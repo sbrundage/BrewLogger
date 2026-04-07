@@ -5,22 +5,49 @@ import PackageDescription
 
 let package = Package(
     name: "BrewLogger",
+    platforms: [.iOS(.v18)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
-            name: "BrewLogger",
-            targets: ["BrewLogger"]
+            name: "BrewLoggerPresentation",
+            targets: ["BrewLoggerPresentation"]
         ),
+        .library(
+            name: "BrewLoggerDomain",
+            targets: ["BrewLoggerDomain"]
+        ),
+        .library(
+            name: "BrewLoggerData",
+            targets: ["BrewLoggerData"]
+        )
+    ],
+    dependencies: [
+        .package(path: "../CoreLogger")
     ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "BrewLogger"
+            name: "BrewLoggerDomain",
+            dependencies: [],
+            path: "Sources/BrewLogger/Domain",
+        ),
+        .target(
+            name: "BrewLoggerData",
+            dependencies: ["BrewLoggerDomain", "CoreLogger"],
+            path: "Sources/BrewLogger/Data",
+        ),
+        .target(
+            name: "BrewLoggerPresentation",
+            dependencies: [
+                "BrewLoggerDomain",
+                "BrewLoggerData",
+                "CoreLogger"
+            ],
+            path: "Sources/BrewLogger/Presentation"
         ),
         .testTarget(
             name: "BrewLoggerTests",
-            dependencies: ["BrewLogger"]
-        ),
+            dependencies: ["BrewLoggerData", "BrewLoggerDomain"],
+            path: "Tests/BrewLoggerTests"
+        )
     ]
 )
