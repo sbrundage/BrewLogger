@@ -26,9 +26,15 @@ public extension PersistenceController {
     @MainActor
     static var stubbedPreviewBrews: PersistenceController = {
         let controller = PersistenceController(modelName: "BrewLogger", bundle: .module, inMemory: true)
-        
+        let context = controller.container.viewContext
+
+        let coffee = CoffeeModel(context: context)
+        coffee.id = UUID().uuidString
+        coffee.name = "Rodrigo Sanchez"
+        coffee.roaster = "KOS"
+
         for _ in 0..<10 {
-            let brew = BrewModel(context: controller.container.viewContext)
+            let brew = BrewModel(context: context)
             brew.id = UUID().uuidString
             brew.date = Date()
             brew.dose = 18.0
@@ -36,8 +42,10 @@ public extension PersistenceController {
             brew.brewTime = 28
             brew.method = 1
             brew.rating = 4
+            brew.coffee = coffee
         }
-        
+
+        try? context.save()
         return controller
     }()
     
@@ -56,12 +64,15 @@ public extension PersistenceController {
             ("Drop Bear Espresso", "Kookaburra"),
         ]
 
+        let context = controller.container.viewContext
         for coffee in coffees {
-            let coffeeModel = CoffeeModel(context: controller.container.viewContext)
+            let coffeeModel = CoffeeModel(context: context)
+            coffeeModel.id = UUID().uuidString
             coffeeModel.name = coffee.name
             coffeeModel.roaster = coffee.roaster
         }
 
+        try? context.save()
         return controller
     }()
 }

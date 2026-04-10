@@ -9,16 +9,12 @@ let package = Package(
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
+            name: "BrewLoggerApplication",
+            targets: ["BrewLoggerApplication"]
+        ),
+        .library(
             name: "BrewLoggerPresentation",
             targets: ["BrewLoggerPresentation"]
-        ),
-        .library(
-            name: "BrewLoggerDomain",
-            targets: ["BrewLoggerDomain"]
-        ),
-        .library(
-            name: "BrewLoggerData",
-            targets: ["BrewLoggerData"]
         )
     ],
     dependencies: [
@@ -26,20 +22,32 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "BrewLoggerApplication",
+            dependencies: [
+                "BrewLoggerDomain",
+                "BrewLoggerData",
+                "CoreLogger"
+            ],
+            path: "Sources/BrewLogger/Application",
+        ),
+        .target(
             name: "BrewLoggerDomain",
             dependencies: [],
             path: "Sources/BrewLogger/Domain",
         ),
         .target(
             name: "BrewLoggerData",
-            dependencies: ["BrewLoggerDomain", "CoreLogger"],
+            dependencies: [
+                "BrewLoggerDomain",
+                "CoreLogger"
+            ],
             path: "Sources/BrewLogger/Data",
         ),
         .target(
             name: "BrewLoggerPresentation",
             dependencies: [
+                "BrewLoggerApplication",
                 "BrewLoggerDomain",
-                "BrewLoggerData",
                 "CoreLogger"
             ],
             path: "Sources/BrewLogger/Presentation"
