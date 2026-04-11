@@ -14,7 +14,7 @@ public struct LogBrewUseCase {
         self.repository = repository
     }
     
-    func execute(newBrew: Brew) throws {
+    public func execute(newBrew: Brew) throws {
         try repository.log(newBrew)
     }
 }
@@ -26,7 +26,7 @@ public struct FetchAllBrewsUseCase {
         self.repository = repository
     }
     
-    func execute(for coffeeId: String) throws -> [Brew] {
+    public func execute(for coffeeId: String?) throws -> [Brew] {
         try repository.fetchAll(for: coffeeId)
     }
 }
@@ -38,7 +38,7 @@ public struct DeleteBrewUseCase {
         self.repository = repository
     }
     
-    func execute(brewId: String) throws {
+    public func execute(brewId: String) throws {
         try repository.delete(id: brewId)
     }
 }
@@ -50,7 +50,7 @@ public struct UpdateBrewUseCase {
         self.repository = repository
     }
     
-    func execute(updatedBrew: Brew) throws {
+    public func execute(updatedBrew: Brew) throws {
         try repository.update(updatedBrew)
     }
 }

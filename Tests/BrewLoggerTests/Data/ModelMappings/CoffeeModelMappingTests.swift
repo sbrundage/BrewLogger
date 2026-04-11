@@ -58,7 +58,7 @@ struct CoffeeModelMappingTests {
         let coffee = Coffee(id: "abc", name: "El Puente",
             originInfo: nil,
             roastInfo: .init(roaster: "KOS", date: nil, roastLevel: nil),
-            brews: [], process: nil)
+            process: nil)
         let sut = CoffeeModel(context: context)
 
         // Act

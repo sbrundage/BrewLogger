@@ -12,7 +12,6 @@ public struct Coffee: Sendable, Identifiable {
     public let name: String
     public let originInfo: OriginInfo?
     public let roastInfo: RoastInfo?
-    public let brews: [Brew]
     public let process: ProcessMethod?
 
     public init(
@@ -20,14 +19,12 @@ public struct Coffee: Sendable, Identifiable {
         name: String,
         originInfo: OriginInfo?,
         roastInfo: RoastInfo?,
-        brews: [Brew],
         process: ProcessMethod?
     ) {
         self.id = id
         self.name = name
         self.originInfo = originInfo
         self.roastInfo = roastInfo
-        self.brews = brews
         self.process = process
     }
 }

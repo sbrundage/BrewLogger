@@ -27,7 +27,10 @@ public final class StubBrewRepository: BrewRepository {
     public init() {}
 
     public func log(_ brew: Brew) throws { brews.append(brew) }
-    public func fetchAll(for coffeeId: String) throws -> [Brew] { brews.filter { $0.coffeeId == coffeeId } }
+    public func fetchAll(for coffeeId: String?) throws -> [Brew] {
+        guard let coffeeId else { return brews }
+        return brews.filter { $0.coffee.id == coffeeId }
+    }
     public func delete(id: String) throws { brews.removeAll { $0.id == id } }
     public func update(_ brew: Brew) throws {
         if let i = brews.firstIndex(where: { $0.id == brew.id }) { brews[i] = brew }

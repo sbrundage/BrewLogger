@@ -6,32 +6,33 @@
 //
 
 import Foundation
+import SwiftUI
 
 public struct Brew: Identifiable, Sendable {
     public let id: String
     public let date: Date
-    public let coffeeId: String
+    public let coffee: Coffee
     public let dose: Double
     public let yield: Double
     public let brewTime: TimeInterval
     public let method: BrewMethod
-    public let rating: Int?
+    public let rating: Double?
     public let notes: String?
 
     public init(
         id: String = UUID().uuidString,
         date: Date,
-        coffeeId: String,
+        coffee: Coffee,
         dose: Double,
         yield: Double,
         brewTime: TimeInterval,
         method: BrewMethod,
-        rating: Int?,
+        rating: Double?,
         notes: String? = nil
     ) {
         self.id = id
         self.date = date
-        self.coffeeId = coffeeId
+        self.coffee = coffee
         self.dose = dose
         self.yield = yield
         self.brewTime = brewTime
@@ -45,4 +46,14 @@ public enum BrewMethod: Int, Sendable {
     case pourOver = 1
     case espresso = 2
     case na = 3
+    
+    public var image: Image? {
+        switch self {
+        case .pourOver:
+                .init(systemName: "mug")
+        case .espresso:
+                .init(systemName: "cup.and.saucer")
+        case .na: nil
+        }
+    }
 }

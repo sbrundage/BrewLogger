@@ -8,10 +8,10 @@
 import Foundation
 import BrewLoggerDomain
 
+/// Repository responsible for managing Brew model persistence within CoreData.
+/// Supports logging, fetching, updating and deleting.
 public final class CoreDataBrewRepository: BrewRepository {
     private let store: CoreDataStore<BrewModel>
-    // Read-only — used only to wire the Core Data relationship on save.
-    // All Coffee CRUD lives in CoreDataCoffeeRepository.
     private let coffeeStore: CoreDataStore<CoffeeModel>
     
     public init(
@@ -21,26 +21,33 @@ public final class CoreDataBrewRepository: BrewRepository {
         self.store = store
         self.coffeeStore = coffeeStore
     }
-        
+    
+    /// Logs a particular brew in CoreData.
+    /// - Parameter brew: Brew model to persist
     public func log(_ brew: Brew) throws {
-        // Fetch parent CoffeeModel to set the managed object relationship.
-        let coffeeModel = try coffeeStore.fetchOne(id: brew.coffeeId)
+        let coffeeModel = try coffeeStore.fetchOne(id: brew.coffee.id)
         try store.insert {
             $0.update(from: brew)
             $0.coffee = coffeeModel
         }
     }
-
-    public func fetchAll(for coffeeId: String) throws -> [Brew] {
-        // Predicate traverses the relationship — Core Data resolves coffee.id without requiring a separate join.
-        let predicate = NSPredicate(format: "coffee.id == %@", coffeeId)
+    
+    /// Fetches all Brews for a particular coffee ID if present, otherwise returns all persisted Brews
+    /// - Parameter coffeeId: Optional ID for a Coffee model
+    /// - Returns: An array of Brew objects
+    public func fetchAll(for coffeeId: String?) throws -> [Brew] {
+        let predicate = coffeeId.map { NSPredicate(format: "coffee.id == %@", $0) }
         return try store.fetchAll(predicate: predicate).compactMap { $0.toDomain() }
     }
     
+    /// Deletes a particular Brew from CoreData
+    /// - Parameter id: ID of the Brew model to delete from storage
     public func delete(id: String) throws {
         try store.delete(id: id)
     }
     
+    /// Updates a particular Brew in CoreData
+    /// - Parameter brew: Updated Brew model to be persisted
     public func update(_ brew: Brew) throws {
         try store.update(id: brew.id) {
             $0.update(from: brew)

@@ -16,21 +16,21 @@ extension BrewModel {
         self.yield = brew.yield
         self.brewTime = brew.brewTime
         self.method = Int16(brew.method.rawValue)
-        self.rating = brew.rating.map { NSNumber(value: $0) }
+        self.rating = brew.rating.map { NSDecimalNumber(value: $0) }
         self.notes = brew.notes
     }
 
     func toDomain() -> Brew? {
-        guard let id, let date, let coffeeId = coffee?.id else { return nil }
+        guard let id, let date, let domainCoffee = coffee?.toDomain() else { return nil }
         return Brew(
             id: id,
             date: date,
-            coffeeId: coffeeId,
+            coffee: domainCoffee,
             dose: dose,
             yield: yield,
             brewTime: brewTime,
             method: BrewMethod(rawValue: Int(method)) ?? .na,
-            rating: rating?.intValue,
+            rating: rating?.doubleValue,
             notes: notes
         )
     }
