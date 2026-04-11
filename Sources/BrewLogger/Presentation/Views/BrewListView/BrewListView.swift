@@ -1,0 +1,85 @@
+//
+//  BrewListView.swift
+//  BrewLogger
+//
+//  Created by Stephen Brundage on 2/19/26.
+//
+
+import SwiftUI
+
+struct BrewListView: View {
+    @State private var viewModel = BrewViewModel()
+    
+    var body: some View {
+        VStack {
+            if viewModel.brews.isEmpty {
+                Text("Add a brew to get started")
+                    .font(.headline)
+                
+                // TODO: Custom image with animation
+                Image(systemName: "cup.and.heat.waves")
+                    .resizable()
+                    .frame(width: 60, height: 60)
+                    .scaledToFit()
+                    .padding()
+            } else {
+                listView
+            }
+        } //: VStack
+        .hidableSearchable(isHidden: viewModel.brews.isEmpty, searchText: $viewModel.searchText)
+        .navigationTitle("Brew History")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    // TODO: Add a new brew
+                } label: {
+                    Image(systemName: "plus")
+                }
+            }
+            
+            
+//            ToolbarItem(placement: .automatic) {
+//                Button {
+//                    // TODO: Add filtering / sorting
+//                } label: {
+//                    Image(systemName: "line.3.horizontal.decrease")
+//                }
+//            }
+        }
+    }
+    
+    private var listView: some View {
+        ScrollView {
+            LazyVStack(spacing: 12) {
+                ForEach(viewModel.brews) { brew in
+                    BrewView(brew: brew)
+                }
+            } //: LazyVStack
+            .padding(.horizontal)
+        } //: ScrollView
+    }
+}
+
+extension View {
+    func hidableSearchable(isHidden: Bool, searchText: Binding<String>) -> some View {
+        self.modifier(HidableSearchBar(searchText: searchText, isHidden: isHidden))
+    }
+}
+
+struct HidableSearchBar: ViewModifier {
+    @Binding var searchText: String
+    
+    let isHidden: Bool
+    
+    func body(content: Content) -> some View {
+        if isHidden { content } else {
+            content.searchable(text: $searchText)
+        }
+    }
+}
+
+#Preview {
+    NavigationStack {
+        BrewListView()
+    }
+}
