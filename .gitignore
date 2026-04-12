@@ -18,3 +18,4 @@ xcuserdata/
 # .swiftpm
 
 .build/
+~/.DS_Store
