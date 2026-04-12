@@ -6,22 +6,19 @@
 //
 
 import Foundation
+import BrewLoggerApplication
 import BrewLoggerDomain
-import BrewLoggerData
-import CoreData
 
 @MainActor @Observable
-public class BrewViewModel {
-//    private let repository: BrewRepository
+public class BrewViewModel {    
+    private(set) var brews: [Brew] = []
     
-    private(set) var brewLogs: [Brew] = []
+    var searchText: String = ""
     
     public init(
-//        context: NSManagedObjectContext = PersistenceController.brewLogger.container.viewContext
+        repository: BrewRepository = RepositoryFactory.makeBrew(for: .stub)
     ) {
-//        self.repository = CoreDataBrewRepository(
-//            store: CoreDataBrewStore(context: context)
-//        )
+        
     }
 }
 

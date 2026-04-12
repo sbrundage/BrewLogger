@@ -23,9 +23,8 @@ public struct MainBrewView: View {
     }
     
     public var body: some View {
-        VStack {
-            Text("Main Brew Logger View")
-            CoffeeListView()
+        NavigationStack {
+            BrewListView()
         } //: VStack
         .environment(\.managedObjectContext, persistenceController.container.viewContext)
     }
