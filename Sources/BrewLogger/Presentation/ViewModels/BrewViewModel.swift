@@ -9,7 +9,6 @@ import Foundation
 import BrewLoggerDomain
 import BrewLoggerData
 import CoreData
-import CoreLogger
 
 @MainActor @Observable
 public class BrewViewModel {
