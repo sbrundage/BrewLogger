@@ -18,7 +18,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../CoreLogger")
+        .package(url: "git@github.com:sbrundage/CoreLogger.git", branch: "develop")
     ],
     targets: [
         .target(
