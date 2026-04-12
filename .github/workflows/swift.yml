@@ -16,7 +16,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Build
-      run: swift build -v
+      run: xcodebuild build -scheme BrewLogger-Package -destination 'platform=iOS Simulator,name=iPhone 17'
     - name: Run tests
-      run: swift test -v
+      run: xcodebuild test -scheme BrewLogger-Package -destination 'platform=iOS Simulator,name=iPhone 17'

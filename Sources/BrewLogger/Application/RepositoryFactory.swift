@@ -8,7 +8,6 @@
 import Foundation
 import BrewLoggerDomain
 import BrewLoggerData
-import CoreLogger
 
 public struct RepositoryFactory {
     public static func makeBrew(for environment: EnvironmentType) -> BrewRepository {
