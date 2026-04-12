@@ -20,6 +20,6 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Build
-      run: swift build -v
+      run: xcodebuild build -scheme BrewLogger-Package -destination 'platform=iOS Simulator,name=iPhone 17'
     - name: Run tests
-      run: swift test -v
+      run: xcodebuild test -scheme BrewLogger-Package -destination 'platform=iOS Simulator,name=iPhone 17'
