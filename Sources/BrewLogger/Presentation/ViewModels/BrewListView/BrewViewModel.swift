@@ -14,6 +14,7 @@ public class BrewViewModel {
     private(set) var brews: [Brew] = []
     
     var searchText: String = ""
+    var showAddBrewSheet: Bool = false
     
     public init(
         repository: BrewRepository = RepositoryFactory.makeBrew(for: .stub)

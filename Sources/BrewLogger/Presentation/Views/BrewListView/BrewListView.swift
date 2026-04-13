@@ -31,7 +31,7 @@ struct BrewListView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    // TODO: Add a new brew
+                    viewModel.showAddBrewSheet = true
                 } label: {
                     Image(systemName: "plus")
                 }
@@ -45,6 +45,18 @@ struct BrewListView: View {
 //                    Image(systemName: "line.3.horizontal.decrease")
 //                }
 //            }
+        }
+        .sheet(isPresented: $viewModel.showAddBrewSheet) {
+            NavigationStack {
+                UpdatedAddBrewView()
+                    .toolbar {
+                        Button {
+                            viewModel.showAddBrewSheet = false
+                        } label: {
+                            Image(systemName: "xmark")
+                        }
+                    }
+            }
         }
     }
     

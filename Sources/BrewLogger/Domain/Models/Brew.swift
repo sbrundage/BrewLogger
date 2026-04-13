@@ -56,4 +56,14 @@ public enum BrewMethod: Int, Sendable {
         case .na: nil
         }
     }
+    
+    public var title: String {
+        switch self {
+        case .pourOver:
+            "Pour Over"
+        case .espresso:
+            "Espresso"
+        case .na: "N/A"
+        }
+    }
 }
