@@ -80,21 +80,6 @@ struct BrewListView: View {
             }
         }
         .listStyle(.plain)
-//        ScrollView {
-//            LazyVStack(spacing: 12) {
-//                ForEach(viewModel.brews) { brew in
-//                    BrewView(brew: brew)
-//                        .swipeActions(edge: .trailing) {
-//                            Button(role: .destructive) {
-//                                viewModel.delete(brew)
-//                            } label: {
-//                                Label("Delete", systemImage: "trash")
-//                            }
-//                        }
-//                }
-//            } //: LazyVStack
-//            .padding(.horizontal)
-//        } //: ScrollView
     }
 }
 

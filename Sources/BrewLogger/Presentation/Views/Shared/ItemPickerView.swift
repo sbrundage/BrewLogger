@@ -33,9 +33,9 @@ struct ItemPickerView<Item: Listable>: View {
                     .foregroundStyle(.primary)
 
                     if item.id != items.last?.id { Divider() }
-                }
-            }
-        }
+                } //: ForEach
+            } //: LazyVStack
+        } //: ScrollView
         .listRowBackground(Color(.secondarySystemFill))
     }
 }
