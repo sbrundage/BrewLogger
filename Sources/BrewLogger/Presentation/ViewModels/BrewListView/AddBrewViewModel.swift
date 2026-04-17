@@ -5,33 +5,121 @@
 //  Created by Stephen Brundage on 4/12/26.
 //
 
-import Foundation
+import SwiftUI
+import BrewLoggerApplication
 import BrewLoggerDomain
 
-@Observable
+@MainActor @Observable
 final class AddBrewViewModel {
+    private let fetchCoffees: FetchAllCoffeesUseCase
+    private let logNewCoffee: LogCoffeeUseCase
+    private let logNewBrew: LogBrewUseCase
+    
+    private var coffees: [Coffee] = []
+    
     var newBrew = NewBrew()
-
-    // String-backed inputs since TextField requires String bindings
-    var doseInput: String = ""
-    var yieldInput: String = ""
-    var brewTimeInput: String = ""
-    var ratingInput: String = ""
+    var coffeeSearch = ""
     
-    var canSave: Bool { true }
+    // Picker Toggles
+    var showCoffeePicker = false
+    var showMethodPicker = false
+        
+    var canSave: Bool { newBrew.canSave }
     
+    var filteredCoffees: [Coffee] {
+        coffeeSearch.isEmpty
+        ? coffees
+        : coffees.filter { $0.name.localizedCaseInsensitiveContains(coffeeSearch)
+        }
+    }
+    
+    init(
+        coffeeRepository: CoffeeRepository = RepositoryFactory.stub.coffee,
+        brewRepository: BrewRepository = RepositoryFactory.stub.brew
+    ) {
+        self.logNewCoffee = LogCoffeeUseCase(repository: coffeeRepository)
+        self.fetchCoffees = FetchAllCoffeesUseCase(repository: coffeeRepository)
+        self.logNewBrew = LogBrewUseCase(repository: brewRepository)
+    }
+    
+    func fetchAllCoffees() {
+        do {
+            coffees = try fetchCoffees.execute()
+        } catch {
+            // TODO: Handle Error
+            print("Got an error while fetching all coffees: \(error)")
+        }
+    }
+    
+    func saveBrew() throws {
+        // TODO: Handle error / show pop up
+        guard
+            canSave,
+            let newBrew = newBrew.convertToBrew()
+        else { return }
+        
+        try logNewBrew.execute(newBrew: newBrew)
+    }
+    
+    func addNewCoffee() {
+        // TODO: Flesh out
+        // For now, just save a random new coffee
+        let newCoffee = Coffee(
+            name: "Brand New Coffee",
+            originInfo: nil,
+            roastInfo: .init(roaster: "KOS", date: Date(), roastLevel: .light),
+            process: .natural
+        )
+        
+        do {
+            try logNewCoffee.execute(coffee: newCoffee)
+            self.newBrew.coffee = newCoffee
+            
+            // Fetch updated coffees
+            fetchAllCoffees()
+        } catch {
+            // TODO: Handle error / show pop up
+            print("Got an error while logging new coffee: \(error)")
+        }
+    }
 }
 
 extension AddBrewViewModel {
-    // Allow user to fill in components of a new brew
     struct NewBrew {
         var coffee: Coffee? = nil
-        var dose: Double? = nil
-        var yield: Double? = nil
-        var temperature: Double? = nil
-        var brewTime: TimeInterval? = nil
+        var dose: String = ""
+        var yield: String = ""
+        var brewTime: String = ""
         var method: BrewMethod? = nil
-        var rating: Double? = nil
-        var notes: String? = nil
+        var rating: String = ""
+        var notes: String = ""
+
+        var canSave: Bool {
+            coffee != nil &&
+            method != nil &&
+            Double(dose) != nil &&
+            Double(yield) != nil &&
+            Double(brewTime) != nil
+        }
+
+        func convertToBrew() -> Brew? {
+            guard
+                let coffee, let method,
+                let dose = Double(dose),
+                let yield = Double(yield),
+                let brewTime = Double(brewTime)
+            else { return nil }
+
+            return Brew(
+                date: Date(),
+                coffee: coffee,
+                dose: dose,
+                yield: yield,
+                brewTime: brewTime,
+                method: method,
+                rating: Double(rating),
+                notes: notes.isEmpty ? nil : notes
+            )
+        }
     }
 }

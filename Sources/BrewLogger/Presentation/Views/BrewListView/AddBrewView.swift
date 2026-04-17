@@ -9,236 +9,152 @@ import SwiftUI
 import BrewLoggerDomain
 
 struct AddBrewView: View {
-    @State private var viewModel = AddBrewViewModel()
-    @State private var showCoffeePicker = false
-    @State private var showMethodPicker = false
-    @State private var coffeeSearch = ""
-
-    var body: some View {
-        Form {
-            requiredFieldsSection
-
-            optionalFieldsSection
-        }
-        .navigationTitle("New Brew")
-        .overlay {
-            if showCoffeePicker {
-                SelectionPopup(
-                    title: "Select a Coffee",
-                    items: Coffee.previewList,
-                    label: \.name,
-                    selected: $viewModel.newBrew.coffee,
-                    isPresented: $showCoffeePicker
-                )
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
-            }
-            if showMethodPicker {
-                SelectionPopup(
-                    title: "Select a Method",
-                    items: [BrewMethod.pourOver, .espresso],
-                    label: \.title,
-                    selected: $viewModel.newBrew.method,
-                    isPresented: $showMethodPicker
-                )
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
-            }
-        }
-        .animation(.spring(duration: 0.25), value: showCoffeePicker)
-        .animation(.spring(duration: 0.25), value: showMethodPicker)
-    }
+    @Environment(\.dismiss) private var dismiss
     
-    private var requiredFieldsSection: some View {
-        Section("Required") {
-            Button(viewModel.newBrew.coffee?.name ?? "Select a coffee") {
-                showCoffeePicker = true
-            }
-            .foregroundStyle(viewModel.newBrew.coffee == nil ? .secondary : .primary)
-
-            Button(viewModel.newBrew.method?.title ?? "Select a method") {
-                showMethodPicker = true
-            }
-            .foregroundStyle(viewModel.newBrew.method == nil ? .secondary : .primary)
-
-            TextField("Dose (g)", text: $viewModel.doseInput)
-                .keyboardType(.decimalPad)
-
-            TextField("Yield (g)", text: $viewModel.yieldInput)
-                .keyboardType(.decimalPad)
-
-            TextField("Brew Time", text: $viewModel.brewTimeInput)
-                .keyboardType(.decimalPad)
-        }
-    }
-    
-    private var optionalFieldsSection: some View {
-        Section("Optional") {
-            TextField("Rating (0–5)", text: $viewModel.ratingInput)
-                .keyboardType(.decimalPad)
-
-            TextField("Notes", text: Binding(
-                get: { viewModel.newBrew.notes ?? "" },
-                set: { viewModel.newBrew.notes = $0.isEmpty ? nil : $0 }
-            ), axis: .vertical)
-                .lineLimit(3...6)
-        }
-    }
-}
-
-struct UpdatedAddBrewView: View {
     @State private var viewModel = AddBrewViewModel()
-    @State private var showCoffeePicker = false
-    @State private var showMethodPicker = false
-    @State private var coffeeSearch: String = ""
+    
+    @FocusState private var focus: Field?
 
     var body: some View {
         Form {
             requiredFieldsSection
             optionalFieldsSection
             
-            
-            if viewModel.canSave {
-                Button {
-                    // TODO: Save Brew
-                    print("saving brew")
-                } label: {
-                    Text("Save Brew")
-                }
-                .foregroundStyle(.cyan)
-                .frame(maxWidth: .infinity)
+            Button {
+                do { try viewModel.saveBrew(); dismiss() }
+                catch { /* TODO: Handle error */ }
+            } label: {
+                Text("Save Brew")
             }
+            .foregroundStyle(viewModel.canSave ? .cyan : .secondary)
+            .frame(maxWidth: .infinity)
+            .disabled(!viewModel.canSave)
         }
         .navigationTitle("New Brew")
-        .animation(.spring(duration: 0.2), value: showCoffeePicker)
-        .animation(.spring(duration: 0.2), value: showMethodPicker)
+        .onAppear {
+            viewModel.fetchAllCoffees()
+        }
+        .toolbar {
+            ToolbarItem(placement: .keyboard) {
+                HStack {
+                    Button { focus = focus?.previous } label: {
+                        Image(systemName: "chevron.up")
+                    }
+                    .disabled(focus?.previous == nil)
+
+                    Button { focus = focus?.next } label: {
+                        Image(systemName: "chevron.down")
+                    }
+                    .disabled(focus?.next == nil)
+
+                    Spacer()
+
+                    Button("Done") { focus = nil }
+                }
+            }
+        }
     }
 
     private var requiredFieldsSection: some View {
         Section("Required") {
-            // Coffee expandable
-            Button {
-                showCoffeePicker.toggle()
-            } label: {
-                HStack {
-                    Text(viewModel.newBrew.coffee?.name ?? "Select a coffee")
-                        .foregroundStyle(viewModel.newBrew.coffee == nil ? .gray : .white)
-                    Spacer()
-                    Image(systemName: "chevron.down")
-                        .rotationEffect(.degrees(showCoffeePicker ? 180 : 0))
-                        .foregroundStyle(.gray)
-                }
-            }
-
-            if showCoffeePicker {
-                // Search + add new coffee
-                HStack {
-                    Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                    TextField("Search", text: $coffeeSearch)
-                    Spacer()
-                    Button {
-                        // TODO: present add coffee flow
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundStyle(.cyan)
-                    }
-                }
-                .listRowBackground(Color(.secondarySystemFill))
-
-                let filtered = coffeeSearch.isEmpty
-                    ? Coffee.previewList
-                    : Coffee.previewList.filter { $0.name.localizedCaseInsensitiveContains(coffeeSearch) }
-
-                ScrollView {
-                    LazyVStack(spacing: 0) {
-                        ForEach(filtered) { coffee in
-                            Button {
-                                viewModel.newBrew.coffee = coffee
-                                showCoffeePicker = false
-                                coffeeSearch = ""
-                            } label: {
-                                HStack {
-                                    Text(coffee.name)
-                                    Spacer()
-                                    if viewModel.newBrew.coffee == coffee {
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
-                                .padding(.vertical, 10)
-                                .padding(.trailing, 8) // prevent checkmark hiding behind scroll indicator
-                            }
-                            .foregroundStyle(.primary)
-
-                            if coffee.id != filtered.last?.id { Divider() }
+            // Select a Coffee
+            
+            ExpandablePickerRow(
+                title: viewModel.newBrew.coffee?.name ?? "Select a coffee",
+                isSelected: viewModel.newBrew.coffee != nil,
+                isExpanded: $viewModel.showCoffeePicker
+            ) {
+                // Search and add new coffee
+                CoffeePickerView(
+                    coffeeSearch: $viewModel.coffeeSearch,
+                    filteredCoffees: viewModel.filteredCoffees,
+                    selectedCoffee: viewModel.newBrew.coffee,
+                    addNewCoffee: {
+                        viewModel.addNewCoffee()
+                    },
+                    onCoffeeOptionTap: { coffee in
+                        viewModel.newBrew.coffee = coffee
+                        viewModel.coffeeSearch = ""
+                        withAnimation(.spring(duration: 0.2)) {
+                            viewModel.showCoffeePicker = false
                         }
                     }
-                }
-                .frame(maxHeight: 200)
-                .listRowBackground(Color(.secondarySystemFill))
+                )
             }
-
-            // Method expandable
-            Button {
-                showMethodPicker.toggle()
-            } label: {
-                HStack {
-                    Text(viewModel.newBrew.method?.title ?? "Select a method")
-                        .foregroundStyle(viewModel.newBrew.method == nil ? .gray : .white)
-                    Spacer()
-                    Image(systemName: "chevron.down")
-                        .rotationEffect(.degrees(showMethodPicker ? 180 : 0))
-                        .foregroundStyle(.gray)
-                }
-            }
-
-            if showMethodPicker {
-                VStack(spacing: 0) {
-                    ForEach([BrewMethod.pourOver, .espresso], id: \.self) { method in
-                        Button {
-                            viewModel.newBrew.method = method
-                            showMethodPicker = false
-                        } label: {
-                            HStack {
-                                Text(method.title)
-                                Spacer()
-                                if viewModel.newBrew.method == method {
-                                    Image(systemName: "checkmark")
-                                }
-                            }
-                            .padding(.vertical, 10)
-                            .padding(.trailing, 8)
-                        }
-                        .foregroundStyle(.primary)
-
-                        if method != .espresso { Divider() }
+            
+            // Choose a Method picker
+            ExpandablePickerRow(
+                title: viewModel.newBrew.method?.title ?? "Select a method",
+                isSelected: viewModel.newBrew.method != nil,
+                isExpanded: $viewModel.showMethodPicker
+            ) {
+                let displayMethods: [BrewMethod] = [.espresso, .pourOver]
+                ItemPickerView(
+                    items: displayMethods,
+                    selectedItem: viewModel.newBrew.method
+                ) { method in
+                    viewModel.newBrew.method = method
+                    withAnimation(.spring(duration: 0.2)) {
+                        viewModel.showMethodPicker = false
                     }
                 }
-                .listRowBackground(Color(.secondarySystemFill))
             }
 
-            TextField("Dose (g)", text: $viewModel.doseInput)
+            TextField("Dose (g)", text: $viewModel.newBrew.dose)
                 .keyboardType(.decimalPad)
+                .textContentType(.none)
+                .focused($focus, equals: .dose)
 
-            TextField("Yield (g)", text: $viewModel.yieldInput)
+            TextField("Yield (g)", text: $viewModel.newBrew.yield)
                 .keyboardType(.decimalPad)
+                .textContentType(.none)
+                .focused($focus, equals: .yield)
 
-            TextField("Brew Time", text: $viewModel.brewTimeInput)
+            TextField("Brew Time", text: $viewModel.newBrew.brewTime)
                 .keyboardType(.decimalPad)
+                .textContentType(.none)
+                .focused($focus, equals: .brewTime)
         }
     }
 
     private var optionalFieldsSection: some View {
         Section("Optional") {
-            TextField("Rating (0–5)", text: $viewModel.ratingInput)
+            TextField("Rating (0–5)", text: $viewModel.newBrew.rating)
                 .keyboardType(.decimalPad)
+                .textContentType(.none)
+                .focused($focus, equals: .rating)
 
-            TextField("Notes", text: Binding(
-                get: { viewModel.newBrew.notes ?? "" },
-                set: { viewModel.newBrew.notes = $0.isEmpty ? nil : $0 }
-            ), axis: .vertical)
+            TextField("Notes", text: $viewModel.newBrew.notes, axis: .vertical)
                 .lineLimit(3...6)
+                .focused($focus, equals: .notes)
+        }
+    }
+
+    private enum Field {
+        case dose, yield, brewTime, rating, notes
+        
+        var next: Field? {
+            switch self {
+            case .dose: return .yield
+            case .yield: return .brewTime
+            case .brewTime: return .rating
+            case .rating: return .notes
+            case .notes: return nil
+            }
+        }
+        
+        var previous: Field? {
+            switch self {
+            case .dose: return nil
+            case .yield: return .dose
+            case .brewTime: return .yield
+            case .rating: return .brewTime
+            case .notes: return .rating
+            }
         }
     }
 }
 
 #Preview {
-    UpdatedAddBrewView()
+    AddBrewView()
 }

@@ -42,7 +42,7 @@ public struct Brew: Identifiable, Sendable {
     }
 }
 
-public enum BrewMethod: Int, Sendable {
+public enum BrewMethod: Int, Sendable, Identifiable {
     case pourOver = 1
     case espresso = 2
     case na = 3
@@ -66,4 +66,6 @@ public enum BrewMethod: Int, Sendable {
         case .na: "N/A"
         }
     }
+    
+    public var id: Int { rawValue }
 }
