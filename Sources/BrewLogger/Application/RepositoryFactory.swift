@@ -8,20 +8,15 @@
 import Foundation
 import BrewLoggerDomain
 import BrewLoggerData
-import CoreLogger
 
+@MainActor
 public struct RepositoryFactory {
-    public static func makeBrew(for environment: EnvironmentType) -> BrewRepository {
-        switch environment {
-        case .stub:
-            StubBrewRepository()
-        }
-    }
-    
-    public static func makeCoffee(for environment: EnvironmentType) -> CoffeeRepository {
-        switch environment {
-        case .stub:
-            StubCoffeeRepository()
-        }
-    }
+    public let coffee: any CoffeeRepository
+    public let brew: any BrewRepository
+
+    // One shared instance — stub repos share the same in-memory state
+    public static let stub = RepositoryFactory(
+        coffee: StubCoffeeRepository(),
+        brew: StubBrewRepository()
+    )
 }
