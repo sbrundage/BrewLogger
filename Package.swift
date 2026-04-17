@@ -1,4 +1,4 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.1
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -18,7 +18,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../CoreLogger")
+        .package(url: "git@github.com:sbrundage/CoreLogger.git", branch: "develop")
     ],
     targets: [
         .target(

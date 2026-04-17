@@ -22,7 +22,7 @@ public final class StubCoffeeRepository: CoffeeRepository {
 }
 
 public final class StubBrewRepository: BrewRepository {
-    private var brews: [Brew] = []
+    private var brews: [Brew] = Brew.previewList
 
     public init() {}
 

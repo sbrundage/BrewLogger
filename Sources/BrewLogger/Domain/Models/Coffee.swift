@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Coffee: Sendable, Identifiable {
+public struct Coffee: Sendable, Identifiable, Hashable {
     public let id: String
     public let name: String
     public let originInfo: OriginInfo?
@@ -27,6 +27,10 @@ public struct Coffee: Sendable, Identifiable {
         self.roastInfo = roastInfo
         self.process = process
     }
+    
+    public static func == (lhs: Coffee, rhs: Coffee) -> Bool { lhs.id == rhs.id }
+    
+    public func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
 
 public enum ProcessMethod: Sendable {
