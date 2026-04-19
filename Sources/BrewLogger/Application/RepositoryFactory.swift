@@ -13,11 +13,18 @@ import BrewLoggerData
 public struct RepositoryFactory {
     public let coffee: any CoffeeRepository
     public let brew: any BrewRepository
+    public let scale: any BLEScaleRepository
 
     public static let stub = RepositoryFactory(
         coffee: StubCoffeeRepository(),
-        brew: StubBrewRepository()
+        brew: StubBrewRepository(),
+        scale: StubBLEScaleRepository()
     )
     
-    // public static let scale: BLEScaleRepository = CoreBluetoothScaleRepository()
+    // TODO: Add dev repositories
+//    public static let dev: RepositoryFactory = .init(
+//        coffee: <#T##any CoffeeRepository#>,
+//        brew: <#T##any BrewRepository#>,
+//        scale: <#T##any BLEScaleRepository#>
+//    )
 }

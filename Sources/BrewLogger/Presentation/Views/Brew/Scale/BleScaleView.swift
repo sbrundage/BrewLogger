@@ -1,11 +1,12 @@
 //
-//  SwiftUIView.swift
+//  BleScaleView.swift
 //  BrewLogger
 //
 //  Created by Stephen Brundage on 4/19/26.
 //
 
 import SwiftUI
+import BrewLoggerApplication
 
 struct BleScaleView: View {
     @State private var viewModel = BleScaleViewModel()
@@ -17,5 +18,5 @@ struct BleScaleView: View {
 
 #Preview {
     BleScaleView()
-        .environment(BleScaleConnectionManager(repository: StubBLEScaleRepository()))
+        .environment(BleScaleConnectionManager(repository: RepositoryFactory.stub.scale))
 }

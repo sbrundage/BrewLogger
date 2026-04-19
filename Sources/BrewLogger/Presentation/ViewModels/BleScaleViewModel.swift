@@ -18,7 +18,7 @@ public final class BleScaleConnectionManager {
     private let observeState: ObserveScaleStateUseCase
     private var stateTask: Task<Void, Never>?
 
-    public init(repository: BLEScaleRepository = RepositoryFactory.scale) {
+    public init(repository: BLEScaleRepository = RepositoryFactory.stub.scale) {
         self.connect = ConnectToScaleUseCase(repository: repository)
         self.disconnect = DisconnectFromScaleUseCase(repository: repository)
         self.observeState = ObserveScaleStateUseCase(repository: repository)
@@ -55,7 +55,7 @@ public final class BleScaleViewModel {
     private var readingsTask: Task<Void, Never>?
     private var stateTask: Task<Void, Never>?
 
-    public init(repository: BLEScaleRepository = RepositoryFactory.scale) {
+    public init(repository: BLEScaleRepository = RepositoryFactory.stub.scale) {
         self.connect = ConnectToScaleUseCase(repository: repository)
         self.disconnect = DisconnectFromScaleUseCase(repository: repository)
         self.observe = ObserveScaleReadingsUseCase(repository: repository)
