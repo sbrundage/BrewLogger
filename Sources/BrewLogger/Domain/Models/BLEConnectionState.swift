@@ -13,4 +13,19 @@ public enum BLEConnectionState: Sendable {
     case connecting
     case connected
     case failed(any Error)
+    
+    public var description: String {
+        switch self {
+        case .disconnected:
+            "Disconnne"
+        case .scanning:
+            "Scanning"
+        case .connecting:
+            "Connecting"
+        case .connected:
+            "Connected"
+        case .failed(let error):
+            "Failed: \(error)"
+        }
+    }
 }

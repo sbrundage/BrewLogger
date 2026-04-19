@@ -10,28 +10,49 @@ import BrewLoggerDomain
 
 @MainActor
 final class BLEScaleManager: NSObject {
-    // BLE UUIDs
+    // MARK: - Constants
+    private static let peripheralName = "Coffee Scale"
+
+    // MARK: - BLE UUIDs
+    // Standard Bluetooth SIG UUIDs for environmental sensing (temp/humidity)
     private let envServiceUUID      = CBUUID(string: "181A")
     private let temperatureCharUUID = CBUUID(string: "2A6E")
     private let humidityCharUUID    = CBUUID(string: "2A6F")
+    // Custom UUIDs defined on the ESP32 for scale weight data
     private let scaleServiceUUID    = CBUUID(string: "12345678-1234-1234-1234-1234567890AB")
     private let weightCharUUID      = CBUUID(string: "12345678-1234-1234-1234-1234567890AC")
+    // Write-only characteristic — write any byte to trigger a tare on the ESP32
+    private let tareCharUUID        = CBUUID(string: "12345678-1234-1234-1234-1234567890AD")
 
-    private let continuation: AsyncStream<ScaleReading>.Continuation
+    // MARK: - AsyncStream infrastructure
+    // Each stream has a paired continuation — the continuation is the write-end (yield/finish),
+    // the stream is the read-end consumed by observers. Both are created once in init and kept alive
+    // for the lifetime of this manager.
+    private let readingsContinuation: AsyncStream<ScaleReading>.Continuation
+    private let stateContinuation: AsyncStream<BLEConnectionState>.Continuation
+
+    /// Live scale readings (weight + env data) emitted on each BLE notify callback.
+    let readings: AsyncStream<ScaleReading>
+    /// Connection state transitions emitted whenever the BLE state machine advances.
+    let stateChanges: AsyncStream<BLEConnectionState>
 
     private(set) var connectionState: BLEConnectionState = .disconnected
 
     private var centralManager: CBCentralManager?
     private var peripheral: CBPeripheral?
+    private var tareCharacteristic: CBCharacteristic?
     private var latestTemperature: Double = 0
     private var latestHumidity: Double = 0
 
-    let readings: AsyncStream<ScaleReading>
-
     override init() {
-        var cont: AsyncStream<ScaleReading>.Continuation!
-        readings = AsyncStream { cont = $0 }
-        continuation = cont
+        var readingsCont: AsyncStream<ScaleReading>.Continuation!
+        readings = AsyncStream { readingsCont = $0 }
+        readingsContinuation = readingsCont
+
+        var stateCont: AsyncStream<BLEConnectionState>.Continuation!
+        stateChanges = AsyncStream { stateCont = $0 }
+        stateContinuation = stateCont
+
         super.init()
     }
 
@@ -39,19 +60,30 @@ final class BLEScaleManager: NSObject {
 
     func connect() {
         guard centralManager == nil else { return }
+        // Initialising CBCentralManager triggers centralManagerDidUpdateState(_:).
+        // queue: .main keeps all delegate callbacks on the main thread, consistent with @MainActor.
         connectionState = .scanning
-        // queue: .main ensures all delegate callbacks arrive on the main thread,
-        // which is safe since this class is @MainActor
+        stateContinuation.yield(.scanning)
         centralManager = CBCentralManager(delegate: self, queue: .main)
+    }
+
+    func tare() {
+        guard let peripheral, let tareCharacteristic else { return }
+        // Write a single byte — the ESP32 TareCallbacks::onWrite triggers scale.tare() on any write
+        peripheral.writeValue(Data([0x01]), for: tareCharacteristic, type: .withResponse)
     }
 
     func disconnect() {
         if let peripheral, let centralManager {
             centralManager.cancelPeripheralConnection(peripheral)
         }
-        continuation.finish()
         connectionState = .disconnected
+        stateContinuation.yield(.disconnected)
+        // Finish both streams — any active for-await loops in observers will exit cleanly.
+        readingsContinuation.finish()
+        stateContinuation.finish()
         peripheral = nil
+        tareCharacteristic = nil
         centralManager = nil
     }
 }
@@ -61,6 +93,8 @@ final class BLEScaleManager: NSObject {
 extension BLEScaleManager: @preconcurrency CBCentralManagerDelegate {
 
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        // TODO: Handle non-poweredOn states (.poweredOff, .unauthorized, .unsupported) by
+        // surfacing a .failed or dedicated .bluetoothUnavailable state to the UI.
         guard central.state == .poweredOn else { return }
         central.scanForPeripherals(withServices: [envServiceUUID, scaleServiceUUID])
     }
@@ -71,15 +105,17 @@ extension BLEScaleManager: @preconcurrency CBCentralManagerDelegate {
         advertisementData: [String: Any],
         rssi: NSNumber
     ) {
-        guard peripheral.name == "Coffee Scale" else { return }
+        guard peripheral.name == BLEScaleManager.peripheralName else { return }
         self.peripheral = peripheral
         central.stopScan()
         connectionState = .connecting
+        stateContinuation.yield(.connecting)
         central.connect(peripheral)
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         connectionState = .connected
+        stateContinuation.yield(.connected)
         peripheral.delegate = self
         peripheral.discoverServices([envServiceUUID, scaleServiceUUID])
     }
@@ -90,8 +126,9 @@ extension BLEScaleManager: @preconcurrency CBCentralManagerDelegate {
         error: (any Error)?
     ) {
         self.peripheral = nil
+        // Peripheral dropped — resume scanning to auto-reconnect
         connectionState = .scanning
-        // Automatically restart scan to reconnect
+        stateContinuation.yield(.scanning)
         central.scanForPeripherals(withServices: [envServiceUUID, scaleServiceUUID])
     }
 
@@ -102,6 +139,10 @@ extension BLEScaleManager: @preconcurrency CBCentralManagerDelegate {
     ) {
         if let error {
             connectionState = .failed(error)
+            stateContinuation.yield(.failed(error))
+        } else {
+            connectionState = .disconnected
+            stateContinuation.yield(.disconnected)
         }
     }
 }
@@ -123,8 +164,14 @@ extension BLEScaleManager: @preconcurrency CBPeripheralDelegate {
         error: (any Error)?
     ) {
         guard let characteristics = service.characteristics else { return }
-        for characteristic in characteristics where characteristic.properties.contains(.notify) {
-            peripheral.setNotifyValue(true, for: characteristic)
+        for characteristic in characteristics {
+            if characteristic.properties.contains(.notify) {
+                peripheral.setNotifyValue(true, for: characteristic)
+            }
+            // Store tare characteristic so tare() can write to it later
+            if characteristic.uuid == tareCharUUID {
+                tareCharacteristic = characteristic
+            }
         }
     }
 
@@ -152,7 +199,7 @@ extension BLEScaleManager: @preconcurrency CBPeripheralDelegate {
                 temperature: latestTemperature,
                 humidity: latestHumidity
             )
-            continuation.yield(reading)
+            readingsContinuation.yield(reading)
 
         default:
             break

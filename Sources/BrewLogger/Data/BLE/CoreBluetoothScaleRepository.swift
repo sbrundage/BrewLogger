@@ -8,7 +8,7 @@
 import Foundation
 import BrewLoggerDomain
 
-@MainActor
+@MainActor @Observable
 public final class CoreBluetoothScaleRepository: BLEScaleRepository {
     private let manager: BLEScaleManager
 
@@ -16,19 +16,11 @@ public final class CoreBluetoothScaleRepository: BLEScaleRepository {
         self.manager = BLEScaleManager()
     }
 
-    public var connectionState: BLEConnectionState {
-        manager.connectionState
-    }
+    public var connectionState: BLEConnectionState { manager.connectionState }
+    public var state​Changes: AsyncStream<BLEConnectionState> { manager.stateChanges }
+    public var readings: AsyncStream<ScaleReading> { manager.readings }
 
-    public var readings: AsyncStream<ScaleReading> {
-        manager.readings
-    }
-
-    public func connect() {
-        manager.connect()
-    }
-
-    public func disconnect() {
-        manager.disconnect()
-    }
+    public func connect() { manager.connect() }
+    public func disconnect() { manager.disconnect() }
+    public func tare() { manager.tare() }
 }

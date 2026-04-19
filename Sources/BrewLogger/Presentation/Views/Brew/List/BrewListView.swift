@@ -8,10 +8,14 @@
 import SwiftUI
 
 struct BrewListView: View {
+    @Environment(BleScaleConnectionManager.self) var connectionManager
+
     @State private var viewModel = BrewViewModel()
     
     var body: some View {
         VStack {
+            Text(connectionManager.connectionState.description) // need to add description to BLEConnectionState
+            
             if viewModel.brews.isEmpty {
                 Text("Add a brew to get started")
                     .font(.headline)
@@ -26,15 +30,12 @@ struct BrewListView: View {
                 listView
             }
         } //: VStack
-        .onAppear {
-            viewModel.fetchAllBrews()
-        }
-        .searchable(text: $viewModel.searchText)
+        .hidableSearchable(isHidden: viewModel.brews.isEmpty, searchText: $viewModel.searchText)
         .navigationTitle("Brew History")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    viewModel.showAddBrewSheet = true
+                    // TODO: Add a new brew
                 } label: {
                     Image(systemName: "plus")
                 }
@@ -49,42 +50,43 @@ struct BrewListView: View {
 //                }
 //            }
         }
-        .sheet(isPresented: $viewModel.showAddBrewSheet, onDismiss: {
-            viewModel.fetchAllBrews()
-        }) {
-            NavigationStack {
-                AddBrewView()
-                    .toolbar {
-                        Button {
-                            viewModel.showAddBrewSheet = false
-                        } label: { Image(systemName: "xmark") }
-                    }
-            }
-        }
     }
     
     private var listView: some View {
-        List {
-            ForEach(viewModel.brews) { brew in
-                BrewView(brew: brew)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowSeparator(.hidden)
-                    .swipeActions(edge: .trailing) {
-                        Button(role: .destructive) {
-                            viewModel.delete(brew)
-                        } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
-                    }
-            }
-        }
-        .listStyle(.plain)
+        ScrollView {
+            LazyVStack(spacing: 12) {
+                ForEach(viewModel.brews) { brew in
+                    BrewView(brew: brew)
+                }
+            } //: LazyVStack
+            .padding(.horizontal)
+        } //: ScrollView
     }
 }
+
+extension View {
+    func hidableSearchable(isHidden: Bool, searchText: Binding<String>) -> some View {
+        self.modifier(HidableSearchBar(searchText: searchText, isHidden: isHidden))
+    }
+}
+
+struct HidableSearchBar: ViewModifier {
+    @Binding var searchText: String
+    
+    let isHidden: Bool
+    
+    func body(content: Content) -> some View {
+        if isHidden { content } else {
+            content.searchable(text: $searchText)
+        }
+    }
+}
+
+import BrewLoggerData
 
 #Preview {
     NavigationStack {
         BrewListView()
     }
+    .environment(BleScaleConnectionManager(repository: StubBLEScaleRepository()))
 }

@@ -36,3 +36,14 @@ public final class StubBrewRepository: BrewRepository {
         if let i = brews.firstIndex(where: { $0.id == brew.id }) { brews[i] = brew }
     }
 }
+
+public final class StubBLEScaleRepository: BLEScaleRepository {
+    public var connectionState: BLEConnectionState = .disconnected
+    public var state​Changes: AsyncStream<BLEConnectionState> { AsyncStream { _ in } }
+    public var readings: AsyncStream<ScaleReading> { AsyncStream { _ in } }
+
+    public init() {}
+    public func connect() {}
+    public func disconnect() {}
+    public func tare() {}
+}

@@ -15,6 +15,7 @@ import BrewLoggerData
 
 public struct MainBrewView: View {
 //    @State private var brewViewModel = BrewViewModel()
+    @State private var connectionManager = BleScaleConnectionManager()
     
     let persistenceController: PersistenceController
      
@@ -27,6 +28,8 @@ public struct MainBrewView: View {
             BrewListView()
         } //: VStack
         .environment(\.managedObjectContext, persistenceController.container.viewContext)
+        .environment(connectionManager)
+        .onAppear { connectionManager.startConnecting() }
     }
 }
 

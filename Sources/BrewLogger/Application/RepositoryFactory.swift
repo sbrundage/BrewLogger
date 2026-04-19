@@ -14,9 +14,10 @@ public struct RepositoryFactory {
     public let coffee: any CoffeeRepository
     public let brew: any BrewRepository
 
-    // One shared instance — stub repos share the same in-memory state
     public static let stub = RepositoryFactory(
         coffee: StubCoffeeRepository(),
         brew: StubBrewRepository()
     )
+    
+    // public static let scale: BLEScaleRepository = CoreBluetoothScaleRepository()
 }
