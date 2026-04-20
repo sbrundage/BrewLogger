@@ -79,9 +79,10 @@ final class BLEScaleManager: NSObject {
         }
         connectionState = .disconnected
         stateContinuation.yield(.disconnected)
-        // Finish both streams — any active for-await loops in observers will exit cleanly.
-        readingsContinuation.finish()
-        stateContinuation.finish()
+        // Do NOT finish the streams here — finishing permanently kills them.
+        // Since RepositoryFactory.dev is a singleton, the same streams are reused
+        // across connect/disconnect cycles. Tasks that observe these streams are
+        // cancelled by the view model, so no cleanup is needed on the stream itself.
         peripheral = nil
         tareCharacteristic = nil
         centralManager = nil

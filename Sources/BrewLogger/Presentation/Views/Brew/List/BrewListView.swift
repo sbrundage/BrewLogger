@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import BrewLoggerApplication
 
 struct BrewListView: View {
     @Environment(BleScaleConnectionManager.self) var connectionManager
@@ -14,28 +15,24 @@ struct BrewListView: View {
     
     var body: some View {
         VStack {
-            Text(connectionManager.connectionState.description) // need to add description to BLEConnectionState
+            BleConnectionView(isConnected: connectionManager.isConnected)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
             
             if viewModel.brews.isEmpty {
-                Text("Add a brew to get started")
-                    .font(.headline)
-                
-                // TODO: Custom image with animation
-                Image(systemName: "cup.and.heat.waves")
-                    .resizable()
-                    .frame(width: 60, height: 60)
-                    .scaledToFit()
-                    .padding()
+                noBrewsView
             } else {
                 listView
             }
         } //: VStack
-        .hidableSearchable(isHidden: viewModel.brews.isEmpty, searchText: $viewModel.searchText)
+        .onAppear { viewModel.fetchAllBrews() }
+        .searchable(text: $viewModel.searchText)
         .navigationTitle("Brew History")
+        .frame(maxHeight: .infinity, alignment: .top)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    // TODO: Add a new brew
+                    viewModel.showAddBrewSheet = true
                 } label: {
                     Image(systemName: "plus")
                 }
@@ -50,34 +47,51 @@ struct BrewListView: View {
 //                }
 //            }
         }
+        .sheet(isPresented: $viewModel.showAddBrewSheet, onDismiss: {
+            viewModel.fetchAllBrews()
+        }) {
+            NavigationStack {
+                AddBrewView()
+                    .toolbar {
+                        Button {
+                            viewModel.showAddBrewSheet = false
+                        } label: { Image(systemName: "xmark") }
+                    }
+            }
+        }
     }
     
     private var listView: some View {
-        ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(viewModel.brews) { brew in
-                    BrewView(brew: brew)
-                }
-            } //: LazyVStack
-            .padding(.horizontal)
-        } //: ScrollView
+        List {
+            ForEach(viewModel.brews) { brew in
+                BrewView(brew: brew)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            viewModel.delete(brew)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+            }
+        }
+        .listStyle(.plain)
     }
-}
-
-extension View {
-    func hidableSearchable(isHidden: Bool, searchText: Binding<String>) -> some View {
-        self.modifier(HidableSearchBar(searchText: searchText, isHidden: isHidden))
-    }
-}
-
-struct HidableSearchBar: ViewModifier {
-    @Binding var searchText: String
     
-    let isHidden: Bool
-    
-    func body(content: Content) -> some View {
-        if isHidden { content } else {
-            content.searchable(text: $searchText)
+    private var noBrewsView: some View {
+        VStack {
+            Spacer()
+            // TODO: Custom image with animation
+            Image(systemName: "cup.and.heat.waves")
+                .resizable()
+                .frame(width: 60, height: 60)
+                .scaledToFit()
+                .padding()
+            Text("Add a brew to get started")
+                .font(.headline)
+            Spacer()
         }
     }
 }
@@ -88,5 +102,5 @@ import BrewLoggerData
     NavigationStack {
         BrewListView()
     }
-    .environment(BleScaleConnectionManager(repository: StubBLEScaleRepository()))
+    .environment(BleScaleConnectionManager(repository: RepositoryFactory.stub.scale))
 }

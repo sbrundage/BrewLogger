@@ -21,10 +21,10 @@ public struct RepositoryFactory {
         scale: StubBLEScaleRepository()
     )
     
-    // TODO: Add dev repositories
-//    public static let dev: RepositoryFactory = .init(
-//        coffee: <#T##any CoffeeRepository#>,
-//        brew: <#T##any BrewRepository#>,
-//        scale: <#T##any BLEScaleRepository#>
-//    )
+    // TODO: Add dev repositories - Move away from stub repos and pass in CoreDataStore created from host app
+    public static let dev = RepositoryFactory(
+        coffee: StubCoffeeRepository(),
+        brew: StubBrewRepository(),
+        scale: CoreBluetoothScaleRepository()
+    )
 }

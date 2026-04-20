@@ -13,19 +13,19 @@ public enum BLEConnectionState: Sendable {
     case connecting
     case connected
     case failed(any Error)
-    
-    public var description: String {
-        switch self {
-        case .disconnected:
-            "Disconnne"
-        case .scanning:
-            "Scanning"
-        case .connecting:
-            "Connecting"
-        case .connected:
-            "Connected"
-        case .failed(let error):
-            "Failed: \(error)"
+}
+
+extension BLEConnectionState: Equatable {
+    public static func == (lhs: BLEConnectionState, rhs: BLEConnectionState) -> Bool {
+        switch (lhs, rhs) {
+        case (.disconnected, .disconnected),
+             (.scanning, .scanning),
+             (.connecting, .connecting),
+             (.connected, .connected),
+             (.failed, .failed):
+            return true
+        default:
+            return false
         }
     }
 }

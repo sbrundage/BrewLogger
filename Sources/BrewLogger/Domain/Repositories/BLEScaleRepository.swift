@@ -12,6 +12,7 @@ public protocol BLEScaleRepository: AnyObject {
     var connectionState: BLEConnectionState { get }
     var state​Changes: AsyncStream<BLEConnectionState> { get }
     var readings: AsyncStream<ScaleReading> { get }
+    
     func connect()
     func disconnect()
     func tare()
