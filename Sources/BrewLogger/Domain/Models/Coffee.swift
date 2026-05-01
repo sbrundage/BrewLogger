@@ -33,9 +33,9 @@ public struct Coffee: Sendable, Identifiable, Hashable {
     public func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
 
-public enum ProcessMethod: Sendable {
+public enum ProcessMethod: String, Sendable, Hashable {
     case washed
     case natural
     case honey
-    case other(String)
+    case wetHulled = "wet hulled"
 }

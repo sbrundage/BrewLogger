@@ -13,10 +13,19 @@ struct CoffeeView: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            Text(coffee.name)
-                .font(.headline)
-            
             HStack {
+                Text(coffee.name)
+                    .font(.headline)
+                
+                Spacer()
+                
+                if let roaster = coffee.roastInfo?.roaster {
+                    Text(roaster)
+                        .font(.subheadline)
+                }
+            } //: HStack
+            
+            HStack(alignment: .top) {
                 VStack(alignment: .leading) {
                     if let origin = coffee.originInfo {
                         Text(origin.location)
@@ -31,17 +40,10 @@ struct CoffeeView: View {
                 
                 Spacer()
                 
-                VStack(alignment: .leading) {
-                    if let roaster = coffee.roastInfo?.roaster {
-                        Text(roaster)
-                            .font(.subheadline)
-                    }
-                    
-                    if let roastDate = coffee.roastInfo?.date {
-                        Text(roastDate.shortFormatted)
-                            .font(.caption)
-                    }
-                } //: VStack
+                if let roastDate = coffee.roastInfo?.date {
+                    Text(roastDate.shortFormatted)
+                        .font(.caption)
+                }
             } //: HStack
         } //: VStack
         .padding()
@@ -56,4 +58,6 @@ struct CoffeeView: View {
 
 #Preview {
     CoffeeView(coffee: .preview)
+    let coffee = Coffee(name: "Test Coffee", originInfo: nil, roastInfo: nil, process: nil)
+    CoffeeView(coffee: coffee)
 }

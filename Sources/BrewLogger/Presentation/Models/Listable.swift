@@ -17,3 +17,13 @@ extension Coffee: Listable {
 }
 
 extension BrewMethod: Listable {}
+
+extension RoastLevel: Listable {
+    public var id: String { rawValue }
+    public var title: String { rawValue.capitalized }
+}
+
+extension ProcessMethod: Listable {
+    public var id: String { rawValue }
+    public var title: String { rawValue.capitalized }
+}
