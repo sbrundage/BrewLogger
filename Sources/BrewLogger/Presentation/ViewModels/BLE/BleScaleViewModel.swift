@@ -21,6 +21,7 @@ public final class BleScaleViewModel {
     private(set) var finalYield: Double? = nil
 
     private var readingsTask: Task<Void, Never>?
+    private var armTask: Task<Void, Never>?
 
     public init(repository: BLEScaleRepository = RepositoryFactory.dev.scale) {
         self.observe = ObserveScaleReadingsUseCase(repository: repository)
@@ -39,6 +40,7 @@ public final class BleScaleViewModel {
 
     public func stopObserving() {
         readingsTask?.cancel()
+        armTask?.cancel()
         isArmed = false
         resetSession()
     }
@@ -49,9 +51,14 @@ public final class BleScaleViewModel {
         tareUseCase.execute()
         // Delay arming so readings at the pre-tare weight are discarded while
         // the ESP32 processes the tare command (~100ms loop interval + margin).
-        Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(400))
-            self?.isArmed = true
+        armTask?.cancel()
+        armTask = Task { @MainActor [weak self] in
+            do {
+                try await Task.sleep(for: .milliseconds(400))
+                self?.isArmed = true
+            } catch {
+                // Task was cancelled before firing — do not arm
+            }
         }
     }
 }
@@ -75,21 +82,33 @@ private extension BleScaleViewModel {
         guard let start = brewStartTime else { return }
         
         let elapsed = now.timeIntervalSince(start)
+
+        // Hard stop at max brew time — prevents chart overflow
+        if elapsed >= 40 {
+            finalYield = samples.last?.weight ?? reading.weight
+            isArmed = false
+            return
+        }
+
         samples.append(WeightSample(elapsed: elapsed, weight: reading.weight))
         
-        if samples.count > 600 { samples.removeFirst() }
-        
-        detectFinalYield()
+//        detectFinalYield()
     }
 
     func detectFinalYield() {
-        guard finalYield == nil, samples.count >= 20 else { return }
-        
-        let recent = samples.suffix(20).map(\.weight)
-        let spread = (recent.max() ?? 0) - (recent.min() ?? 0)
-        let peak = recent.max() ?? 0
-        if spread < 0.5 && peak > 10 {
-            finalYield = peak
+        guard finalYield == nil, let latest = samples.last else { return }
+        // Don't check until well into the shot to avoid false positives during pre-infusion
+        guard latest.weight > 15, latest.elapsed >= 12 else { return }
+
+        // Find the sample from ~4 seconds ago using elapsed time in the samples
+        let windowStart = latest.elapsed - 4.0
+        guard let oldSample = samples.first(where: { $0.elapsed >= windowStart }) else { return }
+
+        // Active extraction runs ~1–2 g/s; threshold is 2g/4s = 0.5 g/s.
+        // If weight increased by less than 2g in the last 4 seconds, the shot is done.
+        let increase = latest.weight - oldSample.weight
+        if increase < 2.0 {
+            finalYield = latest.weight
             isArmed = false
         }
     }

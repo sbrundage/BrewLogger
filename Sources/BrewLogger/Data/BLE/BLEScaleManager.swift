@@ -25,16 +25,42 @@ final class BLEScaleManager: NSObject {
     private let tareCharUUID        = CBUUID(string: "12345678-1234-1234-1234-1234567890AD")
 
     // MARK: - AsyncStream infrastructure
-    // Each stream has a paired continuation — the continuation is the write-end (yield/finish),
-    // the stream is the read-end consumed by observers. Both are created once in init and kept alive
-    // for the lifetime of this manager.
-    private let readingsContinuation: AsyncStream<ScaleReading>.Continuation
-    private let stateContinuation: AsyncStream<BLEConnectionState>.Continuation
+    // AsyncStream terminates when its consuming task is cancelled, making it single-use.
+    // To support multiple sequential subscribers (e.g. a modal being dismissed and re-opened),
+    // we use a multicast pattern: each call to readings/stateChanges creates a fresh AsyncStream
+    // with its own continuation. We keep a dictionary of active continuations and yield to all of
+    // them whenever the BLE hardware fires. When a subscriber's task is cancelled, its continuation
+    // removes itself from the dictionary via onTermination.
+    private var readingsContinuations: [UUID: AsyncStream<ScaleReading>.Continuation] = [:]
+    private var stateContinuations: [UUID: AsyncStream<BLEConnectionState>.Continuation] = [:]
 
     /// Live scale readings (weight + env data) emitted on each BLE notify callback.
-    let readings: AsyncStream<ScaleReading>
+    /// Each call returns a fresh stream — safe to iterate across multiple sequential consumers.
+    var readings: AsyncStream<ScaleReading> {
+        let id = UUID()
+        return AsyncStream { [weak self] continuation in
+            self?.readingsContinuations[id] = continuation
+            continuation.onTermination = { @Sendable [weak self] _ in
+                Task { @MainActor [weak self] in
+                    self?.readingsContinuations.removeValue(forKey: id)
+                }
+            }
+        }
+    }
+
     /// Connection state transitions emitted whenever the BLE state machine advances.
-    let stateChanges: AsyncStream<BLEConnectionState>
+    /// Each call returns a fresh stream — safe to iterate across multiple sequential consumers.
+    var stateChanges: AsyncStream<BLEConnectionState> {
+        let id = UUID()
+        return AsyncStream { [weak self] continuation in
+            self?.stateContinuations[id] = continuation
+            continuation.onTermination = { @Sendable [weak self] _ in
+                Task { @MainActor [weak self] in
+                    self?.stateContinuations.removeValue(forKey: id)
+                }
+            }
+        }
+    }
 
     private(set) var connectionState: BLEConnectionState = .disconnected
 
@@ -45,14 +71,6 @@ final class BLEScaleManager: NSObject {
     private var latestHumidity: Double = 0
 
     override init() {
-        var readingsCont: AsyncStream<ScaleReading>.Continuation!
-        readings = AsyncStream { readingsCont = $0 }
-        readingsContinuation = readingsCont
-
-        var stateCont: AsyncStream<BLEConnectionState>.Continuation!
-        stateChanges = AsyncStream { stateCont = $0 }
-        stateContinuation = stateCont
-
         super.init()
     }
 
@@ -63,7 +81,7 @@ final class BLEScaleManager: NSObject {
         // Initialising CBCentralManager triggers centralManagerDidUpdateState(_:).
         // queue: .main keeps all delegate callbacks on the main thread, consistent with @MainActor.
         connectionState = .scanning
-        stateContinuation.yield(.scanning)
+        stateContinuations.values.forEach { $0.yield(.scanning) }
         centralManager = CBCentralManager(delegate: self, queue: .main)
     }
 
@@ -78,11 +96,7 @@ final class BLEScaleManager: NSObject {
             centralManager.cancelPeripheralConnection(peripheral)
         }
         connectionState = .disconnected
-        stateContinuation.yield(.disconnected)
-        // Do NOT finish the streams here — finishing permanently kills them.
-        // Since RepositoryFactory.dev is a singleton, the same streams are reused
-        // across connect/disconnect cycles. Tasks that observe these streams are
-        // cancelled by the view model, so no cleanup is needed on the stream itself.
+        stateContinuations.values.forEach { $0.yield(.disconnected) }
         peripheral = nil
         tareCharacteristic = nil
         centralManager = nil
@@ -110,13 +124,13 @@ extension BLEScaleManager: @preconcurrency CBCentralManagerDelegate {
         self.peripheral = peripheral
         central.stopScan()
         connectionState = .connecting
-        stateContinuation.yield(.connecting)
+        stateContinuations.values.forEach { $0.yield(.connecting) }
         central.connect(peripheral)
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         connectionState = .connected
-        stateContinuation.yield(.connected)
+        stateContinuations.values.forEach { $0.yield(.connected) }
         peripheral.delegate = self
         peripheral.discoverServices([envServiceUUID, scaleServiceUUID])
     }
@@ -129,7 +143,7 @@ extension BLEScaleManager: @preconcurrency CBCentralManagerDelegate {
         self.peripheral = nil
         // Peripheral dropped — resume scanning to auto-reconnect
         connectionState = .scanning
-        stateContinuation.yield(.scanning)
+        stateContinuations.values.forEach { $0.yield(.scanning) }
         central.scanForPeripherals(withServices: [envServiceUUID, scaleServiceUUID])
     }
 
@@ -140,10 +154,10 @@ extension BLEScaleManager: @preconcurrency CBCentralManagerDelegate {
     ) {
         if let error {
             connectionState = .failed(error)
-            stateContinuation.yield(.failed(error))
+            stateContinuations.values.forEach { $0.yield(.failed(error)) }
         } else {
             connectionState = .disconnected
-            stateContinuation.yield(.disconnected)
+            stateContinuations.values.forEach { $0.yield(.disconnected) }
         }
     }
 }
@@ -200,7 +214,7 @@ extension BLEScaleManager: @preconcurrency CBPeripheralDelegate {
                 temperature: latestTemperature,
                 humidity: latestHumidity
             )
-            readingsContinuation.yield(reading)
+            readingsContinuations.values.forEach { $0.yield(reading) }
 
         default:
             break

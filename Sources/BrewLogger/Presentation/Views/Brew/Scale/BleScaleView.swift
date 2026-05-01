@@ -16,7 +16,7 @@ struct BleLiveScaleView: View {
     @State private var viewModel = BleScaleViewModel()
     
     private let maxYield: Double = 45
-    private let maxBrewTime: Double = 30
+    private let maxBrewTime: Double = 35
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -28,7 +28,7 @@ struct BleLiveScaleView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                .frame(height: 180)
+                .frame(height: 110)
                 .onTapGesture { viewModel.tare() }
             } else {
                 Chart(viewModel.samples) { sample in
