@@ -6,31 +6,29 @@
 //
 
 import SwiftUI
+import BrewLoggerApplication
 
 struct BrewListView: View {
+    @Environment(BleScaleConnectionManager.self) var connectionManager
+
     @State private var viewModel = BrewViewModel()
     
     var body: some View {
         VStack {
+            BleConnectionView(isConnected: connectionManager.isConnected)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
+            
             if viewModel.brews.isEmpty {
-                Text("Add a brew to get started")
-                    .font(.headline)
-                
-                // TODO: Custom image with animation
-                Image(systemName: "cup.and.heat.waves")
-                    .resizable()
-                    .frame(width: 60, height: 60)
-                    .scaledToFit()
-                    .padding()
+                noBrewsView
             } else {
                 listView
             }
         } //: VStack
-        .onAppear {
-            viewModel.fetchAllBrews()
-        }
+        .onAppear { viewModel.fetchAllBrews() }
         .searchable(text: $viewModel.searchText)
         .navigationTitle("Brew History")
+        .frame(maxHeight: .infinity, alignment: .top)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
@@ -81,10 +79,28 @@ struct BrewListView: View {
         }
         .listStyle(.plain)
     }
+    
+    private var noBrewsView: some View {
+        VStack {
+            Spacer()
+            // TODO: Custom image with animation
+            Image(systemName: "cup.and.heat.waves")
+                .resizable()
+                .frame(width: 60, height: 60)
+                .scaledToFit()
+                .padding()
+            Text("Add a brew to get started")
+                .font(.headline)
+            Spacer()
+        }
+    }
 }
+
+import BrewLoggerData
 
 #Preview {
     NavigationStack {
         BrewListView()
     }
+    .environment(BleScaleConnectionManager(repository: RepositoryFactory.stub.scale))
 }

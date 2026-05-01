@@ -6,18 +6,38 @@
 //
 
 import SwiftUI
+import BrewLoggerApplication
 import BrewLoggerDomain
 
 struct AddBrewView: View {
+    @Environment(BleScaleConnectionManager.self) var connectionManager
     @Environment(\.dismiss) private var dismiss
     
     @State private var viewModel = AddBrewViewModel()
     
     @FocusState private var focus: Field?
+    
+    private var timeFieldPlaceholder: String {
+        connectionManager.isConnected ? "Brew time will be tracked automatically" : "Brew Time"
+    }
+    
+    private var yieldFieldPlaceholder: String {
+        connectionManager.isConnected ? "Yield will be tracked automatically" : "Yield (g)"
+    }
 
     var body: some View {
         Form {
             requiredFieldsSection
+            
+            if connectionManager.isConnected {
+                Section("Scale Reading") {
+                    BleLiveScaleView(
+                        yield: $viewModel.newBrew.yield,
+                        brewTime: $viewModel.newBrew.brewTime
+                    )
+                }
+            }
+
             optionalFieldsSection
             
             Button {
@@ -105,12 +125,12 @@ struct AddBrewView: View {
                 .textContentType(.none)
                 .focused($focus, equals: .dose)
 
-            TextField("Yield (g)", text: $viewModel.newBrew.yield)
+            TextField(yieldFieldPlaceholder, text: $viewModel.newBrew.yield)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .yield)
 
-            TextField("Brew Time", text: $viewModel.newBrew.brewTime)
+            TextField(timeFieldPlaceholder, text: $viewModel.newBrew.brewTime)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .brewTime)
@@ -157,4 +177,5 @@ struct AddBrewView: View {
 
 #Preview {
     AddBrewView()
+        .environment(BleScaleConnectionManager(repository: RepositoryFactory.stub.scale))
 }

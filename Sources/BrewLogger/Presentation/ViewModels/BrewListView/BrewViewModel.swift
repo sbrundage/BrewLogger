@@ -20,7 +20,7 @@ class BrewViewModel {
     var showAddBrewSheet: Bool = false
     
     init(
-        repository: BrewRepository = RepositoryFactory.stub.brew
+        repository: BrewRepository = RepositoryFactory.dev.brew
     ) {
         self.fetchBrews = FetchAllBrewsUseCase(repository: repository)
         self.deleteBrew = DeleteBrewUseCase(repository: repository)

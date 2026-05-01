@@ -34,8 +34,8 @@ final class AddBrewViewModel {
     }
     
     init(
-        coffeeRepository: CoffeeRepository = RepositoryFactory.stub.coffee,
-        brewRepository: BrewRepository = RepositoryFactory.stub.brew
+        coffeeRepository: CoffeeRepository = RepositoryFactory.dev.coffee,
+        brewRepository: BrewRepository = RepositoryFactory.dev.brew
     ) {
         self.logNewCoffee = LogCoffeeUseCase(repository: coffeeRepository)
         self.fetchCoffees = FetchAllCoffeesUseCase(repository: coffeeRepository)
