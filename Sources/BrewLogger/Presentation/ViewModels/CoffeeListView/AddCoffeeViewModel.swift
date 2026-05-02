@@ -17,17 +17,14 @@ final class AddCoffeeViewModel {
 
     var canSave: Bool { newCoffee.canSave }
 
-    // Picker toggles
-    var showRoastLevelPicker = false
-    var showRoastDatePicker = false
-    var showProcessPicker = false
-
     init(repository: CoffeeRepository = RepositoryFactory.dev.coffee) {
         self.logCoffee = LogCoffeeUseCase(repository: repository)
     }
 
-    func saveCoffee() throws {
-        try logCoffee.execute(coffee: newCoffee.toCoffee())
+    func saveCoffee() throws -> Coffee {
+        let coffee = newCoffee.toCoffee()
+        try logCoffee.execute(coffee: coffee)
+        return coffee
     }
 }
 

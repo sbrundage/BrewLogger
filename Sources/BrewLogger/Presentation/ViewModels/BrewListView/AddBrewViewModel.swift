@@ -19,11 +19,7 @@ final class AddBrewViewModel {
     
     var newBrew = NewBrew()
     var coffeeSearch = ""
-    
-    // Picker Toggles
-    var showCoffeePicker = false
-    var showMethodPicker = false
-        
+
     var canSave: Bool { newBrew.canSave }
     
     var filteredCoffees: [Coffee] {
@@ -59,28 +55,6 @@ final class AddBrewViewModel {
         else { return }
         
         try logNewBrew.execute(newBrew: newBrew)
-    }
-    
-    func addNewCoffee() {
-        // TODO: Flesh out
-        // For now, just save a random new coffee
-        let newCoffee = Coffee(
-            name: "Brand New Coffee",
-            originInfo: nil,
-            roastInfo: .init(roaster: "KOS", date: Date(), roastLevel: .light),
-            process: .natural
-        )
-        
-        do {
-            try logNewCoffee.execute(coffee: newCoffee)
-            self.newBrew.coffee = newCoffee
-            
-            // Fetch updated coffees
-            fetchAllCoffees()
-        } catch {
-            // TODO: Handle error / show pop up
-            print("Got an error while logging new coffee: \(error)")
-        }
     }
 }
 

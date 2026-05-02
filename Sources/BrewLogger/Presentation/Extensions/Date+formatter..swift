@@ -11,7 +11,7 @@ import Foundation
 extension Date {
     var shortFormatted: String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "dd/MM/yy"
+        formatter.dateFormat = "MM/dd/yy"
         return formatter.string(from: self)
     }
 }

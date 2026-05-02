@@ -12,8 +12,17 @@ struct AddCoffeeView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var viewModel = AddCoffeeViewModel()
+    @State private var showRoastLevelPicker = false
+    @State private var showRoastDatePicker = false
+    @State private var showProcessPicker = false
+    
+    let onSuccessfulSave: ((Coffee) -> ())?
 
     @FocusState private var focus: Field?
+    
+    init(onSuccessfulSave: ((Coffee) -> ())? = nil) {
+        self.onSuccessfulSave = onSuccessfulSave
+    }
 
     var body: some View {
         Form {
@@ -21,7 +30,11 @@ struct AddCoffeeView: View {
             optionalSection
 
             Button {
-                do { try viewModel.saveCoffee(); dismiss() }
+                do {
+                    let savedCoffee = try viewModel.saveCoffee()
+                    onSuccessfulSave?(savedCoffee)
+                    dismiss()
+                }
                 catch { /* TODO: Handle error */ }
             } label: {
                 Text("Save Coffee")
@@ -64,24 +77,26 @@ struct AddCoffeeView: View {
             TextField("Roaster", text: $viewModel.newCoffee.roaster)
                 .focused($focus, equals: .roaster)
 
+            // Roast Level
             ExpandablePickerRow(
                 title: viewModel.newCoffee.roastLevel?.title ?? "Roast Level",
                 isSelected: viewModel.newCoffee.roastLevel != nil,
-                isExpanded: $viewModel.showRoastLevelPicker
+                isExpanded: $showRoastLevelPicker
             ) {
                 ItemPickerView(
                     items: [RoastLevel.light, .medium, .dark],
                     selectedItem: viewModel.newCoffee.roastLevel
                 ) { level in
                     viewModel.newCoffee.roastLevel = level
-                    viewModel.showRoastLevelPicker = false
+                    showRoastLevelPicker = false
                 }
             }
 
+            // Roast Date
             ExpandablePickerRow(
                 title: viewModel.newCoffee.roastDate?.shortFormatted ?? "Roast Date",
                 isSelected: viewModel.newCoffee.roastDate != nil,
-                isExpanded: $viewModel.showRoastDatePicker
+                isExpanded: $showRoastDatePicker
             ) {
                 DatePicker(
                     "",
@@ -93,36 +108,37 @@ struct AddCoffeeView: View {
                 )
                 .datePickerStyle(.graphical)
                 .labelsHidden()
+                .tint(.cyan)
 
-                Button("Clear") {
+                Button {
                     viewModel.newCoffee.roastDate = nil
-                    viewModel.showRoastDatePicker = false
+                    // TODO: This doesn't animate closed
+                    showRoastDatePicker = false
+                } label: {
+                    Text("Clear")
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
                 .tint(.secondary)
-                .frame(maxWidth: .infinity)
                 .listRowSeparator(.hidden)
-            }
-            .onChange(of: viewModel.showRoastDatePicker) { _, isExpanding in
-                if isExpanding && viewModel.newCoffee.roastDate == nil {
-                    viewModel.newCoffee.roastDate = Date()
-                }
             }
 
             TextField("Origin", text: $viewModel.newCoffee.originLocation)
                 .focused($focus, equals: .origin)
 
+            // Roast Process
             ExpandablePickerRow(
                 title: viewModel.newCoffee.process?.title ?? "Process",
                 isSelected: viewModel.newCoffee.process != nil,
-                isExpanded: $viewModel.showProcessPicker
+                isExpanded: $showProcessPicker
             ) {
                 ItemPickerView(
-                    items: [ProcessMethod.washed, .natural, .honey, .wetHulled],
+                    items: ProcessMethod.allCases,
                     selectedItem: viewModel.newCoffee.process
                 ) { process in
                     viewModel.newCoffee.process = process
-                    viewModel.showProcessPicker = false
+                    showProcessPicker = false
                 }
             }
         }

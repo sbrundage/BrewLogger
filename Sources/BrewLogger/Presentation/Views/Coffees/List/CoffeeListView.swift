@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CoffeeListView: View {
     @State private var viewModel = CoffeeViewModel()
-
+    
     var body: some View {
         VStack {
             if viewModel.coffees.isEmpty {

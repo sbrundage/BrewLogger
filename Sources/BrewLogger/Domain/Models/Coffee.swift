@@ -33,7 +33,7 @@ public struct Coffee: Sendable, Identifiable, Hashable {
     public func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
 
-public enum ProcessMethod: String, Sendable, Hashable {
+public enum ProcessMethod: String, Sendable, Hashable, CaseIterable {
     case washed
     case natural
     case honey

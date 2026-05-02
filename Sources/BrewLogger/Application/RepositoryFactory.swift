@@ -44,20 +44,5 @@ public struct RepositoryFactory {
             ),
             scale: bleRepository
         )
-        seedPlaceholderCoffeeIfNeeded(coffeeRepo: dev.coffee)
-    }
-
-    /// Seeds a single placeholder coffee on first launch so brews can be logged
-    /// before the Add Coffee UI is built. Remove once real coffee creation exists.
-    private static func seedPlaceholderCoffeeIfNeeded(coffeeRepo: any CoffeeRepository) {
-        guard (try? coffeeRepo.fetchAll())?.isEmpty == true else { return }
-        let placeholder = Coffee(
-            id: "placeholder-rodrigo-sanchez",
-            name: "Rodrigo Sanchez",
-            originInfo: nil,
-            roastInfo: nil,
-            process: nil
-        )
-        try? coffeeRepo.log(placeholder)
     }
 }
