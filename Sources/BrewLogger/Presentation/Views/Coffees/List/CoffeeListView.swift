@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import BrewLoggerDomain
 
 struct CoffeeListView: View {
     @State private var viewModel = CoffeeViewModel()
@@ -43,22 +44,28 @@ struct CoffeeListView: View {
                     }
             }
         }
+        .navigationDestination(for: Coffee.self) { coffee in
+            CoffeeDetailsView(coffee: coffee)
+        }
     }
 
     private var listView: some View {
         List {
             ForEach(viewModel.coffees) { coffee in
-                CoffeeView(coffee: coffee)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowSeparator(.hidden)
-                    .swipeActions(edge: .trailing) {
-                        Button(role: .destructive) {
-                            viewModel.delete(coffee)
-                        } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
+                NavigationLink(value: coffee.hasDetails ? coffee : nil) {
+                    CoffeeView(coffee: coffee)
+                }
+                .navigationLinkIndicatorVisibility(.hidden)
+                .listRowBackground(Color.clear)
+                .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
+                .listRowSeparator(.hidden)
+                .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) {
+                        viewModel.delete(coffee)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
                     }
+                }
             }
         }
         .listStyle(.plain)
