@@ -6,19 +6,34 @@
 //
 
 import SwiftUI
+import BrewLoggerApplication
 import BrewLoggerDomain
 
 @MainActor @Observable
 final class CoffeeDetailsViewModel {
+    private let fetchBrews: FetchAllBrewsUseCase
+//    private let originInfoLookup: OriginLookupUseCase
     
+    private(set) var brews: [Brew] = []
+    
+    init(
+        repository: BrewRepository = RepositoryFactory.dev.brew
+    ) {
+        self.fetchBrews = FetchAllBrewsUseCase(repository: repository)
+    }
 }
 
 struct CoffeeDetailsView: View {
+    @State private var viewModel = CoffeeDetailsViewModel()
+    
     let coffee: Coffee
     
     var body: some View {
         VStack(alignment: .leading) {
-            brewInfoView
+//            brewInfoView
+//                .padding(.bottom)
+            
+            highestRatedView
                 .padding(.bottom)
             
             if let roastInfo = coffee.roastInfo {
@@ -26,8 +41,15 @@ struct CoffeeDetailsView: View {
                     .padding(.bottom)
             }
             
-            if let originInfo = coffee.originInfo {
-                originInfoView(origin: originInfo)
+            if true /*!viewModel.brews.isEmpty*/ {
+                Text("Past Brews Log / Chart View")
+                    .frame(maxWidth: .infinity, maxHeight: 200)
+                    .background(.secondary)
+                    .padding(.bottom)
+            }
+            
+            if let originInfo = coffee.originInfo, #available(iOS 26.0, *) {
+                OriginView(origin: originInfo)
             }
             
             Spacer()
@@ -38,10 +60,8 @@ struct CoffeeDetailsView: View {
     
     // MARK: Brew Info
     
-    private var brewInfoView: some View {
+    private var highestRatedView: some View {
         VStack(alignment: .leading, spacing: 8) {
-//            Text("Number of Brews: 20")
-            
             Text("Highest Rated Brew")
                 .font(.headline)
             
@@ -50,6 +70,7 @@ struct CoffeeDetailsView: View {
                         Text("Grind Size")
                             .fontWeight(.light)
                         Text("0.5")
+                            .fontWeight(.medium)
                     } //: VStack
                     .frame(maxWidth: .infinity)
                 
@@ -61,6 +82,7 @@ struct CoffeeDetailsView: View {
                         Text("Time")
                             .fontWeight(.light)
                         Text("30s")
+                            .fontWeight(.medium)
                     } //: VStack
                     .frame(maxWidth: .infinity)
                 
@@ -72,6 +94,48 @@ struct CoffeeDetailsView: View {
                         Text("Yield")
                             .fontWeight(.light)
                         Text("34g")
+                            .fontWeight(.medium)
+                    } //: VStack
+                    .frame(maxWidth: .infinity)
+            } //: HStack
+        } //: VStack
+    }
+    
+    private var brewInfoView: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Brew History")
+                .font(.headline)
+            
+            HStack {
+                    VStack {
+                        Text("Brews")
+                            .fontWeight(.light)
+                        Text("20")
+                            .fontWeight(.medium)
+                    } //: VStack
+                    .frame(maxWidth: .infinity)
+                
+                Divider()
+                    .frame(width: 0.5, height: 30)
+                    .overlay(.secondary)
+                
+                    VStack {
+                        Text("Time")
+                            .fontWeight(.light)
+                        Text("30s")
+                            .fontWeight(.medium)
+                    } //: VStack
+                    .frame(maxWidth: .infinity)
+                
+                Divider()
+                    .frame(width: 0.5, height: 30)
+                    .overlay(.secondary)
+                
+                    VStack {
+                        Text("Yield")
+                            .fontWeight(.light)
+                        Text("34g")
+                            .fontWeight(.medium)
                     } //: VStack
                     .frame(maxWidth: .infinity)
             } //: HStack
@@ -126,43 +190,6 @@ struct CoffeeDetailsView: View {
             } //: HStack
         } //: VStack
         .frame(maxWidth: .infinity)
-    }
-    
-    // MARK: Origin Info
-    
-    private func originInfoView(origin: OriginInfo) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Origin Info")
-                .font(.headline)
-            
-            HStack {
-                Text("\(origin.location)")
-                
-                Spacer()
-                
-                if let altitude = origin.altitude {
-                    Text("\(altitude) masl")
-                }
-            } //: HStack
-            .padding(.bottom)
-            
-            Button {
-                // TODO:
-            } label: {
-                HStack {
-                    Text("Learn More")
-                        .fontWeight(.medium)
-                    Image(systemName: "sparkles")
-                } //: HStack
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 6)
-            }
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .foregroundStyle(.secondary)
-            )
-            .tint(.cyan)
-        } //: VStack
     }
 }
 
