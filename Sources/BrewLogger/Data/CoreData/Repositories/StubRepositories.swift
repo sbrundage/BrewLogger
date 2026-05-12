@@ -22,7 +22,7 @@ public final class StubCoffeeRepository: CoffeeRepository {
 }
 
 public final class StubBrewRepository: BrewRepository {
-    private var brews: [Brew] = []
+    private var brews: [Brew] = [Brew.preview]
 
     public init() {}
 
@@ -42,20 +42,6 @@ public final class StubBLEScaleRepository: BLEScaleRepository {
     public var connectionState: BLEConnectionState = .connected
     public var state​Changes: AsyncStream<BLEConnectionState> { AsyncStream { _ in } }
     public var readings: AsyncStream<ScaleReading> { AsyncStream { _ in } }
-    
-//    public var readings: AsyncStream<ScaleReading> {
-//        AsyncStream { continuation in
-//            Task {
-//                var weight = 0.0
-//                for _ in 0..<350 {
-//                    try? await Task.sleep(for: .milliseconds(100))
-//                    weight += Double.random(in: 0.08...0.13)
-//                    continuation.yield(ScaleReading(weight: weight, temperature: 72.5, humidity: 45.0))
-//                }
-//                continuation.finish()
-//            }
-//        }
-//    }
 
     public init() {}
     public func connect() {}

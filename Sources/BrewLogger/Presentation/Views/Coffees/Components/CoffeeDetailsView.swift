@@ -29,32 +29,35 @@ struct CoffeeDetailsView: View {
     let coffee: Coffee
     
     var body: some View {
-        VStack(alignment: .leading) {
-//            brewInfoView
-//                .padding(.bottom)
-            
-            highestRatedView
-                .padding(.bottom)
-            
-            if let roastInfo = coffee.roastInfo {
-                roastInfoView(roast: roastInfo)
+        ScrollView {
+            VStack(alignment: .leading) {
+                //            brewInfoView
+                //                .padding(.bottom)
+                
+                highestRatedView
                     .padding(.bottom)
-            }
-            
-            if true /*!viewModel.brews.isEmpty*/ {
-                Text("Past Brews Log / Chart View")
-                    .frame(maxWidth: .infinity, maxHeight: 200)
-                    .background(.secondary)
-                    .padding(.bottom)
-            }
-            
-            if let originInfo = coffee.originInfo, #available(iOS 26.0, *) {
-                OriginView(origin: originInfo)
-            }
-            
-            Spacer()
-        } //: VStack
-        .padding(.horizontal)
+                
+                if let roastInfo = coffee.roastInfo {
+                    roastInfoView(roast: roastInfo)
+                        .padding(.bottom)
+                }
+                
+                if true /*!viewModel.brews.isEmpty*/ {
+                    Text("Past Brews Log / Chart View")
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 200)
+                        .background(.secondary)
+                        .padding(.bottom)
+                }
+                
+                if let originInfo = coffee.originInfo, #available(iOS 26.0, *) {
+                    OriginView(origin: originInfo)
+                }
+                
+                Spacer()
+            } //: VStack
+            .padding(.horizontal)
+        }
         .navigationTitle(coffee.name)
     }
     

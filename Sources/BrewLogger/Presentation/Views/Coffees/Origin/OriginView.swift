@@ -149,7 +149,7 @@ final class OriginDetailsGenerator {
 @available(iOS 26.0, *)
 @Generable
 struct OriginDetails: Equatable {
-    @Guide(description: "More information about the origin and it's coffee region.")
+    @Guide(description: "More information about the origin and it's coffee region no longer than 4 sentences.")
     let description: String
 //    
 //    @Guide(description: "A list of day-by-day plans.")
