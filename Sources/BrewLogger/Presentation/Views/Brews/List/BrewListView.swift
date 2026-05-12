@@ -66,7 +66,7 @@ struct BrewListView: View {
             ForEach(viewModel.brews) { brew in
                 BrewView(brew: brew)
                     .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                    .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
                     .listRowSeparator(.hidden)
                     .swipeActions(edge: .trailing) {
                         Button(role: .destructive) {

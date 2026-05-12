@@ -28,14 +28,16 @@ public struct Coffee: Sendable, Identifiable, Hashable {
         self.process = process
     }
     
+    public var hasDetails: Bool { originInfo != nil || roastInfo != nil || process != nil }
+
     public static func == (lhs: Coffee, rhs: Coffee) -> Bool { lhs.id == rhs.id }
-    
+
     public func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
 
-public enum ProcessMethod: Sendable {
+public enum ProcessMethod: String, Sendable, Hashable, CaseIterable {
     case washed
     case natural
     case honey
-    case other(String)
+    case wetHulled = "wet hulled"
 }

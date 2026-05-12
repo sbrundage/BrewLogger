@@ -15,6 +15,11 @@ struct AddBrewView: View {
     
     @State private var viewModel = AddBrewViewModel()
     
+    // Navigation
+    @State private var showCoffeePicker = false
+    @State private var showMethodPicker = false
+    @State private var showAddCoffeeView = false
+
     @FocusState private var focus: Field?
     
     private var timeFieldPlaceholder: String {
@@ -41,8 +46,12 @@ struct AddBrewView: View {
             optionalFieldsSection
             
             Button {
-                do { try viewModel.saveBrew(); dismiss() }
-                catch { /* TODO: Handle error */ }
+                do {
+                    try viewModel.saveBrew()
+                    dismiss()
+                } catch {
+                    /* TODO: Handle error */
+                }
             } label: {
                 Text("Save Brew")
             }
@@ -51,21 +60,15 @@ struct AddBrewView: View {
             .disabled(!viewModel.canSave)
         }
         .navigationTitle("New Brew")
-        .onAppear {
-            viewModel.fetchAllCoffees()
-        }
+        .onAppear { viewModel.fetchAllCoffees() }
         .toolbar {
             ToolbarItem(placement: .keyboard) {
                 HStack {
-                    Button { focus = focus?.previous } label: {
-                        Image(systemName: "chevron.up")
-                    }
-                    .disabled(focus?.previous == nil)
+                    Button { focus = focus?.previous } label: { Image(systemName: "chevron.up") }
+                        .disabled(focus?.previous == nil)
 
-                    Button { focus = focus?.next } label: {
-                        Image(systemName: "chevron.down")
-                    }
-                    .disabled(focus?.next == nil)
+                    Button { focus = focus?.next } label: { Image(systemName: "chevron.down") }
+                        .disabled(focus?.next == nil)
 
                     Spacer()
 
@@ -73,40 +76,39 @@ struct AddBrewView: View {
                 }
             }
         }
+        .navigationDestination(isPresented: $showAddCoffeeView) {
+            AddCoffeeView { newCoffee in
+                viewModel.newBrew.coffee = newCoffee
+            }
+        }
     }
 
     private var requiredFieldsSection: some View {
         Section("Required") {
             // Select a Coffee
-            
             ExpandablePickerRow(
                 title: viewModel.newBrew.coffee?.name ?? "Select a coffee",
                 isSelected: viewModel.newBrew.coffee != nil,
-                isExpanded: $viewModel.showCoffeePicker
+                isExpanded: $showCoffeePicker
             ) {
-                // Search and add new coffee
                 CoffeePickerView(
                     coffeeSearch: $viewModel.coffeeSearch,
                     filteredCoffees: viewModel.filteredCoffees,
                     selectedCoffee: viewModel.newBrew.coffee,
-                    addNewCoffee: {
-                        viewModel.addNewCoffee()
-                    },
+                    addNewCoffee: { showAddCoffeeView = true },
                     onCoffeeOptionTap: { coffee in
                         viewModel.newBrew.coffee = coffee
                         viewModel.coffeeSearch = ""
-                        withAnimation(.spring(duration: 0.2)) {
-                            viewModel.showCoffeePicker = false
-                        }
+                        showCoffeePicker = false
                     }
                 )
             }
-            
-            // Choose a Method picker
+
+            // Select Brew Method
             ExpandablePickerRow(
                 title: viewModel.newBrew.method?.title ?? "Select a method",
                 isSelected: viewModel.newBrew.method != nil,
-                isExpanded: $viewModel.showMethodPicker
+                isExpanded: $showMethodPicker
             ) {
                 let displayMethods: [BrewMethod] = [.espresso, .pourOver]
                 ItemPickerView(
@@ -114,22 +116,23 @@ struct AddBrewView: View {
                     selectedItem: viewModel.newBrew.method
                 ) { method in
                     viewModel.newBrew.method = method
-                    withAnimation(.spring(duration: 0.2)) {
-                        viewModel.showMethodPicker = false
-                    }
+                    showMethodPicker = false
                 }
             }
-
+            
+            // Dose
             TextField("Dose (g)", text: $viewModel.newBrew.dose)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .dose)
 
+            // Yield
             TextField(yieldFieldPlaceholder, text: $viewModel.newBrew.yield)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .yield)
 
+            // Time
             TextField(timeFieldPlaceholder, text: $viewModel.newBrew.brewTime)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
@@ -139,11 +142,13 @@ struct AddBrewView: View {
 
     private var optionalFieldsSection: some View {
         Section("Optional") {
+            // Rating
             TextField("Rating (0–5)", text: $viewModel.newBrew.rating)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .rating)
 
+            // Notes
             TextField("Notes", text: $viewModel.newBrew.notes, axis: .vertical)
                 .lineLimit(3...6)
                 .focused($focus, equals: .notes)
@@ -176,6 +181,8 @@ struct AddBrewView: View {
 }
 
 #Preview {
-    AddBrewView()
-        .environment(BleScaleConnectionManager(repository: RepositoryFactory.stub.scale))
+    NavigationStack {
+        AddBrewView()
+            .environment(BleScaleConnectionManager(repository: RepositoryFactory.stub.scale))
+    }
 }

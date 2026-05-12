@@ -18,7 +18,9 @@ struct CoffeePickerView: View {
     
     var body: some View {
         HStack {
-            Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+            
             TextField("Search", text: $coffeeSearch)
             
             Spacer()
