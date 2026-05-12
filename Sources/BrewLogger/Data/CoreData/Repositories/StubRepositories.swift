@@ -39,7 +39,7 @@ public final class StubBrewRepository: BrewRepository {
 
 @MainActor
 public final class StubBLEScaleRepository: BLEScaleRepository {
-    public var connectionState: BLEConnectionState = .connected
+    public var connectionState: BLEConnectionState = .disconnected
     public var state​Changes: AsyncStream<BLEConnectionState> { AsyncStream { _ in } }
     public var readings: AsyncStream<ScaleReading> { AsyncStream { _ in } }
 

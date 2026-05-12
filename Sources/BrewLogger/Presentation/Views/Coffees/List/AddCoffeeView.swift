@@ -88,7 +88,7 @@ struct AddCoffeeView: View {
                     selectedItem: viewModel.newCoffee.roastLevel
                 ) { level in
                     viewModel.newCoffee.roastLevel = level
-                    showRoastLevelPicker = false
+                    withAnimation(.spring(duration: 0.2)) { showRoastLevelPicker = false }
                 }
             }
 
@@ -113,7 +113,7 @@ struct AddCoffeeView: View {
                 Button {
                     viewModel.newCoffee.roastDate = nil
                     // TODO: This doesn't animate closed
-                    showRoastDatePicker = false
+//                    withAnimation(.spring(duration: 0.2)) { showRoastDatePicker = false }
                 } label: {
                     Text("Clear")
                         .foregroundStyle(.white)
@@ -138,7 +138,7 @@ struct AddCoffeeView: View {
                     selectedItem: viewModel.newCoffee.process
                 ) { process in
                     viewModel.newCoffee.process = process
-                    showProcessPicker = false
+                    withAnimation(.spring(duration: 0.2)) { showProcessPicker = false }
                 }
             }
         }
