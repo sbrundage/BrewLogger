@@ -7,6 +7,8 @@
 
 import SwiftUI
 import BrewLoggerDomain
+
+#if canImport(FoundationModels)
 import FoundationModels
 
 @available(iOS 26.0, *)
@@ -166,3 +168,4 @@ extension OriginDetails {
 #Preview {
     OriginView(origin: .init(location: "Huila, Colombia", altitude: 1750))
 }
+#endif

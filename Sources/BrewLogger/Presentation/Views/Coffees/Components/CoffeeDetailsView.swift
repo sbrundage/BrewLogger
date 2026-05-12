@@ -50,9 +50,11 @@ struct CoffeeDetailsView: View {
                         .padding(.bottom)
                 }
                 
+                #if canImport(FoundationModels)
                 if let originInfo = coffee.originInfo, #available(iOS 26.0, *) {
                     OriginView(origin: originInfo)
                 }
+                #endif
                 
                 Spacer()
             } //: VStack
