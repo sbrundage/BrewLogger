@@ -6,11 +6,21 @@
 //
 
 import SwiftUI
+import MapKit
 
 struct OriginHistoryMapView: View {
-    // TODO: Show a cool map view with pins of all the origin locations from all your coffess
+    @State private var viewModel = OriginHistoryMapViewModel()
+
     var body: some View {
-        Text("World View of all Coffee Locations")
+        Map {
+            ForEach(viewModel.locations) { location in
+                Marker(location.coffee.name, coordinate: location.coordinate)
+                    .tint(.cyan)
+            }
+        }
+        .task {
+            await viewModel.load()
+        }
     }
 }
 

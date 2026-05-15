@@ -87,8 +87,8 @@ struct AddCoffeeView: View {
                     items: [RoastLevel.light, .medium, .dark],
                     selectedItem: viewModel.newCoffee.roastLevel
                 ) { level in
-                    viewModel.newCoffee.roastLevel = level
                     withAnimation(.spring(duration: 0.2)) { showRoastLevelPicker = false }
+                    viewModel.newCoffee.roastLevel = level
                 }
             }
 
@@ -137,8 +137,8 @@ struct AddCoffeeView: View {
                     items: ProcessMethod.allCases,
                     selectedItem: viewModel.newCoffee.process
                 ) { process in
-                    viewModel.newCoffee.process = process
                     withAnimation(.spring(duration: 0.2)) { showProcessPicker = false }
+                    viewModel.newCoffee.process = process
                 }
             }
         }
