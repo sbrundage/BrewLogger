@@ -19,7 +19,12 @@ jobs:
     - uses: webfactory/ssh-agent@v0.9.0
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Pick simulator
+      id: sim
+      run: |
+        DEVICE=$(xcrun simctl list devices available | grep -E "iPhone [0-9]+ \(" | head -1 | sed -E 's/.*(iPhone [0-9]+).*/\1/')
+        echo "name=$DEVICE" >> "$GITHUB_OUTPUT"
     - name: Build
-      run: xcodebuild build -scheme BrewLogger-Package -destination 'platform=iOS Simulator,name=iPhone 17'
+      run: xcodebuild build -scheme BrewLogger-Package -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}"
     - name: Run tests
-      run: xcodebuild test -scheme BrewLogger-Package -destination 'platform=iOS Simulator,name=iPhone 17'
+      run: xcodebuild test -scheme BrewLogger-Package -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}"

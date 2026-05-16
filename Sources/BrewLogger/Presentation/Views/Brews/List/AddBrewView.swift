@@ -97,9 +97,9 @@ struct AddBrewView: View {
                     selectedCoffee: viewModel.newBrew.coffee,
                     addNewCoffee: { showAddCoffeeView = true },
                     onCoffeeOptionTap: { coffee in
+                        withAnimation(.spring(duration: 0.2)) { showCoffeePicker = false }
                         viewModel.newBrew.coffee = coffee
                         viewModel.coffeeSearch = ""
-                        showCoffeePicker = false
                     }
                 )
             }
@@ -115,8 +115,8 @@ struct AddBrewView: View {
                     items: displayMethods,
                     selectedItem: viewModel.newBrew.method
                 ) { method in
+                    withAnimation(.spring(duration: 0.2)) { showMethodPicker = false }
                     viewModel.newBrew.method = method
-                    showMethodPicker = false
                 }
             }
             

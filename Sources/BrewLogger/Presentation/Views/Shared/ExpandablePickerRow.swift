@@ -23,7 +23,7 @@ struct ExpandablePickerRow<Content: View>: View {
         } label: {
             HStack {
                 Text(title)
-                    .foregroundStyle(isSelected ? .primary : .secondary)
+                    .foregroundStyle(isSelected ? Color(.label) : Color(.placeholderText))
                 Spacer()
                 Image(systemName: "chevron.down")
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
