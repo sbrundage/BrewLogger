@@ -12,6 +12,7 @@ extension BrewModel {
     func update(from brew: Brew) {
         self.id = brew.id
         self.date = brew.date
+        self.grindSize = grindSize
         self.dose = brew.dose
         self.yield = brew.yield
         self.brewTime = brew.brewTime
@@ -26,10 +27,12 @@ extension BrewModel {
             id: id,
             date: date,
             coffee: domainCoffee,
+            grindSize: grindSize,
             dose: dose,
             yield: yield,
             brewTime: brewTime,
             method: BrewMethod(rawValue: Int(method)) ?? .na,
+            brewTemp: brewTemp?.intValue,
             rating: rating?.doubleValue,
             notes: notes
         )

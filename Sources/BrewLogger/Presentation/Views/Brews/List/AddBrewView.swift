@@ -97,9 +97,9 @@ struct AddBrewView: View {
                     selectedCoffee: viewModel.newBrew.coffee,
                     addNewCoffee: { showAddCoffeeView = true },
                     onCoffeeOptionTap: { coffee in
-                        withAnimation(.spring(duration: 0.2)) { showCoffeePicker = false }
                         viewModel.newBrew.coffee = coffee
                         viewModel.coffeeSearch = ""
+                        withAnimation(.spring(duration: 0.2)) { showCoffeePicker = false }
                     }
                 )
             }
@@ -115,33 +115,47 @@ struct AddBrewView: View {
                     items: displayMethods,
                     selectedItem: viewModel.newBrew.method
                 ) { method in
-                    withAnimation(.spring(duration: 0.2)) { showMethodPicker = false }
                     viewModel.newBrew.method = method
+                    withAnimation(.spring(duration: 0.2)) { showMethodPicker = false }
                 }
             }
+            
+            // Grind Size
+            TextField("Grind Size", text: $viewModel.newBrew.grindSize)
+                .keyboardType(.decimalPad)
+                .textContentType(.none)
+                .focused($focus, equals: .grindSize)
             
             // Dose
             TextField("Dose (g)", text: $viewModel.newBrew.dose)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .dose)
+            
+            // Brew Time
+            BrewTimerTextField(
+                placeholder: timeFieldPlaceholder,
+                focus: $focus,
+                focusField: .brewTime,
+                brewTime: $viewModel.newBrew.brewTime
+            )
 
             // Yield
             TextField(yieldFieldPlaceholder, text: $viewModel.newBrew.yield)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .yield)
-
-            // Time
-            TextField(timeFieldPlaceholder, text: $viewModel.newBrew.brewTime)
-                .keyboardType(.decimalPad)
-                .textContentType(.none)
-                .focused($focus, equals: .brewTime)
         }
     }
 
     private var optionalFieldsSection: some View {
         Section("Optional") {
+            // Brew Temp
+            TextField("Brew Temp", text: $viewModel.newBrew.brewTemp)
+                .keyboardType(.decimalPad)
+                .textContentType(.none)
+                .focused($focus, equals: .rating)
+            
             // Rating
             TextField("Rating (0–5)", text: $viewModel.newBrew.rating)
                 .keyboardType(.decimalPad)
@@ -155,14 +169,15 @@ struct AddBrewView: View {
         }
     }
 
-    private enum Field {
-        case dose, yield, brewTime, rating, notes
+    enum Field {
+        case grindSize, dose, yield, brewTime, rating, notes
         
         var next: Field? {
             switch self {
-            case .dose: return .yield
-            case .yield: return .brewTime
-            case .brewTime: return .rating
+            case .grindSize: return .dose
+            case .dose: return .brewTime
+            case .brewTime: return .yield
+            case .yield: return .rating
             case .rating: return .notes
             case .notes: return nil
             }
@@ -170,10 +185,11 @@ struct AddBrewView: View {
         
         var previous: Field? {
             switch self {
-            case .dose: return nil
-            case .yield: return .dose
-            case .brewTime: return .yield
-            case .rating: return .brewTime
+            case .grindSize: return nil
+            case .dose: return .grindSize
+            case .brewTime: return .dose
+            case .yield: return .brewTime
+            case .rating: return .yield
             case .notes: return .rating
             }
         }

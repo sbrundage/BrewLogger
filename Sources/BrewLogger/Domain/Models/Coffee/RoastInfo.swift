@@ -23,7 +23,7 @@ public struct RoastInfo: Sendable {
     }
 }
 
-public enum RoastLevel: String, Sendable {
+public enum RoastLevel: String, CaseIterable, Sendable {
     case light
     case medium
     case dark

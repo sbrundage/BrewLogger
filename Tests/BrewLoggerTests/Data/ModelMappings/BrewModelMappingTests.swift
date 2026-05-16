@@ -82,20 +82,18 @@ struct BrewModelMappingTests {
     @Test("update(from:) sets all fields from domain model")
     func testUpdateFrom_withAllFields_allFieldsAreSet() {
         // Arrange
-        let coffee = Coffee(id: "c1", name: "Test Coffee", originInfo: nil, roastInfo: nil, process: nil)
-        let brew = Brew(id: "b1", date: Date(timeIntervalSince1970: 500),
-            coffee: coffee, dose: 17.0, yield: 34.0,
-            brewTime: 25.0, method: .espresso, rating: 5, notes: "Great")
+        let coffee = Coffee(id: "coffee-1", name: "Test Coffee", originInfo: nil, roastInfo: nil, process: nil)
+        let brew = Brew(id: "brew-1", date: Date(), coffee: coffee, grindSize: 0.5, dose: 17, yield: 34, brewTime: 28, method: .espresso, brewTemp: 195, rating: 5, notes: "Great")
         let sut = BrewModel(context: context)
 
         // Act
         sut.update(from: brew)
 
         // Assert
-        #expect(sut.id == "b1")
+        #expect(sut.id == "brew-1")
         #expect(sut.dose == 17.0)
         #expect(sut.yield == 34.0)
-        #expect(sut.brewTime == 25.0)
+        #expect(sut.brewTime == 28.0)
         #expect(sut.method == 2)
         #expect(sut.rating?.doubleValue == 5.0)
         #expect(sut.notes == "Great")

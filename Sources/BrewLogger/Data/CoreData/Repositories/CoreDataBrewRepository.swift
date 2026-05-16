@@ -37,7 +37,10 @@ public final class CoreDataBrewRepository: BrewRepository {
     /// - Returns: An array of Brew objects
     public func fetchAll(for coffeeId: String?) throws -> [Brew] {
         let predicate = coffeeId.map { NSPredicate(format: "coffee.id == %@", $0) }
-        return try store.fetchAll(predicate: predicate).compactMap { $0.toDomain() }
+        return try store.fetchAll(
+            predicate: predicate,
+            sortDescriptors: [NSSortDescriptor(keyPath: \BrewModel.date, ascending: false)]
+        ).compactMap { $0.toDomain() }
     }
     
     /// Deletes a particular Brew from CoreData
