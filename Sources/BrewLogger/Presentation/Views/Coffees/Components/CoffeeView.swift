@@ -9,6 +9,8 @@ import SwiftUI
 import BrewLoggerDomain
 
 struct CoffeeView: View {
+    @Environment(\.colorScheme) private var colorScheme
+    
     let coffee: Coffee
     
     var body: some View {
@@ -50,7 +52,7 @@ struct CoffeeView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .foregroundStyle(Color(hex: "#966E4A"))
+                .foregroundStyle(colorScheme == .dark ? BrandColors.slateDark : BrandColors.slateLight)
         )
         .frame(maxWidth: .infinity)
     }

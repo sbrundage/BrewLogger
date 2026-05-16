@@ -11,20 +11,31 @@ struct BleConnectionView: View {
     let isConnected: Bool
     
     var body: some View {
-        HStack {
-            if isConnected {
-                Text("Connected to BLE Scale")
-                    .font(.footnote)
-                
-                Image(systemName: "circle.fill")
-                    .resizable()
-                    .frame(width: 8, height: 8)
-            } else {
-                Text("Not connected to BLE Scale")
-                    .font(.footnote)
+        VStack(spacing: 12) {
+            HStack {
+                if isConnected {
+                    Text("Connected to BLE Scale")
+                        .font(.footnote)
+                    
+                    Image(systemName: "circle.fill")
+                        .resizable()
+                        .frame(width: 8, height: 8)
+                } else {
+                    Text("Not connected to BLE Scale")
+                        .font(.footnote)
+                }
+            } //: HStack
+            .foregroundStyle(isConnected ? .green : .red)
+
+            if !isConnected {
+                Button("Open Bluetooth Settings") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+                .font(.footnote)
             }
-        } //: HStack
-        .foregroundStyle(isConnected ? .green : .red)
+        } //: VStack
     }
 }
 

@@ -27,3 +27,12 @@ extension ProcessMethod: Listable {
     public var id: String { rawValue }
     public var title: String { rawValue.capitalized }
 }
+
+extension BrewSortOption: Listable {
+    public var title: String {
+        switch self {
+        case .newest: return "Newest"
+        case .highestRated: return "Highest Rated"
+        }
+    }
+}

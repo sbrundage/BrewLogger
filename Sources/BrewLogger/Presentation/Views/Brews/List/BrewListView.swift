@@ -6,19 +6,20 @@
 //
 
 import SwiftUI
-import BrewLoggerApplication
+import BrewLoggerDomain
 
 struct BrewListView: View {
     @Environment(BleScaleConnectionManager.self) var connectionManager
 
     @State private var viewModel = BrewViewModel()
+    @State private var selectedSortOption: BrewSortOption = .newest
+    
+    // Popovers
+    @State private var showBlePopover: Bool = false
+    @State private var showSortPopover: Bool = false
     
     var body: some View {
         VStack {
-            BleConnectionView(isConnected: connectionManager.isConnected)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
-            
             if viewModel.brews.isEmpty {
                 noBrewsView
             } else {
@@ -30,6 +31,37 @@ struct BrewListView: View {
         .navigationTitle("Brew History")
         .frame(maxHeight: .infinity, alignment: .top)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    showBlePopover = true
+                } label: {
+                    Image(systemName: "dot.radiowaves.left.and.right")
+                        .foregroundStyle(connectionManager.isConnected ? .green : .secondary)
+                }
+                .popover(isPresented: $showBlePopover) {
+                    BleConnectionView(isConnected: connectionManager.isConnected)
+                        .padding()
+                        .presentationCompactAdaptation(.popover)
+                }
+            }
+            
+            ToolbarItem(placement: .automatic) {
+                Button {
+                    // TODO: Add filtering / sorting
+                    showSortPopover = true
+                } label: {
+                    Image(systemName: "line.3.horizontal.decrease")
+                }
+                .popover(isPresented: $showSortPopover) {
+                    ItemPickerView(items: BrewSortOption.allCases, selectedItem: selectedSortOption, onItemTap: { option in
+                        selectedSortOption = option
+                        showSortPopover = false
+                    })
+                    .padding()
+                    .presentationCompactAdaptation(.popover)
+                }
+            }
+
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     viewModel.showAddBrewSheet = true
@@ -37,15 +69,6 @@ struct BrewListView: View {
                     Image(systemName: "plus")
                 }
             }
-            
-            
-//            ToolbarItem(placement: .automatic) {
-//                Button {
-//                    // TODO: Add filtering / sorting
-//                } label: {
-//                    Image(systemName: "line.3.horizontal.decrease")
-//                }
-//            }
         }
         .sheet(isPresented: $viewModel.showAddBrewSheet, onDismiss: {
             viewModel.fetchAllBrews()
@@ -96,7 +119,9 @@ struct BrewListView: View {
     }
 }
 
-import BrewLoggerData
+#if DEBUG
+import BrewLoggerApplication
+#endif
 
 #Preview {
     NavigationStack {
@@ -104,3 +129,4 @@ import BrewLoggerData
     }
     .environment(BleScaleConnectionManager(repository: RepositoryFactory.stub.scale))
 }
+

@@ -61,16 +61,19 @@ final class AddBrewViewModel {
 extension AddBrewViewModel {
     struct NewBrew {
         var coffee: Coffee? = nil
+        var grindSize: String = ""
         var dose: String = ""
         var yield: String = ""
         var brewTime: String = ""
         var method: BrewMethod? = nil
+        var brewTemp: String = ""
         var rating: String = ""
         var notes: String = ""
 
         var canSave: Bool {
             coffee != nil &&
             method != nil &&
+            Double(grindSize) != nil &&
             Double(dose) != nil &&
             Double(yield) != nil &&
             Double(brewTime) != nil
@@ -79,6 +82,7 @@ extension AddBrewViewModel {
         func convertToBrew() -> Brew? {
             guard
                 let coffee, let method,
+                let grindSize = Double(grindSize),
                 let dose = Double(dose),
                 let yield = Double(yield),
                 let brewTime = Double(brewTime)
@@ -87,10 +91,12 @@ extension AddBrewViewModel {
             return Brew(
                 date: Date(),
                 coffee: coffee,
+                grindSize: grindSize,
                 dose: dose,
                 yield: yield,
                 brewTime: brewTime,
                 method: method,
+                brewTemp: Int(brewTemp),
                 rating: Double(rating),
                 notes: notes.isEmpty ? nil : notes
             )

@@ -84,7 +84,7 @@ struct AddCoffeeView: View {
                 isExpanded: $showRoastLevelPicker
             ) {
                 ItemPickerView(
-                    items: [RoastLevel.light, .medium, .dark],
+                    items: RoastLevel.allCases,
                     selectedItem: viewModel.newCoffee.roastLevel
                 ) { level in
                     withAnimation(.spring(duration: 0.2)) { showRoastLevelPicker = false }
@@ -127,6 +127,10 @@ struct AddCoffeeView: View {
             TextField("Origin", text: $viewModel.newCoffee.originLocation)
                 .focused($focus, equals: .origin)
 
+            TextField("Altitude (masl)", text: $viewModel.newCoffee.originAltitude)
+                .keyboardType(.numberPad)
+                .focused($focus, equals: .altitude)
+
             // Roast Process
             ExpandablePickerRow(
                 title: viewModel.newCoffee.process?.title ?? "Process",
@@ -141,17 +145,22 @@ struct AddCoffeeView: View {
                     viewModel.newCoffee.process = process
                 }
             }
+
+            TextField("Variety", text: $viewModel.newCoffee.variety)
+                .focused($focus, equals: .variety)
         }
     }
 
     private enum Field {
-        case name, roaster, origin
+        case name, roaster, origin, altitude, variety
 
         var next: Field? {
             switch self {
             case .name: return .roaster
             case .roaster: return .origin
-            case .origin: return nil
+            case .origin: return .altitude
+            case .altitude: return .variety
+            case .variety: return nil
             }
         }
 
@@ -160,6 +169,8 @@ struct AddCoffeeView: View {
             case .name: return nil
             case .roaster: return .name
             case .origin: return .roaster
+            case .altitude: return .origin
+            case .variety: return .altitude
             }
         }
     }

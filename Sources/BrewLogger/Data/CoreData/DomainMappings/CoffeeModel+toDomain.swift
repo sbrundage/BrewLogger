@@ -18,6 +18,7 @@ extension CoffeeModel {
         self.roastDate = coffee.roastInfo?.date
         self.roastLevel = coffee.roastInfo?.roastLevel?.rawValue
         self.process = coffee.process?.rawValue
+        self.variety = coffee.variety
     }
 
     func toDomain() -> Coffee? {
@@ -41,7 +42,8 @@ extension CoffeeModel {
             name: name,
             originInfo: originInfo,
             roastInfo: roastInfo,
-            process: process.flatMap { ProcessMethod(rawValue: $0) }
+            process: process.flatMap { ProcessMethod(rawValue: $0) },
+            variety: variety
         )
     }
 }

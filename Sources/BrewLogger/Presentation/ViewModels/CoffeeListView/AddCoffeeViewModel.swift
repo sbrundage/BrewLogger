@@ -35,6 +35,8 @@ extension AddCoffeeViewModel {
         var roastLevel: RoastLevel? = nil
         var roastDate: Date? = nil
         var originLocation = ""
+        var originAltitude = ""
+        var variety = ""
         var process: ProcessMethod? = nil
 
         var canSave: Bool { !name.trimmingCharacters(in: .whitespaces).isEmpty }
@@ -50,13 +52,14 @@ extension AddCoffeeViewModel {
 
             let originInfo: OriginInfo? = originLocation.isEmpty
                 ? nil
-                : OriginInfo(location: originLocation, altitude: nil)
+                : OriginInfo(location: originLocation, altitude: Int(originAltitude))
 
             return Coffee(
                 name: name.trimmingCharacters(in: .whitespaces),
                 originInfo: originInfo,
                 roastInfo: roastInfo,
-                process: process
+                process: process,
+                variety: variety.isEmpty ? nil : variety
             )
         }
     }

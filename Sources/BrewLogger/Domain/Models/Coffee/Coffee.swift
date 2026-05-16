@@ -13,19 +13,22 @@ public struct Coffee: Sendable, Identifiable, Hashable {
     public let originInfo: OriginInfo?
     public let roastInfo: RoastInfo?
     public let process: ProcessMethod?
+    public let variety: String?
 
     public init(
         id: String = UUID().uuidString,
         name: String,
         originInfo: OriginInfo?,
         roastInfo: RoastInfo?,
-        process: ProcessMethod?
+        process: ProcessMethod?,
+        variety: String? = nil
     ) {
         self.id = id
         self.name = name
         self.originInfo = originInfo
         self.roastInfo = roastInfo
         self.process = process
+        self.variety = variety
     }
     
     public var hasDetails: Bool { originInfo != nil || roastInfo != nil || process != nil }
@@ -33,11 +36,4 @@ public struct Coffee: Sendable, Identifiable, Hashable {
     public static func == (lhs: Coffee, rhs: Coffee) -> Bool { lhs.id == rhs.id }
 
     public func hash(into hasher: inout Hasher) { hasher.combine(id) }
-}
-
-public enum ProcessMethod: String, Sendable, Hashable, CaseIterable {
-    case washed
-    case natural
-    case honey
-    case wetHulled = "wet hulled"
 }
