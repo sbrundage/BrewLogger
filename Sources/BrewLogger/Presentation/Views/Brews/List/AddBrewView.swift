@@ -55,7 +55,7 @@ struct AddBrewView: View {
             } label: {
                 Text("Save Brew")
             }
-            .foregroundStyle(viewModel.canSave ? .cyan : .secondary)
+            .foregroundStyle(viewModel.canSave ? BrandColors.accent : .secondary)
             .frame(maxWidth: .infinity)
             .disabled(!viewModel.canSave)
         }
@@ -154,7 +154,7 @@ struct AddBrewView: View {
             TextField("Brew Temp", text: $viewModel.newBrew.brewTemp)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
-                .focused($focus, equals: .rating)
+                .focused($focus, equals: .brewTemp)
             
             // Rating
             TextField("Rating (0–5)", text: $viewModel.newBrew.rating)
@@ -170,14 +170,15 @@ struct AddBrewView: View {
     }
 
     enum Field {
-        case grindSize, dose, yield, brewTime, rating, notes
+        case grindSize, dose, brewTime, yield, brewTemp, rating, notes
         
         var next: Field? {
             switch self {
             case .grindSize: return .dose
             case .dose: return .brewTime
             case .brewTime: return .yield
-            case .yield: return .rating
+            case .yield: return .brewTemp
+            case .brewTemp: return .rating
             case .rating: return .notes
             case .notes: return nil
             }
@@ -189,7 +190,8 @@ struct AddBrewView: View {
             case .dose: return .grindSize
             case .brewTime: return .dose
             case .yield: return .brewTime
-            case .rating: return .yield
+            case .brewTemp: return .yield
+            case .rating: return .brewTemp
             case .notes: return .rating
             }
         }

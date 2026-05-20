@@ -15,7 +15,7 @@ struct OriginHistoryMapView: View {
         Map {
             ForEach(viewModel.locations) { location in
                 Marker(location.coffee.name, coordinate: location.coordinate)
-                    .tint(.cyan)
+                    .tint(BrandColors.accent)
             }
         }
         .task {

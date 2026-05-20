@@ -93,7 +93,7 @@ struct OriginLearnMoreView: View {
                 RoundedRectangle(cornerRadius: 16)
                     .foregroundStyle(.secondary)
             )
-            .tint(.cyan)
+            .tint(BrandColors.accent)
         }
         .task {
             self.generator = OriginDetailsGenerator(origin: origin)

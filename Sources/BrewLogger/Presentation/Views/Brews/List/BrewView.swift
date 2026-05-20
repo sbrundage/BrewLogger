@@ -57,7 +57,7 @@ struct BrewView: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .foregroundStyle(colorScheme == .dark ? BrandColors.slateDark : BrandColors.slateLight)
+                .foregroundStyle(colorScheme == .dark ? BrandColors.forestDark : BrandColors.forestLight)
         )
     }
 }

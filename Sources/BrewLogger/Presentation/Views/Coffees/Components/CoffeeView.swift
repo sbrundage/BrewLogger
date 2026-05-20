@@ -52,7 +52,7 @@ struct CoffeeView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .foregroundStyle(colorScheme == .dark ? BrandColors.slateDark : BrandColors.slateLight)
+                .foregroundStyle(colorScheme == .dark ? BrandColors.forestDark : BrandColors.forestLight)
         )
         .frame(maxWidth: .infinity)
     }
