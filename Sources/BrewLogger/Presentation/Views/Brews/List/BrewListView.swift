@@ -12,7 +12,6 @@ struct BrewListView: View {
     @Environment(BleScaleConnectionManager.self) var connectionManager
 
     @State private var viewModel = BrewViewModel()
-    @State private var selectedSortOption: BrewSortOption = .newest
     
     // Popovers
     @State private var showBlePopover: Bool = false
@@ -47,16 +46,19 @@ struct BrewListView: View {
             
             ToolbarItem(placement: .automatic) {
                 Button {
-                    // TODO: Add filtering / sorting
                     showSortPopover = true
                 } label: {
                     Image(systemName: "line.3.horizontal.decrease")
                 }
                 .popover(isPresented: $showSortPopover) {
-                    ItemPickerView(items: BrewSortOption.allCases, selectedItem: selectedSortOption, onItemTap: { option in
-                        selectedSortOption = option
-                        showSortPopover = false
-                    })
+                    ItemPickerView(
+                        items: BrewSortOption.allCases,
+                        selectedItem: viewModel.selectedSortOption,
+                        onItemTap: { option in
+                            viewModel.updateSelectedSortOption(option)
+                            showSortPopover = false
+                        }
+                    )
                     .padding()
                     .presentationCompactAdaptation(.popover)
                 }
