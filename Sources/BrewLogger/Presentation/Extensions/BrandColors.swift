@@ -7,7 +7,11 @@
 
 import SwiftUI
 
-enum BrandColors {
+public enum BrandColors {
+    // MARK: - Accent — change this one line to retheme the entire app
+    public static let accent: Color = Color(hex: "#4CAF82")  // sage green — earthy, works on dark
+    
+
     // Option A: Slate — blue-gray, pairs naturally with cyan
     static let slateLight = Color(hex: "#DCE4EA")
     static let slateDark  = Color(hex: "#1E2B35")

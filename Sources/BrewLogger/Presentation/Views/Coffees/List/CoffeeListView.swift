@@ -24,6 +24,22 @@ struct CoffeeListView: View {
         .navigationTitle("Coffees")
         .frame(maxHeight: .infinity, alignment: .top)
         .toolbar {
+            ToolbarItem(placement: .automatic) {
+                Button {
+                    // TODO: Add filtering / sorting
+                } label: {
+                    Image(systemName: "line.3.horizontal.decrease")
+                }
+//                .popover(isPresented: $showSortPopover) {
+//                    ItemPickerView(items: BrewSortOption.allCases, selectedItem: selectedSortOption, onItemTap: { option in
+//                        selectedSortOption = option
+//                        showSortPopover = false
+//                    })
+//                    .padding()
+//                    .presentationCompactAdaptation(.popover)
+//                }
+            }
+            
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     viewModel.showAddCoffeeSheet = true

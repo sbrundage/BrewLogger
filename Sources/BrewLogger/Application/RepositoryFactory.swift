@@ -13,26 +13,22 @@ import CoreLogger
 
 @MainActor
 public struct RepositoryFactory {
-    public let coffee: any CoffeeRepository
-    public let brew: any BrewRepository
-    public let scale: any BLEScaleRepository
-
-    // Fully in-memory — no BLE, no CoreData. Safe to use anywhere without hardware.
+    public let coffee: CoffeeRepository
+    public let brew: BrewRepository
+    public let scale: BLEScaleRepository
+    
     public static let stub = RepositoryFactory(
         coffee: StubCoffeeRepository(),
         brew: StubBrewRepository(),
         scale: StubBLEScaleRepository()
     )
 
-    // Starts as stubs so default init params work safely before configure() runs.
-    // Host app calls configure(context:) in App.init() to upgrade to real repos.
+    // Starts as stubs. Host app calls configure(context:) in App.init() to upgrade to real repos.
     public private(set) static var dev: RepositoryFactory = .stub
 
-    // Single CBCentralManager instance — creating more than one causes BLE issues.
     private static let bleRepository = CoreBluetoothScaleRepository()
 
-    /// Call once from App.init() before any views load.
-    /// Replaces stub repos with real CoreData-backed ones.
+    /// Call once from App.init(). Replaces stub repos with real CoreData-backed ones.
     public static func configure(with persistenceController: PersistenceController) {
         let context = persistenceController.container.viewContext
         let coffeeStore = CoreDataStore<CoffeeModel>(context: context)

@@ -29,7 +29,7 @@ struct CoffeePickerView: View {
                 addNewCoffee()
             } label: {
                 Image(systemName: "plus.circle.fill")
-                    .foregroundStyle(.cyan)
+                    .foregroundStyle(BrandColors.accent)
             }
         }
         .listRowBackground(Color(.secondarySystemFill))

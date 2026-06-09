@@ -39,7 +39,7 @@ struct AddCoffeeView: View {
             } label: {
                 Text("Save Coffee")
             }
-            .foregroundStyle(viewModel.canSave ? .cyan : .secondary)
+            .foregroundStyle(viewModel.canSave ? BrandColors.accent : .secondary)
             .frame(maxWidth: .infinity)
             .disabled(!viewModel.canSave)
         }
@@ -108,7 +108,7 @@ struct AddCoffeeView: View {
                 )
                 .datePickerStyle(.graphical)
                 .labelsHidden()
-                .tint(.cyan)
+                .tint(BrandColors.accent)
 
                 Button {
                     viewModel.newCoffee.roastDate = nil

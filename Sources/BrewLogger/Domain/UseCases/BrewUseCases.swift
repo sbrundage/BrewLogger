@@ -26,7 +26,7 @@ public struct FetchAllBrewsUseCase {
         self.repository = repository
     }
     
-    public func execute(for coffeeId: String?) throws -> [Brew] {
+    public func execute(coffeeId: String?) throws -> [Brew] {
         try repository.fetchAll(for: coffeeId)
     }
 }

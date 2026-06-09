@@ -8,7 +8,7 @@
 import Foundation
 
 @MainActor
-public protocol BLEScaleRepository: AnyObject {
+public protocol BLEScaleRepository {
     var connectionState: BLEConnectionState { get }
     var state​Changes: AsyncStream<BLEConnectionState> { get }
     var readings: AsyncStream<ScaleReading> { get }

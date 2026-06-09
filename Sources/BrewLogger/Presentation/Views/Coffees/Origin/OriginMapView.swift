@@ -24,7 +24,7 @@ struct OriginMapView: View {
                 )
                 Map(initialPosition: .region(region)) {
                     Marker(location, coordinate: coordinate)
-                        .tint(.cyan)
+                        .tint(BrandColors.accent)
                 }
                 .frame(height: 180)
                 .clipShape(RoundedRectangle(cornerRadius: 12))

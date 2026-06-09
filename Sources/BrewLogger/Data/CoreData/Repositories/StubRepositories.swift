@@ -22,7 +22,7 @@ public final class StubCoffeeRepository: CoffeeRepository {
 }
 
 public final class StubBrewRepository: BrewRepository {
-    private var brews: [Brew] = [Brew.preview]
+    private var brews: [Brew] = Brew.previewList
 
     public init() {}
 
@@ -37,7 +37,6 @@ public final class StubBrewRepository: BrewRepository {
     }
 }
 
-@MainActor
 public final class StubBLEScaleRepository: BLEScaleRepository {
     public var connectionState: BLEConnectionState = .disconnected
     public var state​Changes: AsyncStream<BLEConnectionState> { AsyncStream { _ in } }

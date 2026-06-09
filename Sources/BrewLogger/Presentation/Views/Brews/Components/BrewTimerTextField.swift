@@ -37,7 +37,7 @@ struct BrewTimerTextField: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 24, height: 24)
-                    .tint(.cyan)
+                    .tint(BrandColors.accent)
             }
             .buttonStyle(.borderless)
             .padding(.trailing)
@@ -50,7 +50,7 @@ struct BrewTimerTextField: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 24, height: 24)
-                    .tint(.cyan)
+                    .tint(BrandColors.accent)
             }
             .buttonStyle(.borderless)
         } //: HStack

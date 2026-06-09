@@ -39,7 +39,7 @@ struct BleLiveScaleView: View {
                     )
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.cyan.opacity(0.25), .clear],
+                            colors: [BrandColors.accent.opacity(0.25), .clear],
                             startPoint: .top,
                             endPoint: .bottom
                         )
@@ -50,7 +50,7 @@ struct BleLiveScaleView: View {
                         x: .value("Time (s)", sample.elapsed),
                         y: .value("Weight (g)", clampedWeight)
                     )
-                    .foregroundStyle(.cyan)
+                    .foregroundStyle(BrandColors.accent)
                     .lineStyle(StrokeStyle(lineWidth: 2))
                     .interpolationMethod(.catmullRom)
                 }

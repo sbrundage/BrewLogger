@@ -15,6 +15,9 @@ class BrewViewModel {
     private let deleteBrew: DeleteBrewUseCase
     
     private(set) var brews: [Brew] = []
+    private(set) var selectedSortOption: BrewSortOption = .newest {
+        didSet { sortBrews() }
+    }
     
     var searchText: String = ""
     var showAddBrewSheet: Bool = false
@@ -28,7 +31,7 @@ class BrewViewModel {
     
     func fetchAllBrews() {
         do {
-            self.brews = try fetchBrews.execute(for: nil)
+            self.brews = try fetchBrews.execute(coffeeId: nil)
         } catch {
             // TODO: Handle error
             print("Failed to fetch brews: \(error)")
@@ -42,6 +45,21 @@ class BrewViewModel {
         } catch {
             // TODO: Handle error
             print("Failed to delete brew: \(error)")
+        }
+    }
+    
+    func updateSelectedSortOption(_ option: BrewSortOption) {
+        self.selectedSortOption = option
+    }
+}
+
+private extension BrewViewModel {
+    func sortBrews() {
+        switch selectedSortOption {
+        case .highestRated:
+            self.brews = brews.sorted { $0.rating ?? 0 > $1.rating ?? 0 }
+        case .newest:
+            self.brews = brews.sorted { $0.date > $1.date }
         }
     }
 }
