@@ -18,7 +18,11 @@ class BrewListViewModel {
     private let fetchBrews: FetchAllBrewsUseCase
     private let deleteBrew: DeleteBrewUseCase
     
-    private var brews: [Brew] = []
+    private var noSearchResults: Bool {
+        !brews.isEmpty && filteredBrews.isEmpty
+    }
+
+    private(set) var brews: [Brew] = []
     
     // Why not just a var?
     // Rather than exposing function to adjust this value - what's the benefit
@@ -26,11 +30,7 @@ class BrewListViewModel {
         didSet { sortBrews() }
     }
     
-    var displayedBrews: [Brew] { filterBySearchText() }
-    
-    var noSearchResults: Bool {
-        !brews.isEmpty && displayedBrews.isEmpty
-    }
+    var filteredBrews: [Brew] { filterBySearchText() }
     
     var noResultsText: String {
         noSearchResults ? "No matching results" : "Add a brew to get started"

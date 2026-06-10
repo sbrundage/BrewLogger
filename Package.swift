@@ -54,7 +54,7 @@ let package = Package(
         ),
         .testTarget(
             name: "BrewLoggerTests",
-            dependencies: ["BrewLoggerData", "BrewLoggerDomain"],
+            dependencies: ["BrewLoggerPresentation", "BrewLoggerData", "BrewLoggerDomain"],
             path: "Tests/BrewLoggerTests"
         )
     ]

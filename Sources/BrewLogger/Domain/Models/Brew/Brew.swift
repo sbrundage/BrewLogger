@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Brew: Identifiable, Sendable {
+public struct Brew: Identifiable, Equatable, Sendable {
     public let id: String
     public let date: Date
     public let coffee: Coffee

@@ -19,7 +19,7 @@ struct BrewListView: View {
     
     var body: some View {
         VStack {
-            if viewModel.displayedBrews.isEmpty {
+            if viewModel.filteredBrews.isEmpty {
                 noBrewsView
             } else {
                 listView
@@ -88,7 +88,7 @@ struct BrewListView: View {
     
     private var listView: some View {
         List {
-            ForEach(viewModel.displayedBrews) { brew in
+            ForEach(viewModel.filteredBrews) { brew in
                 BrewView(brew: brew)
                     .listRowBackground(Color.clear)
                     .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))

@@ -21,6 +21,10 @@ public extension Brew {
         notes: "Clean and sweet, nice clarity"
     )
 
+    /*
+     Note:
+     Tests for BrewListViewModel use this array so changes to this may cause failures.
+     */
     static let previewList: [Brew] = [
         Brew(
             date: Date(),
