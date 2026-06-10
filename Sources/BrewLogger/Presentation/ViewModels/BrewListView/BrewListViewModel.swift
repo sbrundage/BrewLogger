@@ -9,14 +9,31 @@ import Foundation
 import BrewLoggerApplication
 import BrewLoggerDomain
 
+// TODO: Thought - How much of repetitive logic in the VM could we meaningfully extract?
+// Both List VMs have the same functionality just different models
+// Could possible explore extracting using protocols and composing vms with their appropriate boilerplate code
+
 @MainActor @Observable
-class BrewViewModel {
+class BrewListViewModel {
     private let fetchBrews: FetchAllBrewsUseCase
     private let deleteBrew: DeleteBrewUseCase
     
+    private var noSearchResults: Bool {
+        !brews.isEmpty && filteredBrews.isEmpty
+    }
+
     private(set) var brews: [Brew] = []
+    
+    // Why not just a var?
+    // Rather than exposing function to adjust this value - what's the benefit
     private(set) var selectedSortOption: BrewSortOption = .newest {
         didSet { sortBrews() }
+    }
+    
+    var filteredBrews: [Brew] { filterBySearchText() }
+    
+    var noResultsText: String {
+        noSearchResults ? "No matching results" : "Add a brew to get started"
     }
     
     var searchText: String = ""
@@ -53,13 +70,22 @@ class BrewViewModel {
     }
 }
 
-private extension BrewViewModel {
+private extension BrewListViewModel {
     func sortBrews() {
         switch selectedSortOption {
         case .highestRated:
             self.brews = brews.sorted { $0.rating ?? 0 > $1.rating ?? 0 }
         case .newest:
             self.brews = brews.sorted { $0.date > $1.date }
+        }
+    }
+    
+    // Could extract this out into a static func on Brew array?
+    // Both List VMs have the same functionality and we could extract out and then have tests
+    func filterBySearchText() -> [Brew] {
+        guard !searchText.isEmpty else { return brews }
+        return brews.filter {
+            $0.isMatch(for: searchText)
         }
     }
 }
