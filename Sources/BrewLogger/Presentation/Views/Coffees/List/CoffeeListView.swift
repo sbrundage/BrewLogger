@@ -9,11 +9,11 @@ import SwiftUI
 import BrewLoggerDomain
 
 struct CoffeeListView: View {
-    @State private var viewModel = CoffeeViewModel()
+    @State private var viewModel = CoffeeListViewModel()
     
     var body: some View {
         VStack {
-            if viewModel.coffees.isEmpty {
+            if viewModel.displayedCoffees.isEmpty {
                 noDataView
             } else {
                 listView
@@ -67,7 +67,7 @@ struct CoffeeListView: View {
 
     private var listView: some View {
         List {
-            ForEach(viewModel.coffees) { coffee in
+            ForEach(viewModel.displayedCoffees) { coffee in
                 NavigationLink(value: coffee.hasDetails ? coffee : nil) {
                     CoffeeView(coffee: coffee)
                 }
@@ -95,7 +95,7 @@ struct CoffeeListView: View {
                 .scaledToFit()
                 .frame(width: 60, height: 60)
                 .padding()
-            Text("Add a coffee to get started")
+            Text(viewModel.noResultsText)
                 .font(.headline)
             Spacer()
         }

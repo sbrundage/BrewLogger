@@ -37,3 +37,11 @@ public struct Coffee: Sendable, Identifiable, Hashable {
 
     public func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
+
+public extension Coffee {
+    func isMatch(for searchQuery: String) -> Bool {
+        name.lowercased().contains(searchQuery) ||
+        roastInfo?.roaster?.lowercased().contains(searchQuery) ?? false ||
+        originInfo?.location.lowercased().contains(searchQuery) ?? false
+    }
+}

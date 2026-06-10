@@ -11,7 +11,7 @@ import BrewLoggerDomain
 struct BrewListView: View {
     @Environment(BleScaleConnectionManager.self) var connectionManager
 
-    @State private var viewModel = BrewViewModel()
+    @State private var viewModel = BrewListViewModel()
     
     // Popovers
     @State private var showBlePopover: Bool = false
@@ -19,7 +19,7 @@ struct BrewListView: View {
     
     var body: some View {
         VStack {
-            if viewModel.brews.isEmpty {
+            if viewModel.displayedBrews.isEmpty {
                 noBrewsView
             } else {
                 listView
@@ -88,7 +88,7 @@ struct BrewListView: View {
     
     private var listView: some View {
         List {
-            ForEach(viewModel.brews) { brew in
+            ForEach(viewModel.displayedBrews) { brew in
                 BrewView(brew: brew)
                     .listRowBackground(Color.clear)
                     .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
@@ -114,7 +114,7 @@ struct BrewListView: View {
                 .frame(width: 60, height: 60)
                 .scaledToFit()
                 .padding()
-            Text("Add a brew to get started")
+            Text(viewModel.noResultsText)
                 .font(.headline)
             Spacer()
         }
