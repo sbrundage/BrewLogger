@@ -85,7 +85,7 @@ private extension BrewListViewModel {
     func filterBySearchText() -> [Brew] {
         guard !searchText.isEmpty else { return brews }
         return brews.filter {
-            $0.isMatch(for: searchText.lowercased())
+            $0.isMatch(for: searchText)
         }
     }
 }

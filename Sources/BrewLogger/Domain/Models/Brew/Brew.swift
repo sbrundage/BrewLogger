@@ -46,11 +46,3 @@ public struct Brew: Identifiable, Sendable {
         self.notes = notes
     }
 }
-
-public extension Brew {
-    func isMatch(for searchQuery: String) -> Bool {
-        let methods: [String] = [BrewMethod.espresso.title, BrewMethod.pourOver.title]
-        return coffee.name.lowercased().contains(searchQuery) ||
-        methods.contains(method.title)
-    }
-}

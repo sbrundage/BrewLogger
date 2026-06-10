@@ -55,7 +55,7 @@ private extension CoffeeListViewModel {
     func filterBySearchText() -> [Coffee] {
         guard !searchText.isEmpty else { return coffees }
         return coffees.filter {
-            $0.isMatch(for: searchText.lowercased())
+            $0.isMatch(for: searchText)
         }
     }
 }
