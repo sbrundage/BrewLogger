@@ -11,8 +11,7 @@ import BrewLoggerDomain
 extension Brew: Matchable {
     public func isMatch(for searchQuery: String) -> Bool {
         let lowercasedQuery = searchQuery.lowercased()
-        return coffee.name.lowercased().contains(lowercasedQuery) ||
-        method.title.lowercased().contains(lowercasedQuery)
+        return coffee.name.lowercased().contains(lowercasedQuery)
     }
 }
 
