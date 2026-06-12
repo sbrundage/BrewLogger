@@ -36,12 +36,7 @@ struct BrewView: View {
                 .padding(.top, 2)
             
             HStack {
-                (Text("\(brew.dose.tens)g").fontWeight(.medium) +
-                 Text(" : ").fontWeight(.light) +
-                 Text("\(brew.yield.tens)g").fontWeight(.medium) +
-                 Text(" in ").fontWeight(.light) +
-                 Text("\(brew.brewTime.tens)s").fontWeight(.medium))
-                .font(.headline)
+                BrewRatioDetailsView(brew: brew, baseFontWeight: .medium, emphasizeFont: .headline)
 
                 Spacer()
                 
