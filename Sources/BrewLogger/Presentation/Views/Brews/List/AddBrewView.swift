@@ -110,9 +110,8 @@ struct AddBrewView: View {
                 isSelected: viewModel.newBrew.method != nil,
                 isExpanded: $showMethodPicker
             ) {
-                let displayMethods: [BrewMethod] = [.espresso, .pourOver]
                 ItemPickerView(
-                    items: displayMethods,
+                    items: BrewMethod.allMethods,
                     selectedItem: viewModel.newBrew.method
                 ) { method in
                     viewModel.newBrew.method = method

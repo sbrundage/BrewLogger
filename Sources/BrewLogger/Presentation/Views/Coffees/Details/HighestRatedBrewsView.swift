@@ -20,84 +20,14 @@ struct HighestRatedBrewsView: View {
                 VStack(alignment: .leading) {
                     Text(brew.method.title)
                         .underline()
-                    
-                    HStack {
-                        VStack {
-                            Text("Grind Size")
-                                .fontWeight(.light)
-                            Text(brew.grindSize.tens)
-                                .fontWeight(.medium)
-                        } //: VStack
-                        .frame(maxWidth: .infinity)
-                        
-                        Divider()
-                            .frame(width: 0.5, height: 30)
-                            .overlay(.secondary)
-                        
-                        VStack {
-                            Text("Time")
-                                .fontWeight(.light)
-                            Text("\(brew.brewTime.tens)s")
-                                .fontWeight(.medium)
-                        } //: VStack
-                        .frame(maxWidth: .infinity)
-                        
-                        Divider()
-                            .frame(width: 0.5, height: 30)
-                            .overlay(.secondary)
-                        
-                        VStack {
-                            Text("Yield")
-                                .fontWeight(.light)
-                            Text("\(brew.yield.tens)g")
-                                .fontWeight(.medium)
-                        } //: VStack
-                        .frame(maxWidth: .infinity)
-                    } //: HStack
+
+                    StatRow(stats: [
+                        .init(label: "Grind Size", value: brew.grindSize.tens),
+                        .init(label: "Time", value: "\(brew.brewTime.tens)s"),
+                        .init(label: "Yield", value: "\(brew.yield.tens)g")
+                    ])
                 } //: VStack
             } //: ForEach
-            
-        } //: VStack
-    }
-    
-    private func highestRatedBrewView(_ brew: Brew) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Highest Rated Brew")
-                .font(.headline)
-            
-            HStack {
-                    VStack {
-                        Text("Grind Size")
-                            .fontWeight(.light)
-                        Text(brew.grindSize.tens)
-                            .fontWeight(.medium)
-                    } //: VStack
-                    .frame(maxWidth: .infinity)
-                
-                Divider()
-                    .frame(width: 0.5, height: 30)
-                    .overlay(.secondary)
-                
-                    VStack {
-                        Text("Time")
-                            .fontWeight(.light)
-                        Text("\(brew.brewTime.tens)s")
-                            .fontWeight(.medium)
-                    } //: VStack
-                    .frame(maxWidth: .infinity)
-                
-                Divider()
-                    .frame(width: 0.5, height: 30)
-                    .overlay(.secondary)
-                
-                    VStack {
-                        Text("Yield")
-                            .fontWeight(.light)
-                        Text("\(brew.yield.tens)g")
-                            .fontWeight(.medium)
-                    } //: VStack
-                    .frame(maxWidth: .infinity)
-            } //: HStack
         } //: VStack
     }
 }

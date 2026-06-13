@@ -10,6 +10,7 @@ import BrewLoggerDomain
 
 struct CoffeeDetailsView: View {
     @State private var viewModel: CoffeeDetailsViewModel
+    @State private var showAllBrews = false
     
     init(coffee: Coffee) {
         self.viewModel = CoffeeDetailsViewModel(coffee: coffee)
@@ -30,7 +31,7 @@ struct CoffeeDetailsView: View {
                     }
                     
                     RecentBrewsView(brews: viewModel.brews, onSeeAllTapped: {
-                        // TODO: navigate to see all brews view
+                        showAllBrews = true
                     })
                     .padding(.bottom)
                 }
@@ -41,67 +42,39 @@ struct CoffeeDetailsView: View {
                 }
                 #endif
                 
-                Spacer()
             } //: VStack
             .padding(.horizontal)
         }
         .navigationTitle(viewModel.coffee.name)
+        .navigationDestination(isPresented: $showAllBrews, destination: {
+            AllBrewsView(title: viewModel.coffee.name, brews: viewModel.brews)
+        })
         .task {
             await viewModel.fetchAllBrews()
         }
     }
     
     // MARK: Roast Info
-    
+
     private func roastInfoView(roast: RoastInfo) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let stats: [StatRow.Stat] = [
+            roast.date.map { .init(label: "Roast Date", value: $0.shortFormatted) },
+            roast.roaster.map { .init(label: "Roaster", value: $0) },
+            roast.roastLevel.map { .init(label: "Roast Level", value: $0.title) }
+        ].compactMap { $0 }
+
+        return VStack(alignment: .leading, spacing: 8) {
             Text("Roast Info")
                 .font(.headline)
-            
-            HStack {
-                if let roastDate = roast.date {
-                    VStack {
-                        Text("Roast Date")
-                            .fontWeight(.light)
-                        Text("\(roastDate.shortFormatted)")
-                            .fontWeight(.medium)
-                    } //: VStack
-                    .frame(maxWidth: .infinity)
-                }
-                
-                Divider()
-                    .frame(width: 0.5, height: 30)
-                    .overlay(.secondary)
-                
-                if let roaster = roast.roaster {
-                    VStack {
-                        Text("Roaster")
-                            .fontWeight(.light)
-                        Text("\(roaster)")
-                            .fontWeight(.medium)
-                    } //: VStack
-                    .frame(maxWidth: .infinity)
-                }
-                
-                Divider()
-                    .frame(width: 0.5, height: 30)
-                    .overlay(.secondary)
-                
-                if let roastLevel = roast.roastLevel {
-                    VStack {
-                        Text("Roast Level")
-                            .fontWeight(.light)
-                        Text("\(roastLevel.title)")
-                            .fontWeight(.medium)
-                    } //: VStack
-                    .frame(maxWidth: .infinity)
-                }
-            } //: HStack
+
+            StatRow(stats: stats)
         } //: VStack
         .frame(maxWidth: .infinity)
     }
 }
 
 #Preview {
-    CoffeeDetailsView(coffee: Coffee.previewList[0])
+    NavigationStack {
+        CoffeeDetailsView(coffee: Coffee.previewList[0])
+    }
 }

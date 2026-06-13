@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public enum BrewMethod: Int, Sendable, Identifiable {
+public enum BrewMethod: Int, Sendable, Identifiable, CaseIterable {
     case pourOver = 1
     case espresso = 2
     case na = 3
@@ -33,4 +33,6 @@ public enum BrewMethod: Int, Sendable, Identifiable {
     }
     
     public var id: Int { rawValue }
+    
+    public static let allMethods: [BrewMethod] = { allCases.filter { $0 != .na } }()
 }

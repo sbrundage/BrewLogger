@@ -7,11 +7,12 @@
 
 import Foundation
 
-// TODO: Fix this and reuse formatter as static
 extension Date {
     var shortFormatted: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MM/dd/yy"
-        return formatter.string(from: self)
+        self.formatted(.dateTime.month(.twoDigits).day(.twoDigits).year(.twoDigits))
+    }
+
+    var monthDay: String {
+        self.formatted(.dateTime.month(.abbreviated).day())
     }
 }
