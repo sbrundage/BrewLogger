@@ -50,7 +50,7 @@ import BrewLoggerDomain
                 isExpanded: $isExpanded
             ) {
                 ItemPickerView(
-                    items: [BrewMethod.pourOver, .espresso],
+                    items: BrewMethod.allMethods,
                     selectedItem: selected
                 ) { selected = $0 }
             }

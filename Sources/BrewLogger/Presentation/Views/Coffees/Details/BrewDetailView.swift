@@ -1,24 +1,22 @@
 //
-//  BrewView.swift
+//  BrewDetailView.swift
 //  BrewLogger
 //
-//  Created by Stephen Brundage on 4/11/26.
+//  Created by Stephen Brundage on 6/13/26.
 //
 
 import SwiftUI
 import BrewLoggerDomain
 
-struct BrewView: View {
-    @Environment(\.colorScheme) private var colorScheme
-    
+struct BrewDetailView: View {
     let brew: Brew
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack {
             HStack {
-                Text(brew.coffee.name)
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                dateView
+                    .font(.headline)
+                    .padding(.top, 2)
                 
                 Spacer()
                 
@@ -28,12 +26,6 @@ struct BrewView: View {
                     Image(systemName: "star.fill")
                 }
             } //: HStack
-            
-            (Text(brew.date.monthDay) +
-             Text(" at ") +
-             Text(brew.date, style: .time))
-                .font(.subheadline)
-                .padding(.top, 2)
             
             HStack {
                 BrewRatioDetailsView(brew: brew, baseFontWeight: .medium, emphasizeFont: .headline)
@@ -47,16 +39,16 @@ struct BrewView: View {
                         .frame(width: 30, height: 30)
                 }
             } //: HStack
-            .padding(.top, 12)
         } //: VStack
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .foregroundStyle(colorScheme == .dark ? BrandColors.forestDark : BrandColors.forestLight)
-        )
+    }
+    
+    var dateView: some View {
+        (Text(brew.date.monthDay) +
+         Text(" - ") +
+         Text(brew.date, style: .time))
     }
 }
 
 #Preview {
-    BrewView(brew: Brew.preview)
+    BrewDetailView(brew: .preview)
 }

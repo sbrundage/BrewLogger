@@ -30,6 +30,7 @@ struct OriginView: View {
 
             if #available(iOS 26.0, *) {
                 OriginIntelligenceView(origin: origin)
+                    .padding(.top, 4)
             }
         }
     }
@@ -91,7 +92,7 @@ struct OriginLearnMoreView: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.gray.opacity(0.2))
             )
             .tint(BrandColors.accent)
         }

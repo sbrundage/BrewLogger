@@ -41,6 +41,6 @@ struct ItemPickerView<Item: Listable>: View {
 }
 
 #Preview {
-    let brewMethods: [BrewMethod] = [.espresso, .pourOver]
+    let brewMethods = BrewMethod.allMethods
     ItemPickerView(items: brewMethods, selectedItem: nil, onItemTap: { _ in })
 }

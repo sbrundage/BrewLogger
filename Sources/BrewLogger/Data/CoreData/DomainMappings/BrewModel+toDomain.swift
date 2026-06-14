@@ -12,7 +12,7 @@ extension BrewModel {
     func update(from brew: Brew) {
         self.id = brew.id
         self.date = brew.date
-        self.grindSize = grindSize
+        self.grindSize = brew.grindSize
         self.dose = brew.dose
         self.yield = brew.yield
         self.brewTime = brew.brewTime
