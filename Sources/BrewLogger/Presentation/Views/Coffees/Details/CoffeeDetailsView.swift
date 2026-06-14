@@ -68,8 +68,7 @@ struct CoffeeDetailsView: View {
                 .font(.headline)
 
             StatRow(stats: stats)
-        } //: VStack
-        .frame(maxWidth: .infinity)
+        }
     }
 }
 
