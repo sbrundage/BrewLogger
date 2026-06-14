@@ -1,5 +1,5 @@
 //
-//  BrewDetailView.swift
+//  BrewRow.swift
 //  BrewLogger
 //
 //  Created by Stephen Brundage on 6/13/26.
@@ -8,7 +8,7 @@
 import SwiftUI
 import BrewLoggerDomain
 
-struct BrewDetailView: View {
+struct BrewRow: View {
     let brew: Brew
     
     var body: some View {
@@ -50,5 +50,5 @@ struct BrewDetailView: View {
 }
 
 #Preview {
-    BrewDetailView(brew: .preview)
+    BrewRow(brew: .preview)
 }

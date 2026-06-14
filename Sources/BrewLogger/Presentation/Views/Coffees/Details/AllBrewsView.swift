@@ -54,7 +54,7 @@ struct AllBrewsView: View {
     private var listView: some View {
         List {
             ForEach(viewModel.displayBrews) { brew in
-                BrewDetailView(brew: brew)
+                BrewRow(brew: brew)
             }
         }
     }
