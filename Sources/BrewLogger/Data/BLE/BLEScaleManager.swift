@@ -25,12 +25,11 @@ final class BLEScaleManager: NSObject {
     private let tareCharUUID        = CBUUID(string: "12345678-1234-1234-1234-1234567890AD")
 
     // MARK: - AsyncStream infrastructure
-    // AsyncStream terminates when its consuming task is cancelled, making it single-use.
-    // To support multiple sequential subscribers (e.g. a modal being dismissed and re-opened),
-    // we use a multicast pattern: each call to readings/stateChanges creates a fresh AsyncStream
-    // with its own continuation. We keep a dictionary of active continuations and yield to all of
-    // them whenever the BLE hardware fires. When a subscriber's task is cancelled, its continuation
-    // removes itself from the dictionary via onTermination.
+    // An AsyncStream dies when its consuming task is cancelled, so each call to readings/stateChanges
+    // returns a fresh stream + continuation. Continuations are keyed by UUID so a consumer can come
+    // and go across view transitions: onTermination removes only that consumer's entry, so a stale
+    // cleanup can't clobber a newly-subscribed one (onTermination fires asynchronously). BLE callbacks
+    // yield to every active continuation.
     private var readingsContinuations: [UUID: AsyncStream<ScaleReading>.Continuation] = [:]
     private var stateContinuations: [UUID: AsyncStream<BLEConnectionState>.Continuation] = [:]
 
@@ -67,6 +66,8 @@ final class BLEScaleManager: NSObject {
     private var centralManager: CBCentralManager?
     private var peripheral: CBPeripheral?
     private var tareCharacteristic: CBCharacteristic?
+    // Temp/humidity arrive on their own characteristics; we cache the latest of each so a weight
+    // notify can bundle all three into a single ScaleReading.
     private var latestTemperature: Double = 0
     private var latestHumidity: Double = 0
 
@@ -92,6 +93,8 @@ final class BLEScaleManager: NSObject {
     }
 
     func disconnect() {
+        // User-initiated teardown: cancel the connection and clear all handles. We set .disconnected
+        // here rather than waiting on didDisconnectPeripheral, which auto-resumes scanning.
         if let peripheral, let centralManager {
             centralManager.cancelPeripheralConnection(peripheral)
         }
@@ -105,8 +108,11 @@ final class BLEScaleManager: NSObject {
 
 // MARK: - CBCentralManagerDelegate
 
+// Connection flow: didUpdateState → scan → didDiscover (match name) → connect →
+// didConnect → discover services. Each step also yields the new state to subscribers.
 extension BLEScaleManager: @preconcurrency CBCentralManagerDelegate {
 
+    // Central is only usable once powered on; that callback kicks off the initial scan.
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         // TODO: Handle non-poweredOn states (.poweredOff, .unauthorized, .unsupported) by
         // surfacing a .failed or dedicated .bluetoothUnavailable state to the UI.
@@ -120,6 +126,7 @@ extension BLEScaleManager: @preconcurrency CBCentralManagerDelegate {
         advertisementData: [String: Any],
         rssi: NSNumber
     ) {
+        // Only our named peripheral; ignore everything else the scan surfaces.
         guard peripheral.name == BLEScaleManager.peripheralName else { return }
         self.peripheral = peripheral
         central.stopScan()
@@ -131,6 +138,7 @@ extension BLEScaleManager: @preconcurrency CBCentralManagerDelegate {
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         connectionState = .connected
         stateContinuations.values.forEach { $0.yield(.connected) }
+        // Become the peripheral's delegate, then walk services → characteristics.
         peripheral.delegate = self
         peripheral.discoverServices([envServiceUUID, scaleServiceUUID])
     }
@@ -164,10 +172,13 @@ extension BLEScaleManager: @preconcurrency CBCentralManagerDelegate {
 
 // MARK: - CBPeripheralDelegate
 
+// Characteristic flow: didDiscoverServices → discover characteristics → subscribe to NOTIFY chars
+// → didUpdateValueFor fires on every reading.
 extension BLEScaleManager: @preconcurrency CBPeripheralDelegate {
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: (any Error)?) {
         guard let services = peripheral.services else { return }
+        // Discover all characteristics on each service (pass nil = no filter).
         for service in services {
             peripheral.discoverCharacteristics(nil, for: service)
         }
@@ -180,6 +191,7 @@ extension BLEScaleManager: @preconcurrency CBPeripheralDelegate {
     ) {
         guard let characteristics = service.characteristics else { return }
         for characteristic in characteristics {
+            // Subscribe to anything that notifies (weight, temp, humidity) → didUpdateValueFor.
             if characteristic.properties.contains(.notify) {
                 peripheral.setNotifyValue(true, for: characteristic)
             }
@@ -197,18 +209,21 @@ extension BLEScaleManager: @preconcurrency CBPeripheralDelegate {
     ) {
         guard error == nil, let data = characteristic.value else { return }
 
+        // ESP32 sends fixed-point ints; divide back to real units (see CLAUDE.md encoding notes).
         switch characteristic.uuid {
         case temperatureCharUUID:
             let raw = data.withUnsafeBytes { $0.load(as: Int16.self) }
-            latestTemperature = Double(raw) / 100.0
+            latestTemperature = Double(raw) / 100.0   // °F ×100
 
         case humidityCharUUID:
             let raw = data.withUnsafeBytes { $0.load(as: UInt16.self) }
-            latestHumidity = Double(raw) / 100.0
+            latestHumidity = Double(raw) / 100.0      // % ×100
 
         case weightCharUUID:
+            // Weight notifies at 10 Hz — the cadence that drives a live reading. Bundle the cached
+            // temp/humidity in and broadcast to subscribers.
             let raw = data.withUnsafeBytes { $0.load(as: Int16.self) }
-            let weight = Double(raw) / 10.0
+            let weight = Double(raw) / 10.0           // grams ×10
             let reading = ScaleReading(
                 weight: weight,
                 temperature: latestTemperature,

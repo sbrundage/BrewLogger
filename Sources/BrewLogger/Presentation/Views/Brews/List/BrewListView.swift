@@ -89,17 +89,32 @@ struct BrewListView: View {
     private var listView: some View {
         List {
             ForEach(viewModel.filteredBrews) { brew in
-                BrewView(brew: brew)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowSeparator(.hidden)
-                    .swipeActions(edge: .trailing) {
-                        Button(role: .destructive) {
-                            viewModel.delete(brew)
-                        } label: {
-                            Label("Delete", systemImage: "trash")
+                NavigationLink {
+                    BrewDetailsView(brew: brew)
+                } label: {
+                    BrewView(brew: brew)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                viewModel.delete(brew)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                         }
+                }
+                .navigationLinkIndicatorVisibility(.hidden)
+                .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
+                .listRowSeparator(.hidden)
+                .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) {
+                        // TODO: delete brew
+//                        viewModel.delete(brew)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
                     }
+                }
             }
         }
         .listStyle(.plain)

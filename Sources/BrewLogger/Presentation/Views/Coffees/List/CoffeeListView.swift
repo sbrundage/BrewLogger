@@ -72,7 +72,6 @@ struct CoffeeListView: View {
                     CoffeeView(coffee: coffee)
                 }
                 .navigationLinkIndicatorVisibility(.hidden)
-                .listRowBackground(Color.clear)
                 .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
                 .listRowSeparator(.hidden)
                 .swipeActions(edge: .trailing) {
