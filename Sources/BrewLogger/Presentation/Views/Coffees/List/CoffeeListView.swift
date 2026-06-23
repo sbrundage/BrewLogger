@@ -52,7 +52,7 @@ struct CoffeeListView: View {
             viewModel.fetchAllCoffees()
         }) {
             NavigationStack {
-                AddCoffeeView()
+                SaveCoffeeView()
                     .toolbar {
                         Button {
                             viewModel.showAddCoffeeSheet = false

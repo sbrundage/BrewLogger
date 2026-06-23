@@ -60,6 +60,6 @@ struct CoffeeView: View {
 
 #Preview {
     CoffeeView(coffee: .preview)
-    let coffee = Coffee(name: "Test Coffee", originInfo: nil, roastInfo: nil, process: nil)
+    let coffee = Coffee(id: UUID().uuidString, name: "Test Coffee", originInfo: nil, roastInfo: nil, process: nil)
     CoffeeView(coffee: coffee)
 }

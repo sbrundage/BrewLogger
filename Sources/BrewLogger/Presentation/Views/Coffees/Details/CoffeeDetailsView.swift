@@ -11,6 +11,7 @@ import BrewLoggerDomain
 struct CoffeeDetailsView: View {
     @State private var viewModel: CoffeeDetailsViewModel
     @State private var showAllBrews = false
+    @State private var showEditSheet = false
     
     init(coffee: Coffee) {
         self.viewModel = CoffeeDetailsViewModel(coffee: coffee)
@@ -49,9 +50,21 @@ struct CoffeeDetailsView: View {
         .navigationDestination(isPresented: $showAllBrews, destination: {
             AllBrewsView(title: viewModel.coffee.name, brews: viewModel.brews)
         })
-        .task {
-            await viewModel.fetchAllBrews()
+        .navigationDestination(isPresented: $showEditSheet, destination: {
+            SaveCoffeeView(coffeeToEdit: viewModel.coffee) { _ in
+                viewModel.refetchCoffee()
+            }
+        })
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showEditSheet = true
+                } label: {
+                    Text("Edit")
+                }
+            }
         }
+        .onAppear { viewModel.fetchAllBrews() }
     }
     
     // MARK: Roast Info

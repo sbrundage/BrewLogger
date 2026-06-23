@@ -17,6 +17,7 @@ extension BrewModel {
         self.yield = brew.yield
         self.brewTime = brew.brewTime
         self.method = Int16(brew.method.rawValue)
+        self.brewTemp = brew.brewTemp.map { NSDecimalNumber(value: $0) }
         self.rating = brew.rating.map { NSDecimalNumber(value: $0) }
         self.notes = brew.notes
     }

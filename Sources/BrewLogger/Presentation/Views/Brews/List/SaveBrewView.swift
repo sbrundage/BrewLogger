@@ -1,5 +1,5 @@
 //
-//  AddBrewView.swift
+//  SaveBrewView.swift
 //  BrewLogger
 //
 //  Created by Stephen Brundage on 4/12/26.
@@ -9,11 +9,11 @@ import SwiftUI
 import BrewLoggerApplication
 import BrewLoggerDomain
 
-struct AddBrewView: View {
+struct SaveBrewView: View {
     @Environment(BleScaleConnectionManager.self) var connectionManager
     @Environment(\.dismiss) private var dismiss
     
-    @State private var viewModel = AddBrewViewModel()
+    @State private var viewModel: SaveBrewViewModel
     
     // Navigation
     @State private var showCoffeePicker = false
@@ -22,12 +22,19 @@ struct AddBrewView: View {
 
     @FocusState private var focus: Field?
     
+    private let onSuccessfulSave: (() -> ())?
+    
     private var timeFieldPlaceholder: String {
         connectionManager.isConnected ? "Brew time will be tracked automatically" : "Brew Time"
     }
     
     private var yieldFieldPlaceholder: String {
         connectionManager.isConnected ? "Yield will be tracked automatically" : "Yield (g)"
+    }
+    
+    init(brewToEdit: Brew? = nil, onSuccessfulSave: (() -> ())? = nil) {
+        self.viewModel = SaveBrewViewModel(brewToEdit: brewToEdit)
+        self.onSuccessfulSave = onSuccessfulSave
     }
 
     var body: some View {
@@ -37,8 +44,8 @@ struct AddBrewView: View {
             if connectionManager.isConnected {
                 Section("Scale Reading") {
                     BleLiveScaleView(
-                        yield: $viewModel.newBrew.yield,
-                        brewTime: $viewModel.newBrew.brewTime
+                        yield: $viewModel.brew.yield,
+                        brewTime: $viewModel.brew.brewTime
                     )
                 }
             }
@@ -48,6 +55,7 @@ struct AddBrewView: View {
             Button {
                 do {
                     try viewModel.saveBrew()
+                    onSuccessfulSave?()
                     dismiss()
                 } catch {
                     /* TODO: Handle error */
@@ -59,7 +67,7 @@ struct AddBrewView: View {
             .frame(maxWidth: .infinity)
             .disabled(!viewModel.canSave)
         }
-        .navigationTitle("New Brew")
+        .navigationTitle(viewModel.isEditing ? "Edit Brew" : "New Brew")
         .onAppear { viewModel.fetchAllCoffees() }
         .toolbar {
             ToolbarItem(placement: .keyboard) {
@@ -77,8 +85,8 @@ struct AddBrewView: View {
             }
         }
         .navigationDestination(isPresented: $showAddCoffeeView) {
-            AddCoffeeView { newCoffee in
-                viewModel.newBrew.coffee = newCoffee
+            SaveCoffeeView { newCoffee in
+                viewModel.brew.coffee = newCoffee
             }
         }
     }
@@ -87,17 +95,17 @@ struct AddBrewView: View {
         Section("Required") {
             // Select a Coffee
             ExpandablePickerRow(
-                title: viewModel.newBrew.coffee?.name ?? "Select a coffee",
-                isSelected: viewModel.newBrew.coffee != nil,
+                title: viewModel.brew.coffee?.name ?? "Select a coffee",
+                isSelected: viewModel.brew.coffee != nil,
                 isExpanded: $showCoffeePicker
             ) {
                 CoffeePickerView(
                     coffeeSearch: $viewModel.coffeeSearch,
                     filteredCoffees: viewModel.filteredCoffees,
-                    selectedCoffee: viewModel.newBrew.coffee,
+                    selectedCoffee: viewModel.brew.coffee,
                     addNewCoffee: { showAddCoffeeView = true },
                     onCoffeeOptionTap: { coffee in
-                        viewModel.newBrew.coffee = coffee
+                        viewModel.brew.coffee = coffee
                         viewModel.coffeeSearch = ""
                         withAnimation(.spring(duration: 0.2)) { showCoffeePicker = false }
                     }
@@ -106,27 +114,27 @@ struct AddBrewView: View {
 
             // Select Brew Method
             ExpandablePickerRow(
-                title: viewModel.newBrew.method?.title ?? "Select a method",
-                isSelected: viewModel.newBrew.method != nil,
+                title: viewModel.brew.method?.title ?? "Select a method",
+                isSelected: viewModel.brew.method != nil,
                 isExpanded: $showMethodPicker
             ) {
                 ItemPickerView(
                     items: BrewMethod.allMethods,
-                    selectedItem: viewModel.newBrew.method
+                    selectedItem: viewModel.brew.method
                 ) { method in
-                    viewModel.newBrew.method = method
+                    viewModel.brew.method = method
                     withAnimation(.spring(duration: 0.2)) { showMethodPicker = false }
                 }
             }
             
             // Grind Size
-            TextField("Grind Size", text: $viewModel.newBrew.grindSize)
+            TextField("Grind Size", text: $viewModel.brew.grindSize)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .grindSize)
             
             // Dose
-            TextField("Dose (g)", text: $viewModel.newBrew.dose)
+            TextField("Dose (g)", text: $viewModel.brew.dose)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .dose)
@@ -136,11 +144,11 @@ struct AddBrewView: View {
                 placeholder: timeFieldPlaceholder,
                 focus: $focus,
                 focusField: .brewTime,
-                brewTime: $viewModel.newBrew.brewTime
+                brewTime: $viewModel.brew.brewTime
             )
 
             // Yield
-            TextField(yieldFieldPlaceholder, text: $viewModel.newBrew.yield)
+            TextField(yieldFieldPlaceholder, text: $viewModel.brew.yield)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .yield)
@@ -150,19 +158,19 @@ struct AddBrewView: View {
     private var optionalFieldsSection: some View {
         Section("Optional") {
             // Brew Temp
-            TextField("Brew Temp", text: $viewModel.newBrew.brewTemp)
+            TextField("Brew Temp", text: $viewModel.brew.brewTemp)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .brewTemp)
             
             // Rating
-            TextField("Rating (0–5)", text: $viewModel.newBrew.rating)
+            TextField("Rating (0–5)", text: $viewModel.brew.rating)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .rating)
 
             // Notes
-            TextField("Notes", text: $viewModel.newBrew.notes, axis: .vertical)
+            TextField("Notes", text: $viewModel.brew.notes, axis: .vertical)
                 .lineLimit(3...6)
                 .focused($focus, equals: .notes)
         }
@@ -199,7 +207,7 @@ struct AddBrewView: View {
 
 #Preview {
     NavigationStack {
-        AddBrewView()
+        SaveBrewView(onSuccessfulSave: {})
             .environment(BleScaleConnectionManager(repository: RepositoryFactory.stub.scale))
     }
 }

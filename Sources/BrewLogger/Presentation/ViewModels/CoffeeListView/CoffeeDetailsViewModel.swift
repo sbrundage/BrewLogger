@@ -13,27 +13,42 @@ import BrewLoggerDomain
 @Observable
 final class CoffeeDetailsViewModel {
     private let fetchBrews: FetchAllBrewsUseCase
+    private let fetchCoffee: FetchCoffeeUseCase
 //    private let originInfoLookup: OriginLookupUseCase
     
-    let coffee: Coffee
+    private(set) var coffee: Coffee
     
     private(set) var brews: [Brew] = []
     private(set) var highestRatedBrews: [Brew] = []
     
     init(
-        repository: BrewRepository = RepositoryFactory.dev.brew,
+        brewRepository: BrewRepository = RepositoryFactory.dev.brew,
+        coffeeRepository: CoffeeRepository = RepositoryFactory.dev.coffee,
         coffee: Coffee
     ) {
-        self.fetchBrews = FetchAllBrewsUseCase(repository: repository)
+        self.fetchBrews = FetchAllBrewsUseCase(repository: brewRepository)
+        self.fetchCoffee = FetchCoffeeUseCase(repository: coffeeRepository)
         self.coffee = coffee
     }
     
-    func fetchAllBrews() async {
+    func fetchAllBrews() {
         do {
             self.brews = try fetchBrews.execute(coffeeId: coffee.id)
             setupBrewStats()
         } catch {
             // TODO: Handle errors
+        }
+    }
+    
+    func refetchCoffee() {
+        do {
+            guard let updatedCoffee = try fetchCoffee.execute(coffeeId: coffee.id) else {
+                // TODO: Handle failure
+                return
+            }
+            self.coffee = updatedCoffee
+        } catch {
+            // TODO: Handle error
         }
     }
 }

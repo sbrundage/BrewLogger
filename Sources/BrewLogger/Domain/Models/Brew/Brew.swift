@@ -21,7 +21,7 @@ public struct Brew: Identifiable, Equatable, Sendable {
     public let notes: String?
 
     public init(
-        id: String = UUID().uuidString,
+        id: String,
         date: Date,
         coffee: Coffee,
         grindSize: Double,

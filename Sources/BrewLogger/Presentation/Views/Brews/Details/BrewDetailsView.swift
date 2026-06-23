@@ -7,22 +7,42 @@
 
 import SwiftUI
 import BrewLoggerDomain
+import BrewLoggerApplication
 
 struct BrewDetailsView: View {
-    let brew: Brew
+    @State private var viewModel: ViewModel
+    @State private var showEditSheet = false
+        
+    init(brew: Brew) {
+        self.viewModel = ViewModel(brew: brew)
+    }
     
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
                 brewInfo
                 
-                if let roastInfo = brew.coffee.roastInfo {
+                if let roastInfo = viewModel.brew.coffee.roastInfo {
                     roastInfoView(roast: roastInfo)
                 }
             } //: VStack
             .padding(.horizontal)
         }
-        .navigationTitle(brew.coffee.name)
+        .navigationTitle(viewModel.brew.coffee.name)
+        .navigationDestination(isPresented: $showEditSheet, destination: {
+            SaveBrewView(brewToEdit: viewModel.brew) {
+                viewModel.refetchBrew()
+            }
+        })
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showEditSheet = true
+                } label: {
+                    Text("Edit")
+                }
+            }
+        }
     }
     
     private var brewInfo: some View {
@@ -31,20 +51,20 @@ struct BrewDetailsView: View {
                 .font(.headline)
             
             StatRow(stats: [
-                .init(label: "Grind Size", value: brew.grindSize.tens),
-                .init(label: "Time", value: "\(brew.brewTime.tens)s"),
-                .init(label: "Yield", value: "\(brew.yield.tens)g")
+                .init(label: "Grind Size", value: viewModel.brew.grindSize.tens),
+                .init(label: "Time", value: "\(viewModel.brew.brewTime.tens)s"),
+                .init(label: "Yield", value: "\(viewModel.brew.yield.tens)g")
             ])
             
             let stats: [StatRow.Stat] = [
-                brew.rating.map { .init(label: "Rating", value: $0.tens) },
-                brew.brewTemp.map { .init(label: "Temp", value: "\($0)") },
-                .init(label: "Method", value: brew.method.title)
+                viewModel.brew.rating.map { .init(label: "Rating", value: $0.tens) },
+                viewModel.brew.brewTemp.map { .init(label: "Temp", value: "\($0)") },
+                .init(label: "Method", value: viewModel.brew.method.title)
             ].compactMap { $0 }
             
             StatRow(stats: stats)
             
-            if let notes = brew.notes {
+            if let notes = viewModel.brew.notes {
                 Text("Notes:")
                     .fontWeight(.semibold)
                 Text(notes)
@@ -68,6 +88,38 @@ struct BrewDetailsView: View {
     }
 }
 
+extension BrewDetailsView {
+    @MainActor @Observable
+    final class ViewModel {
+        private let fetchBrew: FetchBrewUseCase
+        
+        private(set) var brew: Brew
+        
+        init(
+            repository: BrewRepository = RepositoryFactory.dev.brew,
+            brew: Brew
+        ) {
+            self.fetchBrew = FetchBrewUseCase(repository: repository)
+            self.brew = brew
+        }
+        
+        func refetchBrew() {
+            do {
+                guard let updatedBrew = try fetchBrew.execute(brewId: brew.id) else {
+                    // TODO: Handle error
+                    return
+                }
+                self.brew = updatedBrew
+            } catch {
+                // TODO: Handle error
+            }
+        }
+    }
+}
+
 #Preview {
-    BrewDetailsView(brew: .preview)
+    NavigationStack {
+        BrewDetailsView(brew: .preview)
+    }
+    .environment(BleScaleConnectionManager(repository: RepositoryFactory.stub.scale))
 }
