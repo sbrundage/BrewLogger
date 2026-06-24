@@ -8,10 +8,9 @@
 import SwiftUI
 
 struct BrewTimerTextField: View {
-    @State private var isRunning: Bool = false
-    @State private var time: Double = 0.0
-    @State private var timerTask: Task<Void, Never>?
-    @State private var startDate: Date = .now
+    @State private var viewModel = ViewModel()
+
+    private let buttonSize: CGFloat = 28
 
     let placeholder: String
     let focus: FocusState<SaveBrewView.Field?>.Binding
@@ -19,76 +18,54 @@ struct BrewTimerTextField: View {
 
     @Binding var brewTime: String
 
+    private var timerBinding: Binding<String> {
+        Binding(
+            get: { viewModel.time > 0 ? viewModel.formatted(viewModel.time) : brewTime },
+            set: { brewTime = $0 }
+        )
+    }
+
     var body: some View {
         HStack {
-            TextField(placeholder, text: $brewTime)
+            TextField(placeholder, text: timerBinding)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused(focus, equals: focusField)
-                .disabled(isRunning)
+                .disabled(viewModel.isRunning)
 
             Spacer()
 
-            // Start / Stop
+            // Start / Pause
             Button {
-                if isRunning { stopTimer() } else { startTimer() }
+                if viewModel.isRunning { viewModel.pause() } else { viewModel.start() }
             } label: {
-                Image(systemName: isRunning ? "stop.circle" : "play.circle")
+                Image(systemName: viewModel.isRunning ? "pause.circle" : "play.circle")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 24, height: 24)
+                    .frame(width: buttonSize, height: buttonSize)
                     .tint(BrandColors.accent)
             }
             .buttonStyle(.borderless)
             .padding(.trailing)
-            
-            // Restart Timer
+
+            // Reset Timer
             Button {
-                resetTimer()
+                viewModel.reset()
             } label: {
                 Image(systemName: "arrow.counterclockwise")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 24, height: 24)
+                    .frame(width: buttonSize, height: buttonSize)
                     .tint(BrandColors.accent)
             }
             .buttonStyle(.borderless)
         } //: HStack
+        .onChange(of: viewModel.brewTimeString) { _, newValue in
+            brewTime = newValue
+        }
         .onDisappear {
-            stopTimer()
+            viewModel.pause()
         }
-    }
-}
-
-private extension BrewTimerTextField {
-    func startTimer() {
-        isRunning = true
-        startDate = Date()
-        timerTask = Task {
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .milliseconds(100))
-                time = Date().timeIntervalSince(startDate)
-                brewTime = String(format: "%.1f", time)
-            }
-        }
-    }
-
-    func stopTimer() {
-        isRunning = false
-        timerTask?.cancel()
-        timerTask = nil
-        time = Date().timeIntervalSince(startDate)
-        brewTime = String(format: "%.1f", time)
-    }
-    
-    func resetTimer() {
-        stopTimer()
-        time = 0
-        brewTime = ""
-    }
-    
-    func updateBrewTime() {
-        brewTime = String(format: "%.2f", time)
     }
 }
 

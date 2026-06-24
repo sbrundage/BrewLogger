@@ -46,23 +46,20 @@ struct SaveCoffeeView: View {
         }
         .navigationTitle(viewModel.isEditing ? "Edit Coffee" : "New Coffee")
         .toolbar {
-
-            ToolbarItem(placement: .keyboard) {
-                HStack {
-                    Button { focus = focus?.previous } label: {
-                        Image(systemName: "chevron.up")
-                    }
-                    .disabled(focus?.previous == nil)
-
-                    Button { focus = focus?.next } label: {
-                        Image(systemName: "chevron.down")
-                    }
-                    .disabled(focus?.next == nil)
-
-                    Spacer()
-
-                    Button("Done") { focus = nil }
+            ToolbarItemGroup(placement: .keyboard) {
+                Button { focus = focus?.previous } label: {
+                    Image(systemName: "chevron.up")
                 }
+                .disabled(focus?.previous == nil)
+
+                Button { focus = focus?.next } label: {
+                    Image(systemName: "chevron.down")
+                }
+                .disabled(focus?.next == nil)
+
+                Spacer()
+
+                Button("Done") { focus = nil }
             }
         }
     }
