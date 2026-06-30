@@ -27,7 +27,7 @@ struct BrewListView: View {
         } //: VStack
         .onAppear { viewModel.fetchAllBrews() }
         .searchable(text: $viewModel.searchText)
-        .navigationTitle("Brew History")
+        .navigationTitle("Brews")
         .frame(maxHeight: .infinity, alignment: .top)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
