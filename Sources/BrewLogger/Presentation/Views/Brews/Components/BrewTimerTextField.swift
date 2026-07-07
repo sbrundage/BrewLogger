@@ -14,8 +14,8 @@ struct BrewTimerTextField: View {
     @State private var startDate: Date = .now
 
     let placeholder: String
-    let focus: FocusState<AddBrewView.Field?>.Binding
-    let focusField: AddBrewView.Field
+    let focus: FocusState<SaveBrewView.Field?>.Binding
+    let focusField: SaveBrewView.Field
 
     @Binding var brewTime: String
 
@@ -94,6 +94,6 @@ private extension BrewTimerTextField {
 
 #Preview {
     @Previewable @State var brewTime = ""
-    @Previewable @FocusState var focus: AddBrewView.Field?
+    @Previewable @FocusState var focus: SaveBrewView.Field?
     BrewTimerTextField(placeholder: "Brew Time(s)", focus: $focus, focusField: .brewTime, brewTime: $brewTime)
 }

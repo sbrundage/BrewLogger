@@ -31,6 +31,18 @@ public struct FetchAllBrewsUseCase {
     }
 }
 
+public struct FetchBrewUseCase {
+    private let repository: BrewRepository
+    
+    public init(repository: BrewRepository) {
+        self.repository = repository
+    }
+    
+    public func execute(brewId: String) throws -> Brew? {
+        try repository.fetch(for: brewId)
+    }
+}
+
 public struct DeleteBrewUseCase {
     private let repository: BrewRepository
     

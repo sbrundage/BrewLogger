@@ -16,7 +16,7 @@ public struct Coffee: Sendable, Identifiable, Hashable {
     public let variety: String?
 
     public init(
-        id: String = UUID().uuidString,
+        id: String,
         name: String,
         originInfo: OriginInfo?,
         roastInfo: RoastInfo?,

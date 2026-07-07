@@ -14,6 +14,7 @@ public final class StubCoffeeRepository: CoffeeRepository {
     public init() {}
 
     public func log(_ coffee: Coffee) throws { coffees.append(coffee) }
+    public func fetch(coffeeId: String) throws -> Coffee? { coffees.first }
     public func fetchAll() throws -> [Coffee] { coffees }
     public func delete(id: String) throws { coffees.removeAll { $0.id == id } }
     public func update(_ coffee: Coffee) throws {
@@ -22,11 +23,13 @@ public final class StubCoffeeRepository: CoffeeRepository {
 }
 
 public final class StubBrewRepository: BrewRepository {
+    
     private var brews: [Brew] = Brew.previewList
 
     public init() {}
 
     public func log(_ brew: Brew) throws { brews.append(brew) }
+    public func fetch(for brewId: String) throws -> Brew? { brews.first }
     public func fetchAll(for coffeeId: String?) throws -> [Brew] {
         guard let coffeeId else { return brews }
         return brews.filter { $0.coffee.id == coffeeId }

@@ -19,6 +19,10 @@ public final class CoreDataCoffeeRepository: CoffeeRepository {
         try store.insert { $0.update(from: coffee); $0.createdAt = Date() }
     }
     
+    public func fetch(coffeeId: String) throws -> Coffee? {
+        try store.fetchOne(id: coffeeId)?.toDomain()
+    }
+    
     public func fetchAll() throws -> [Coffee] {
         // Brews are loaded via the CoffeeModel.brews relationship in toDomain()
         try store.fetchAll(

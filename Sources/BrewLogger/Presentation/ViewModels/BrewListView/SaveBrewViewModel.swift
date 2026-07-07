@@ -1,5 +1,5 @@
 //
-//  AddBrewViewModel.swift
+//  SaveBrewViewModel.swift
 //  BrewLogger
 //
 //  Created by Stephen Brundage on 4/12/26.
@@ -10,17 +10,17 @@ import BrewLoggerApplication
 import BrewLoggerDomain
 
 @MainActor @Observable
-final class AddBrewViewModel {
+final class SaveBrewViewModel {
     private let fetchCoffees: FetchAllCoffeesUseCase
-    private let logNewCoffee: LogCoffeeUseCase
     private let logNewBrew: LogBrewUseCase
+    private let updateBrew: UpdateBrewUseCase
     
     private var coffees: [Coffee] = []
     
-    var newBrew = NewBrew()
+    var brew = BrewDraft()
     var coffeeSearch = ""
 
-    var canSave: Bool { newBrew.canSave }
+    var canSave: Bool { brew.canSave }
     
     var filteredCoffees: [Coffee] {
         coffeeSearch.isEmpty
@@ -29,13 +29,20 @@ final class AddBrewViewModel {
         }
     }
     
+    var isEditing: Bool { brew.id != nil }
+
     init(
+        brewToEdit: Brew? = nil,
         coffeeRepository: CoffeeRepository = RepositoryFactory.dev.coffee,
         brewRepository: BrewRepository = RepositoryFactory.dev.brew
     ) {
-        self.logNewCoffee = LogCoffeeUseCase(repository: coffeeRepository)
         self.fetchCoffees = FetchAllCoffeesUseCase(repository: coffeeRepository)
         self.logNewBrew = LogBrewUseCase(repository: brewRepository)
+        self.updateBrew = UpdateBrewUseCase(repository: brewRepository)
+        
+        if let brewToEdit {
+            self.brew = BrewDraft(from: brewToEdit)
+        }
     }
     
     func fetchAllCoffees() {
@@ -51,15 +58,20 @@ final class AddBrewViewModel {
         // TODO: Handle error / show pop up
         guard
             canSave,
-            let newBrew = newBrew.convertToBrew()
+            let brew = brew.convertToBrew()
         else { return }
         
-        try logNewBrew.execute(newBrew: newBrew)
+        // If we're updating an existing brew, newBrew id will already be set. Otherwise save a new brew
+        self.brew.id != nil ?
+            try updateBrew.execute(updatedBrew: brew) :
+            try logNewBrew.execute(newBrew: brew)
     }
 }
 
-extension AddBrewViewModel {
-    struct NewBrew {
+extension SaveBrewViewModel {
+    struct BrewDraft {
+        var id: String? = nil
+        var date: Date = Date()
         var coffee: Coffee? = nil
         var grindSize: String = ""
         var dose: String = ""
@@ -78,6 +90,23 @@ extension AddBrewViewModel {
             Double(yield) != nil &&
             Double(brewTime) != nil
         }
+        
+        // for new brews
+        init() {}
+        
+        init(from brew: Brew) {
+            self.id = brew.id
+            self.date = brew.date
+            self.coffee = brew.coffee
+            self.grindSize = String(brew.grindSize)
+            self.dose = String(brew.dose)
+            self.yield = String(brew.yield)
+            self.brewTime = String(brew.brewTime)
+            self.method = brew.method
+            self.brewTemp = brew.brewTemp.map { String($0) } ?? ""
+            self.rating = brew.rating.map { String($0) } ?? ""
+            self.notes = brew.notes ?? ""
+        }
 
         func convertToBrew() -> Brew? {
             guard
@@ -89,7 +118,8 @@ extension AddBrewViewModel {
             else { return nil }
 
             return Brew(
-                date: Date(),
+                id: id ?? UUID().uuidString,
+                date: date,
                 coffee: coffee,
                 grindSize: grindSize,
                 dose: dose,

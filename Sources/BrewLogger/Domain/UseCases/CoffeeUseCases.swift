@@ -19,6 +19,18 @@ public struct LogCoffeeUseCase {
     }
 }
 
+public struct FetchCoffeeUseCase {
+    private let repository: CoffeeRepository
+    
+    public init(repository: CoffeeRepository) {
+        self.repository = repository
+    }
+    
+    public func execute(coffeeId: String) throws -> Coffee? {
+        try repository.fetch(coffeeId: coffeeId)
+    }
+}
+
 public struct FetchAllCoffeesUseCase {
     private let repository: CoffeeRepository
 

@@ -9,6 +9,7 @@ import Foundation
 
 public protocol CoffeeRepository {
     func log(_ coffee: Coffee) throws
+    func fetch(coffeeId: String) throws -> Coffee?
     func fetchAll() throws -> [Coffee]
     func delete(id: String) throws
     func update(_ brew: Coffee) throws

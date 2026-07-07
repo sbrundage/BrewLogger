@@ -9,6 +9,7 @@ import Foundation
 
 public extension Brew {
     static let preview = Brew(
+        id: UUID().uuidString,
         date: Date(),
         coffee: Coffee.preview,
         grindSize: 0.6,
@@ -27,6 +28,7 @@ public extension Brew {
      */
     static let previewList: [Brew] = [
         Brew(
+            id: UUID().uuidString,
             date: Date(),
             coffee: Coffee.previewList[0],
             grindSize: 0.6,
@@ -39,6 +41,7 @@ public extension Brew {
             notes: "Clean and sweet, nice clarity"
         ),
         Brew(
+            id: UUID().uuidString,
             date: Date().addingTimeInterval(-86400),
             coffee: Coffee.previewList[0],
             grindSize: 0.6,
@@ -51,6 +54,7 @@ public extension Brew {
             notes: "Slightly over-extracted, bitter finish"
         ),
         Brew(
+            id: UUID().uuidString,
             date: Date().addingTimeInterval(-86400 * 2),
             coffee: Coffee.previewList[1],
             grindSize: 0.6,
@@ -63,6 +67,7 @@ public extension Brew {
             notes: "Best shot yet"
         ),
         Brew(
+            id: UUID().uuidString,
             date: Date().addingTimeInterval(-86400 * 3),
             coffee: Coffee.previewList[1],
             grindSize: 0.6,
@@ -75,6 +80,7 @@ public extension Brew {
             notes: nil
         ),
         Brew(
+            id: UUID().uuidString,
             date: Date().addingTimeInterval(-86400 * 5),
             coffee: Coffee.previewList[2],
             grindSize: 0.6,

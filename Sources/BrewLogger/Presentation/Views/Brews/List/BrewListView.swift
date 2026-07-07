@@ -76,13 +76,14 @@ struct BrewListView: View {
             viewModel.fetchAllBrews()
         }) {
             NavigationStack {
-                AddBrewView()
+                SaveBrewView()
                     .toolbar {
                         Button {
                             viewModel.showAddBrewSheet = false
                         } label: { Image(systemName: "xmark") }
                     }
             }
+            .environment(connectionManager)
         }
     }
     

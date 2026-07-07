@@ -1,5 +1,5 @@
 //
-//  AddCoffeeView.swift
+//  SaveCoffeeView.swift
 //  BrewLogger
 //
 //  Created by Stephen Brundage on 5/1/26.
@@ -8,10 +8,10 @@
 import SwiftUI
 import BrewLoggerDomain
 
-struct AddCoffeeView: View {
+struct SaveCoffeeView: View {
     @Environment(\.dismiss) private var dismiss
 
-    @State private var viewModel = AddCoffeeViewModel()
+    @State private var viewModel: SaveCoffeeViewModel
     @State private var showRoastLevelPicker = false
     @State private var showRoastDatePicker = false
     @State private var showProcessPicker = false
@@ -20,7 +20,8 @@ struct AddCoffeeView: View {
 
     @FocusState private var focus: Field?
     
-    init(onSuccessfulSave: ((Coffee) -> ())? = nil) {
+    init(coffeeToEdit: Coffee? = nil, onSuccessfulSave: ((Coffee) -> ())? = nil) {
+        self.viewModel = SaveCoffeeViewModel(coffeeToEdit: coffeeToEdit)
         self.onSuccessfulSave = onSuccessfulSave
     }
 
@@ -43,8 +44,9 @@ struct AddCoffeeView: View {
             .frame(maxWidth: .infinity)
             .disabled(!viewModel.canSave)
         }
-        .navigationTitle("New Coffee")
+        .navigationTitle(viewModel.isEditing ? "Edit Coffee" : "New Coffee")
         .toolbar {
+
             ToolbarItem(placement: .keyboard) {
                 HStack {
                     Button { focus = focus?.previous } label: {
@@ -67,42 +69,42 @@ struct AddCoffeeView: View {
 
     private var requiredSection: some View {
         Section("Required") {
-            TextField("Coffee Name", text: $viewModel.newCoffee.name)
+            TextField("Coffee Name", text: $viewModel.coffee.name)
                 .focused($focus, equals: .name)
         }
     }
 
     private var optionalSection: some View {
         Section("Optional") {
-            TextField("Roaster", text: $viewModel.newCoffee.roaster)
+            TextField("Roaster", text: $viewModel.coffee.roaster)
                 .focused($focus, equals: .roaster)
 
             // Roast Level
             ExpandablePickerRow(
-                title: viewModel.newCoffee.roastLevel?.title ?? "Roast Level",
-                isSelected: viewModel.newCoffee.roastLevel != nil,
+                title: viewModel.coffee.roastLevel?.title ?? "Roast Level",
+                isSelected: viewModel.coffee.roastLevel != nil,
                 isExpanded: $showRoastLevelPicker
             ) {
                 ItemPickerView(
                     items: RoastLevel.allCases,
-                    selectedItem: viewModel.newCoffee.roastLevel
+                    selectedItem: viewModel.coffee.roastLevel
                 ) { level in
                     withAnimation(.spring(duration: 0.2)) { showRoastLevelPicker = false }
-                    viewModel.newCoffee.roastLevel = level
+                    viewModel.coffee.roastLevel = level
                 }
             }
 
             // Roast Date
             ExpandablePickerRow(
-                title: viewModel.newCoffee.roastDate?.shortFormatted ?? "Roast Date",
-                isSelected: viewModel.newCoffee.roastDate != nil,
+                title: viewModel.coffee.roastDate?.shortFormatted ?? "Roast Date",
+                isSelected: viewModel.coffee.roastDate != nil,
                 isExpanded: $showRoastDatePicker
             ) {
                 DatePicker(
                     "",
                     selection: Binding(
-                        get: { viewModel.newCoffee.roastDate ?? Date() },
-                        set: { viewModel.newCoffee.roastDate = $0 }
+                        get: { viewModel.coffee.roastDate ?? Date() },
+                        set: { viewModel.coffee.roastDate = $0 }
                     ),
                     displayedComponents: .date
                 )
@@ -111,7 +113,7 @@ struct AddCoffeeView: View {
                 .tint(BrandColors.accent)
 
                 Button {
-                    viewModel.newCoffee.roastDate = nil
+                    viewModel.coffee.roastDate = nil
                     // TODO: This doesn't animate closed
 //                    withAnimation(.spring(duration: 0.2)) { showRoastDatePicker = false }
                 } label: {
@@ -124,29 +126,29 @@ struct AddCoffeeView: View {
                 .listRowSeparator(.hidden)
             }
 
-            TextField("Origin", text: $viewModel.newCoffee.originLocation)
+            TextField("Origin", text: $viewModel.coffee.originLocation)
                 .focused($focus, equals: .origin)
 
-            TextField("Altitude (masl)", text: $viewModel.newCoffee.originAltitude)
+            TextField("Altitude (masl)", text: $viewModel.coffee.originAltitude)
                 .keyboardType(.numberPad)
                 .focused($focus, equals: .altitude)
 
             // Roast Process
             ExpandablePickerRow(
-                title: viewModel.newCoffee.process?.title ?? "Process",
-                isSelected: viewModel.newCoffee.process != nil,
+                title: viewModel.coffee.process?.title ?? "Process",
+                isSelected: viewModel.coffee.process != nil,
                 isExpanded: $showProcessPicker
             ) {
                 ItemPickerView(
                     items: ProcessMethod.allCases,
-                    selectedItem: viewModel.newCoffee.process
+                    selectedItem: viewModel.coffee.process
                 ) { process in
                     withAnimation(.spring(duration: 0.2)) { showProcessPicker = false }
-                    viewModel.newCoffee.process = process
+                    viewModel.coffee.process = process
                 }
             }
 
-            TextField("Variety", text: $viewModel.newCoffee.variety)
+            TextField("Variety", text: $viewModel.coffee.variety)
                 .focused($focus, equals: .variety)
         }
     }
@@ -178,6 +180,6 @@ struct AddCoffeeView: View {
 
 #Preview {
     NavigationStack {
-        AddCoffeeView()
+        SaveCoffeeView()
     }
 }

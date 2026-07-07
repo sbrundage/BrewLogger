@@ -32,6 +32,10 @@ public final class CoreDataBrewRepository: BrewRepository {
         }
     }
     
+    public func fetch(for brewId: String) throws -> Brew? {
+        try store.fetchOne(id: brewId)?.toDomain()
+    }
+    
     /// Fetches all Brews for a particular coffee ID if present, otherwise returns all persisted Brews
     /// - Parameter coffeeId: Optional ID for a Coffee model
     /// - Returns: An array of Brew objects
@@ -52,8 +56,10 @@ public final class CoreDataBrewRepository: BrewRepository {
     /// Updates a particular Brew in CoreData
     /// - Parameter brew: Updated Brew model to be persisted
     public func update(_ brew: Brew) throws {
+        let coffeeModel = try coffeeStore.fetchOne(id: brew.coffee.id)
         try store.update(id: brew.id) {
             $0.update(from: brew)
+            $0.coffee = coffeeModel
         }
     }
 }
