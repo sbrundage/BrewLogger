@@ -40,15 +40,18 @@ class BrewListViewModel {
     var showAddBrewSheet: Bool = false
     
     init(
-        repository: BrewRepository = RepositoryFactory.dev.brew
+        repository: BrewRepository = RepositoryFactory.dev.brew,
+        sortOption: BrewSortOption = .newest
     ) {
         self.fetchBrews = FetchAllBrewsUseCase(repository: repository)
         self.deleteBrew = DeleteBrewUseCase(repository: repository)
+        self.selectedSortOption = sortOption
     }
-    
+
     func fetchAllBrews() {
         do {
             self.brews = try fetchBrews.execute(coffeeId: nil)
+            sortBrews()
         } catch {
             // TODO: Handle error
             print("Failed to fetch brews: \(error)")

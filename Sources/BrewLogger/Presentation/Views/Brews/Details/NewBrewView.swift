@@ -12,7 +12,7 @@ struct NewBrewView: View {
     let brew: Brew
     
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .top) {
                 Text(brew.coffee.name)
                     .font(.system(size: 18))
@@ -51,7 +51,7 @@ struct NewBrewView2: View {
                 }
             } //: VStack
             
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text(brew.coffee.name)
                         .font(.system(size: 18))
