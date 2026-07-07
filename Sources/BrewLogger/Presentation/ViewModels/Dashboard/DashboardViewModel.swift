@@ -16,9 +16,6 @@ extension DashboardView {
         private var brews: [Brew] = []
         private var coffees: [Coffee] = []
 
-        var showAddBrewSheet = false
-        var showAddCoffeeSheet = false
-
         var recentBrews: [Brew] { brews.sorted { $0.date > $1.date } }
         var highestRatedBrews: [Brew] { brews.sorted { ($0.rating ?? 0) > ($1.rating ?? 0) } }
         var mostBrewedCoffees: [Coffee] {

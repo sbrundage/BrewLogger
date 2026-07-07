@@ -6,6 +6,11 @@
 import SwiftUI
 import BrewLoggerDomain
 
+private enum AddRoute: Hashable {
+    case brew
+    case coffee
+}
+
 public struct DashboardView: View {
     @State private var viewModel = ViewModel()
     @State private var searchText = ""
@@ -25,15 +30,11 @@ public struct DashboardView: View {
                     ToolbarSpacer(.flexible, placement: .bottomBar)
                     ToolbarItem(placement: .bottomBar) {
                         Menu {
-                            Button {
-                                viewModel.showAddCoffeeSheet = true
-                            } label: {
+                            Button { path.append(AddRoute.coffee) } label: {
                                 Label("New Coffee", systemImage: "bag")
                             }
                             
-                            Button {
-                                viewModel.showAddBrewSheet = true
-                            } label: {
+                            Button { path.append(AddRoute.brew) } label: {
                                 Label("New Brew", systemImage: "cup.and.heat.waves")
                             }
                         } label: {
@@ -42,23 +43,14 @@ public struct DashboardView: View {
                         .tint(BrandColors.accent)
                     }
                 }
-                .sheet(isPresented: $viewModel.showAddBrewSheet, onDismiss: { viewModel.fetchAll() }) {
-                    NavigationStack {
-                        SaveBrewView()
-                            .toolbar {
-                                Button { viewModel.showAddBrewSheet = false } label: { Image(systemName: "xmark") }
-                            }
+                .navigationDestination(for: AddRoute.self, destination: { route in
+                    switch route {
+                    case .brew:
+                        SaveBrewView(onSuccessfulSave: { viewModel.fetchAll() })
+                    case .coffee:
+                        SaveCoffeeView(onSuccessfulSave: { _ in viewModel.fetchAll() })
                     }
-                    .environment(connectionManager) // SaveBrewView requires @Environment(BleScaleConnectionManager.self); sheets present in a new context
-                }
-                .sheet(isPresented: $viewModel.showAddCoffeeSheet, onDismiss: { viewModel.fetchAll() }) {
-                    NavigationStack {
-                        SaveCoffeeView()
-                            .toolbar {
-                                Button { viewModel.showAddCoffeeSheet = false } label: { Image(systemName: "xmark") }
-                            }
-                    }
-                }
+                })
         }
         .environment(connectionManager)
     }

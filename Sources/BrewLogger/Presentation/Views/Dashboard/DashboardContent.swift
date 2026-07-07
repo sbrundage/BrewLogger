@@ -37,8 +37,6 @@ struct DashboardContent: View {
                 home
             }
         }
-        // Type-based destination so it composes with CoffeeListView's own
-        // `navigationDestination(for: Coffee.self)` on the same stack.
         .navigationDestination(for: SeeAllRoute.self) { route in
             switch route {
             case .recentBrews:
