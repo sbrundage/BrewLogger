@@ -10,7 +10,6 @@ import SwiftUI
 /// Destinations for the dashboard "See All" buttons.
 private enum SeeAllRoute: Hashable {
     case recentBrews  // → BrewListView, newest first (default)
-    case topBrews     // → BrewListView, highest rated first
     case mostBrewed   // → CoffeeListView
 }
 
@@ -20,16 +19,16 @@ private enum SeeAllRoute: Hashable {
 /// this lives in a child view of `DashboardView`.
 struct DashboardContent: View {
     @Environment(\.isSearching) private var isSearching
-
+    
     @Binding private var path: NavigationPath
-
+    
     private let viewModel: DashboardView.ViewModel
-
+    
     public init(viewModel: DashboardView.ViewModel, path: Binding<NavigationPath>) {
         self.viewModel = viewModel
         self._path = path
     }
-
+    
     var body: some View {
         Group {
             if isSearching {
@@ -43,17 +42,13 @@ struct DashboardContent: View {
         .navigationDestination(for: SeeAllRoute.self) { route in
             switch route {
             case .recentBrews:
-                // BleScaleConnectionManager is injected on the NavigationStack in
-                // DashboardView, so it's inherited here and by further pushes (details/edit).
                 BrewListView(sortOption: .newest)
-            case .topBrews:
-                BrewListView(sortOption: .highestRated)
             case .mostBrewed:
                 CoffeeListView()
             }
         }
     }
-
+    
     private var home: some View {
         ScrollView {
             VStack(spacing: 18) {
@@ -63,14 +58,7 @@ struct DashboardContent: View {
                     onSeeAllTapped: { path.append(SeeAllRoute.recentBrews) }) { brew in
                         NewBrewView(brew: brew)
                     }
-
-                SeeSomeView(
-                    items: viewModel.highestRatedBrews,
-                    title: "Top Brews",
-                    onSeeAllTapped: { path.append(SeeAllRoute.topBrews) }) { brew in
-                        NewBrewView(brew: brew)
-                    }
-
+                
                 SeeSomeView(
                     items: viewModel.mostBrewedCoffees,
                     title: "Most Brewed",

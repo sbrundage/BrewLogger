@@ -10,10 +10,6 @@ public struct DashboardView: View {
     @State private var viewModel = ViewModel()
     @State private var searchText = ""
     @State private var path = NavigationPath()
-    // Shared across every destination pushed onto the stack. SaveBrewView (and other
-    // views) require @Environment(BleScaleConnectionManager.self); pushed destinations
-    // resolve their environment from the stack, not the view that pushed them, so it
-    // must live here rather than on individual destinations.
     @State private var connectionManager = BleScaleConnectionManager()
     
     public init() {}
@@ -30,15 +26,15 @@ public struct DashboardView: View {
                     ToolbarItem(placement: .bottomBar) {
                         Menu {
                             Button {
-                                viewModel.showAddBrewSheet = true
-                            } label: {
-                                Label("New Brew", systemImage: "cup.and.heat.waves")
-                            }
-
-                            Button {
                                 viewModel.showAddCoffeeSheet = true
                             } label: {
                                 Label("New Coffee", systemImage: "bag")
+                            }
+                            
+                            Button {
+                                viewModel.showAddBrewSheet = true
+                            } label: {
+                                Label("New Brew", systemImage: "cup.and.heat.waves")
                             }
                         } label: {
                             Image(systemName: "plus")
@@ -65,9 +61,7 @@ public struct DashboardView: View {
                 }
         }
         .environment(connectionManager)
-        .defersSystemGestures(on: .bottom)
     }
-    
 }
 
 #if DEBUG
