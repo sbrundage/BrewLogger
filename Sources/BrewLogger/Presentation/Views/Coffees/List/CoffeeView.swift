@@ -48,12 +48,12 @@ struct CoffeeView: View {
                 }
             } //: HStack
         } //: VStack
-        .padding()
+//        .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .foregroundStyle(colorScheme == .dark ? BrandColors.forestDark : BrandColors.forestLight)
-        )
+//        .background(
+//            RoundedRectangle(cornerRadius: 12)
+//                .foregroundStyle(colorScheme == .dark ? BrandColors.forestDark : BrandColors.forestLight)
+//        )
         .frame(maxWidth: .infinity)
     }
 }

@@ -70,18 +70,16 @@ struct SaveBrewView: View {
         .navigationTitle(viewModel.isEditing ? "Edit Brew" : "New Brew")
         .onAppear { viewModel.fetchAllCoffees() }
         .toolbar {
-            ToolbarItem(placement: .keyboard) {
-                HStack {
-                    Button { focus = focus?.previous } label: { Image(systemName: "chevron.up") }
-                        .disabled(focus?.previous == nil)
+            ToolbarItemGroup(placement: .keyboard) {
+                Button { focus = focus?.previous } label: { Image(systemName: "chevron.up") }
+                    .disabled(focus?.previous == nil)
 
-                    Button { focus = focus?.next } label: { Image(systemName: "chevron.down") }
-                        .disabled(focus?.next == nil)
+                Button { focus = focus?.next } label: { Image(systemName: "chevron.down") }
+                    .disabled(focus?.next == nil)
 
-                    Spacer()
+                Spacer()
 
-                    Button("Done") { focus = nil }
-                }
+                Button("Done") { focus = nil }
             }
         }
         .navigationDestination(isPresented: $showAddCoffeeView) {

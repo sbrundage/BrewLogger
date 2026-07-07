@@ -11,12 +11,16 @@ import BrewLoggerDomain
 struct BrewListView: View {
     @Environment(BleScaleConnectionManager.self) var connectionManager
 
-    @State private var viewModel = BrewListViewModel()
-    
+    @State private var viewModel: BrewListViewModel
+
     // Popovers
     @State private var showBlePopover: Bool = false
     @State private var showSortPopover: Bool = false
-    
+
+    init(sortOption: BrewSortOption = .newest) {
+        _viewModel = State(initialValue: BrewListViewModel(sortOption: sortOption))
+    }
+
     var body: some View {
         VStack {
             if viewModel.filteredBrews.isEmpty {
@@ -27,7 +31,7 @@ struct BrewListView: View {
         } //: VStack
         .onAppear { viewModel.fetchAllBrews() }
         .searchable(text: $viewModel.searchText)
-        .navigationTitle("Brew History")
+        .navigationTitle("Brews")
         .frame(maxHeight: .infinity, alignment: .top)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {

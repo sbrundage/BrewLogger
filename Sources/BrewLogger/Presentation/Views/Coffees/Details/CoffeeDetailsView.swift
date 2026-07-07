@@ -31,10 +31,14 @@ struct CoffeeDetailsView: View {
                             .padding(.bottom)
                     }
                     
-                    RecentBrewsView(brews: viewModel.brews, onSeeAllTapped: {
-                        showAllBrews = true
-                    })
-                    .padding(.bottom)
+                    SeeSomeView(
+                        items: viewModel.brews,
+                        title: "Recent Brews", onSeeAllTapped: {
+                            showAllBrews = true
+                        }) { brew in
+                            BrewRow(brew: brew)
+                        }
+                        .padding(.bottom)
                 }
                 
                 #if canImport(FoundationModels)
