@@ -53,7 +53,7 @@ struct CoffeeModelMappingTests {
     }
 
     @Test("update(from:) sets id, name, and roaster from domain model")
-    func testUpdateFrom_withCoffeeModel_setsAllFieldsCorrectly() {
+    func testUpdateFrom_withCoffeeModel_shouldSetAllFields() {
         // Arrange
         let coffee = Coffee(id: "abc", name: "El Puente",
             originInfo: nil,

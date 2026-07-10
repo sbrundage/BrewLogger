@@ -31,6 +31,7 @@ extension BrewTimerTextField {
             timerTask = Task {
                 while !Task.isCancelled {
                     try? await Task.sleep(for: .milliseconds(100))
+                    guard !Task.isCancelled else { break }
                     self.time = Date().timeIntervalSince(self.startDate)
                     self.brewTimeString = String(format: "%.1f", self.time)
                 }

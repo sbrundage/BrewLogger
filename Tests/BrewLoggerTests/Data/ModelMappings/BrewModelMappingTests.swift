@@ -71,7 +71,7 @@ struct BrewModelMappingTests {
     }
 
     @Test("toDomain maps rating as nil when not set")
-    func testToDomain_whenRatingNotSet_returnsNilRating() {
+    func testToDomain_whenRatingNotSet_shouldReturnNilRating() {
         let sut = BrewModel(context: context)
         sut.id = UUID().uuidString
         sut.date = Date()
@@ -80,7 +80,7 @@ struct BrewModelMappingTests {
     }
 
     @Test("update(from:) sets all fields from domain model")
-    func testUpdateFrom_withAllFields_allFieldsAreSet() {
+    func testUpdateFrom_withAllFields_shouldSetAllFields() {
         // Arrange
         let coffee = Coffee(id: "coffee-1", name: "Test Coffee", originInfo: nil, roastInfo: nil, process: nil)
         let brew = Brew(id: "brew-1", date: Date(), coffee: coffee, grindSize: 0.5, dose: 17, yield: 34, brewTime: 28, method: .espresso, brewTemp: 195, rating: 5, notes: "Great")

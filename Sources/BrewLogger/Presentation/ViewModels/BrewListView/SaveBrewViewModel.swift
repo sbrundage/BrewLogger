@@ -14,8 +14,11 @@ final class SaveBrewViewModel {
     private let fetchCoffees: FetchAllCoffeesUseCase
     private let logNewBrew: LogBrewUseCase
     private let updateBrew: UpdateBrewUseCase
+    private let fetchAllBrews: FetchAllBrewsUseCase
     
     private var coffees: [Coffee] = []
+    
+    private(set) var lastBrew: Brew? = nil
     
     var brew = BrewDraft()
     var coffeeSearch = ""
@@ -39,6 +42,7 @@ final class SaveBrewViewModel {
         self.fetchCoffees = FetchAllCoffeesUseCase(repository: coffeeRepository)
         self.logNewBrew = LogBrewUseCase(repository: brewRepository)
         self.updateBrew = UpdateBrewUseCase(repository: brewRepository)
+        self.fetchAllBrews = FetchAllBrewsUseCase(repository: brewRepository)
         
         if let brewToEdit {
             self.brew = BrewDraft(from: brewToEdit)
@@ -66,7 +70,39 @@ final class SaveBrewViewModel {
             try updateBrew.execute(updatedBrew: brew) :
             try logNewBrew.execute(newBrew: brew)
     }
+    
+    func autofillFromLastBrew() {
+        guard
+            !isEditing,
+            let coffee = brew.coffee,
+            let method = brew.method,
+            brew.grindSize.isEmpty, // Only autofill when input fields are empty
+            brew.dose.isEmpty
+        else {
+            // TODO: Log
+            return
+        }
+        
+        do {
+            lastBrew = try fetchAllBrews.execute(coffeeId: coffee.id)
+                .first { $0.method == method }
+
+            guard let lastBrew else {
+                // TODO: Log - Didn't have first element
+                return
+            }
+            
+            // Autofill
+            brew.grindSize = String(lastBrew.grindSize)
+            brew.dose = String(lastBrew.dose)
+        } catch {
+            // TODO: Handle error
+            print("[SaveBrewViewModel] - Autofill failed: \(error)")
+        }
+    }
 }
+
+// MARK: Brew Draft Model
 
 extension SaveBrewViewModel {
     struct BrewDraft {

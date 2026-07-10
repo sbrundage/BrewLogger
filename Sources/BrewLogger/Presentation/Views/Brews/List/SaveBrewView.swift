@@ -103,9 +103,12 @@ struct SaveBrewView: View {
                     selectedCoffee: viewModel.brew.coffee,
                     addNewCoffee: { showAddCoffeeView = true },
                     onCoffeeOptionTap: { coffee in
-                        viewModel.brew.coffee = coffee
-                        viewModel.coffeeSearch = ""
-                        withAnimation(.spring(duration: 0.2)) { showCoffeePicker = false }
+                        withAnimation(.spring(duration: 0.2)) {
+                            viewModel.brew.coffee = coffee
+                            viewModel.autofillFromLastBrew()
+                            viewModel.coffeeSearch = ""
+                            showCoffeePicker = false
+                        }
                     }
                 )
             }
@@ -120,8 +123,11 @@ struct SaveBrewView: View {
                     items: BrewMethod.allMethods,
                     selectedItem: viewModel.brew.method
                 ) { method in
-                    viewModel.brew.method = method
-                    withAnimation(.spring(duration: 0.2)) { showMethodPicker = false }
+                    withAnimation(.spring(duration: 0.2)) {
+                        viewModel.brew.method = method
+                        viewModel.autofillFromLastBrew()
+                        showMethodPicker = false
+                    }
                 }
             }
             
