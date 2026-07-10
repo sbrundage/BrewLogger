@@ -136,12 +136,14 @@ struct SaveBrewView: View {
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .grindSize)
-            
+                .modifier(AutofillHighlight(active: viewModel.justAutofilled))
+
             // Dose
             TextField("Dose (g)", text: $viewModel.brew.dose)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .dose)
+                .modifier(AutofillHighlight(active: viewModel.justAutofilled))
             
             // Brew Time
             BrewTimerTextField(

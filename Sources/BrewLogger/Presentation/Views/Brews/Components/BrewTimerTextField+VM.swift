@@ -11,12 +11,13 @@ extension BrewTimerTextField {
     @Observable
     @MainActor
     final class ViewModel {
+        private var timerTask: Task<Void, Never>?
+        private var startDate: Date = .now
+
         private(set) var isRunning: Bool = false
         private(set) var time: Double = 0.0
         private(set) var brewTimeString: String = ""
-
-        private var timerTask: Task<Void, Never>?
-        private var startDate: Date = .now
+        private(set) var showResetButton = false
 
         func formatted(_ seconds: Double) -> String {
             let m = Int(seconds) / 60
@@ -26,6 +27,7 @@ extension BrewTimerTextField {
         }
 
         func start() {
+            showResetButton = false
             startDate = Date().addingTimeInterval(-time)
             isRunning = true
             timerTask = Task {
@@ -45,12 +47,14 @@ extension BrewTimerTextField {
             isRunning = false
             time = Date().timeIntervalSince(startDate)
             brewTimeString = String(format: "%.1f", time)
+            showResetButton = true
         }
 
         func reset() {
             pause()
             time = 0
             brewTimeString = ""
+            showResetButton = false
         }
     }
 }

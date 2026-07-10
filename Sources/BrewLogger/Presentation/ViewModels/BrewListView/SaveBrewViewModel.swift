@@ -19,6 +19,7 @@ final class SaveBrewViewModel {
     private var coffees: [Coffee] = []
     
     private(set) var lastBrew: Brew? = nil
+    private(set) var justAutofilled = false
     
     var brew = BrewDraft()
     var coffeeSearch = ""
@@ -95,6 +96,7 @@ final class SaveBrewViewModel {
             // Autofill
             brew.grindSize = String(lastBrew.grindSize)
             brew.dose = String(lastBrew.dose)
+            justAutofilled = true
         } catch {
             // TODO: Handle error
             print("[SaveBrewViewModel] - Autofill failed: \(error)")
