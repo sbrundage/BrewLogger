@@ -12,88 +12,92 @@ import Testing
 @Suite("BrewListViewModel")
 @MainActor
 struct BrewListViewModelTests {
-    
+
     let sut = BrewListViewModel()
-    
+
+    // MARK: - Initialization
+
     @Test("Proper initialization")
-    func whenInitialized_valuesAreCorrect() {
+    func testInit_withNoArguments_shouldHaveDefaultValues() {
         #expect(sut.brews.isEmpty)
         #expect(sut.filteredBrews.isEmpty)
         #expect(sut.noResultsText == "Add a brew to get started")
     }
-    
-    @Test("Brews updated after fetch.")
-    func whenBrewsFetched_stateIsUpdated() {
+
+    // MARK: - Fetch
+
+    @Test("Fetching brews updates state")
+    func testFetchAllBrews_whenBrewsExist_shouldUpdateBrews() {
         // Act
         sut.fetchAllBrews()
-        
+
         // Assert
         #expect(!sut.brews.isEmpty)
     }
 
     // MARK: - Sorting
 
-    @Test("Updating sort to rating descending reorders brew list.")
-    func whenUpdatingSortOptionToHighestRated_sortsByRatingDescending() throws {
+    @Test("Updating sort to highest rated reorders brews by rating descending")
+    func testUpdateSortOption_toHighestRated_shouldSortByRatingDescending() {
         // Arrange
         sut.fetchAllBrews()
-        
+
+        // Act
+        sut.updateSelectedSortOption(.highestRated)
+
         // Assert
-        sortBrewsByHighestRated()
+        expectSortedByHighestRated()
     }
 
-    @Test("Updating sort from highest rated to newest sorts reorders to date descending.")
-    func whenUpdatingSortOptionFromHighestRatedToNewest_sortsByDateDescending() {
+    @Test("Updating sort from highest rated to newest reorders brews by date descending")
+    func testUpdateSortOption_fromHighestRatedToNewest_shouldSortByDateDescending() {
         // Arrange
         sut.fetchAllBrews()
-        
+        sut.updateSelectedSortOption(.highestRated)
+        expectSortedByHighestRated()
+
         // Act
-        // Confirms sorted by highest rated first
-        sortBrewsByHighestRated()
-        
-        // Sort again by newest
         sut.updateSelectedSortOption(.newest)
-        
+
         // Assert
         let ratings = sut.filteredBrews.map { $0.rating ?? 0 }
-        
         #expect(ratings != ratings.sorted(by: >), "Ratings should no longer be in descending order.")
-        
+
         let dates = sut.filteredBrews.map { $0.date }
         #expect(dates == dates.sorted(by: >), "Dates should be in descending order.")
     }
 
     // MARK: - Searching
 
-    @Test("Empty search query returns all brews.")
-    func whenSearchQueryEmpty_returnsAllBrews() {
+    @Test("Empty search query returns all brews")
+    func testSearch_whenQueryEmpty_shouldReturnAllBrews() {
         // Arrange
         sut.fetchAllBrews()
-        
+
         // Assert
         #expect(sut.filteredBrews.count == sut.brews.count, "Both arrays should be the same length.")
     }
 
     @Test("Search query filters brews by coffee name")
-    func whenSearchQueryUpdated_filtersByCoffeeName() {
+    func testSearch_whenQueryMatchesCoffeeName_shouldFilterBrews() {
         // Arrange
         sut.fetchAllBrews()
-        
+
         // Act
         sut.searchText = "Rodrigo"
-        
+
         // Assert
         #expect(sut.filteredBrews.count == 2, "Should be two matches for search text.")
     }
-    
-    @Test("No results flag set when no results for search text")
-    func whenSearchQueryNotPresent_noResultsShown() {
+
+    @Test("No results flag set when search has no matches")
+    func testSearch_whenNoMatches_shouldShowNoResults() {
         // Arrange
         sut.fetchAllBrews()
-        
+
         // Act
         sut.searchText = "randomtext"
-        
+
         // Assert
         #expect(sut.filteredBrews.count == 0, "Should be no matches for search text.")
         #expect(sut.noResultsText == "No matching results")
@@ -101,11 +105,8 @@ struct BrewListViewModelTests {
 }
 
 private extension BrewListViewModelTests {
-    func sortBrewsByHighestRated() {
-        sut.updateSelectedSortOption(.highestRated)
-                
+    func expectSortedByHighestRated() {
         let ratings = sut.filteredBrews.map { $0.rating ?? 0 }
-        
         #expect(ratings == ratings.sorted(by: >), "Ratings should be in descending order.")
     }
 }

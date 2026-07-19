@@ -10,7 +10,7 @@ import SwiftUI
 struct BrewTimerTextField: View {
     @State private var viewModel = ViewModel()
 
-    private let buttonSize: CGFloat = 28
+    private let buttonSize: CGFloat = 32
 
     let placeholder: String
     let focus: FocusState<SaveBrewView.Field?>.Binding
@@ -34,6 +34,22 @@ struct BrewTimerTextField: View {
                 .disabled(viewModel.isRunning)
 
             Spacer()
+            
+            // Reset Timer
+            if viewModel.showResetButton {
+                Button {
+                    viewModel.reset()
+                } label: {
+                    Image(systemName: "arrow.counterclockwise")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: buttonSize, height: buttonSize)
+                        .tint(BrandColors.accent)
+                }
+                .buttonStyle(.borderless)
+                .padding(.trailing, 24)
+                .animation(.easeInOut, value: viewModel.showResetButton)
+            }
 
             // Start / Pause
             Button {
@@ -47,18 +63,6 @@ struct BrewTimerTextField: View {
             }
             .buttonStyle(.borderless)
             .padding(.trailing)
-
-            // Reset Timer
-            Button {
-                viewModel.reset()
-            } label: {
-                Image(systemName: "arrow.counterclockwise")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: buttonSize, height: buttonSize)
-                    .tint(BrandColors.accent)
-            }
-            .buttonStyle(.borderless)
         } //: HStack
         .onChange(of: viewModel.brewTimeString) { _, newValue in
             brewTime = newValue
@@ -72,5 +76,10 @@ struct BrewTimerTextField: View {
 #Preview {
     @Previewable @State var brewTime = ""
     @Previewable @FocusState var focus: SaveBrewView.Field?
-    BrewTimerTextField(placeholder: "Brew Time(s)", focus: $focus, focusField: .brewTime, brewTime: $brewTime)
+    BrewTimerTextField(
+        placeholder: "Brew Time",
+        focus: $focus,
+        focusField: .brewTime,
+        brewTime: $brewTime
+    )
 }
