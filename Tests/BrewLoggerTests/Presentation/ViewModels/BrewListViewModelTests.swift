@@ -35,6 +35,22 @@ struct BrewListViewModelTests {
         #expect(!sut.brews.isEmpty)
     }
 
+    // MARK: - Sections
+
+    @Test("Sections group brews by day, newest first")
+    func testSections_withFetchedBrews_shouldGroupByDayNewestFirst() {
+        // Arrange
+        sut.fetchAllBrews()
+
+        // Act
+        let sections = sut.sections
+
+        // Assert
+        #expect(sections.count == 5, "Stub brews land on five distinct days.")
+        #expect(sections.map(\.periodStart) == sections.map(\.periodStart).sorted(by: >))
+        #expect(sections.flatMap(\.brews).count == sut.filteredBrews.count)
+    }
+
     // MARK: - Sorting
 
     @Test("Updating sort to highest rated reorders brews by rating descending")

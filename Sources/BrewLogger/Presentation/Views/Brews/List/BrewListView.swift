@@ -93,36 +93,70 @@ struct BrewListView: View {
     
     private var listView: some View {
         List {
-            ForEach(viewModel.filteredBrews) { brew in
-                NavigationLink {
-                    BrewDetailsView(brew: brew)
-                } label: {
-                    BrewView(brew: brew)
-                        .listRowBackground(Color.clear)
-                        .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
-                        .listRowSeparator(.hidden)
-                        .swipeActions(edge: .trailing) {
-                            Button(role: .destructive) {
-                                viewModel.delete(brew)
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
+            if viewModel.selectedSortOption == .newest {
+                ForEach(viewModel.sections) { section in
+                    Section {
+                        ForEach(section.brews) { brew in
+                            row(for: brew)
                         }
-                }
-                .navigationLinkIndicatorVisibility(.hidden)
-                .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
-                .listRowSeparator(.hidden)
-                .swipeActions(edge: .trailing) {
-                    Button(role: .destructive) {
-                        // TODO: delete brew
-//                        viewModel.delete(brew)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
+                    } header: {
+                        sectionHeader(for: section)
                     }
+                }
+            } else {
+                ForEach(viewModel.filteredBrews) { brew in
+                    row(for: brew)
                 }
             }
         }
         .listStyle(.plain)
+    }
+
+    private func row(for brew: Brew) -> some View {
+        NavigationLink {
+            BrewDetailsView(brew: brew)
+        } label: {
+            NewBrewView(brew: brew)
+                .listCardBackground()
+                .listRowBackground(Color.clear)
+                .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
+                .listRowSeparator(.hidden)
+                .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) {
+                        viewModel.delete(brew)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+        }
+        .navigationLinkIndicatorVisibility(.hidden)
+        .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
+        .listRowSeparator(.hidden)
+    }
+
+    private func sectionHeader(for section: BrewDateGroup) -> some View {
+        HStack {
+            Text(viewModel.sectionTitle(for: section.periodStart))
+                .font(.subheadline)
+                .fontWeight(.semibold)
+
+            Spacer()
+
+            Text("\(section.brews.count) brew\(section.brews.count == 1 ? "" : "s")")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            if let average = section.brews.averageRating {
+                HStack(spacing: 2) {
+                    Text(average.tens)
+                        .font(.caption)
+                    Image(systemName: "star.fill")
+                        .font(.caption2)
+                }
+                .foregroundStyle(.secondary)
+            }
+        } //: HStack
+        .textCase(nil)
     }
     
     private var noBrewsView: some View {

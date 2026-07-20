@@ -36,3 +36,14 @@ extension BrewSortOption: Listable {
         }
     }
 }
+
+extension CoffeeSortOption: Listable {
+    public var title: String {
+        switch self {
+        case .recentlyBrewed: return "Recently Brewed"
+        case .mostBrewed: return "Most Brewed"
+        case .highestRated: return "Highest Rated"
+        case .freshestRoast: return "Freshest Roast"
+        }
+    }
+}

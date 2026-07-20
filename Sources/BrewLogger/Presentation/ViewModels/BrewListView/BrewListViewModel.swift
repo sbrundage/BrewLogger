@@ -31,6 +31,15 @@ class BrewListViewModel {
     }
     
     var filteredBrews: [Brew] { filterBySearchText() }
+
+    // Day-grouped for the list; the view flattens these when sorted by rating.
+    var sections: [BrewDateGroup] { filteredBrews.groupedByDay() }
+
+    func sectionTitle(for periodStart: Date) -> String {
+        if Calendar.current.isDateInToday(periodStart) { return "Today" }
+        if Calendar.current.isDateInYesterday(periodStart) { return "Yesterday" }
+        return periodStart.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())
+    }
     
     var noResultsText: String {
         noSearchResults ? "No matching results" : "Add a brew to get started"

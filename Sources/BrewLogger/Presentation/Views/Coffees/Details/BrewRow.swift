@@ -12,40 +12,39 @@ struct BrewRow: View {
     let brew: Brew
     
     var body: some View {
-        VStack {
+        VStack(alignment: .leading, spacing: 4) {
             HStack {
                 dateView
-                    .font(.headline)
-                    .padding(.top, 2)
-                
-                Spacer()
-                
-                if let rating = brew.rating {
-                    Text("\(rating.tens)")
-                    
-                    Image(systemName: "star.fill")
-                }
-            } //: HStack
-            
-            HStack {
-                BrewRatioDetailsView(brew: brew, baseFontWeight: .medium, emphasizeFont: .headline)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
 
-                Spacer()
-                
                 if let brewImage = brew.method.image {
                     brewImage
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 30, height: 30)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                if let rating = brew.rating {
+                    Text("\(rating.tens)")
+                        .font(.subheadline)
+
+                    Image(systemName: "star.fill")
+                        .font(.caption)
                 }
             } //: HStack
+
+            BrewRatioDetailsView(brew: brew, baseFontWeight: .regular, emphasizeFont: .subheadline)
         } //: VStack
     }
-    
+
     var dateView: some View {
-        (Text(brew.date.monthDay) +
-         Text(" - ") +
-         Text(brew.date, style: .time))
+        HStack(spacing: 0) {
+            Text(brew.date.monthDay)
+            Text(" · ")
+            Text(brew.date, style: .time)
+        }
     }
 }
 

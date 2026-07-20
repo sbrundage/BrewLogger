@@ -54,14 +54,26 @@ struct DashboardContent: View {
                     items: viewModel.recentBrews,
                     title: "Recent Brews",
                     onSeeAllTapped: { path.append(SeeAllRoute.recentBrews) }) { brew in
-                        NewBrewView(brew: brew)
+                        NavigationLink {
+                            BrewDetailsView(brew: brew)
+                        } label: {
+                            NewBrewView(brew: brew, showsDate: true)
+                        }
+                        .buttonStyle(.plain)
+                        .navigationLinkIndicatorVisibility(.hidden)
                     }
-                
+
                 SeeSomeView(
                     items: viewModel.mostBrewedCoffees,
                     title: "Most Brewed",
                     onSeeAllTapped: { path.append(SeeAllRoute.mostBrewed) }) { coffee in
-                        CoffeeView(coffee: coffee)
+                        NavigationLink {
+                            CoffeeDetailsView(coffee: coffee)
+                        } label: {
+                            CoffeeView(coffee: coffee, stats: viewModel.stats(for: coffee) ?? .empty, showsFreshness: false)
+                        }
+                        .buttonStyle(.plain)
+                        .navigationLinkIndicatorVisibility(.hidden)
                     }
             }
             .padding(.horizontal)
