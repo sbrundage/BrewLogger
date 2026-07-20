@@ -110,6 +110,7 @@ struct BrewListView: View {
             }
         }
         .listStyle(.plain)
+        .listSectionSpacing(2)
     }
 
     private func row(for brew: Brew) -> some View {
@@ -118,8 +119,6 @@ struct BrewListView: View {
         } label: {
             NewBrewView(brew: brew)
                 .listCardBackground()
-                .listRowBackground(Color.clear)
-                .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
                 .listRowSeparator(.hidden)
                 .swipeActions(edge: .trailing) {
                     Button(role: .destructive) {
@@ -147,12 +146,12 @@ struct BrewListView: View {
                 .foregroundStyle(.secondary)
 
             if let average = section.brews.averageRating {
-                HStack(spacing: 2) {
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
                     Text(average.tens)
-                        .font(.caption)
                     Image(systemName: "star.fill")
-                        .font(.caption2)
+                        .imageScale(.small)
                 }
+                .font(.caption)
                 .foregroundStyle(.secondary)
             }
         } //: HStack

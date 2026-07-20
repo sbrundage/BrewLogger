@@ -17,19 +17,21 @@ struct NewBrewView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .top) {
                 Text(brew.coffee.name)
-                    .font(.system(size: 18))
-                
+                    .font(.system(size: 18, weight: .semibold))
+
                 if let brewImage = brew.method.image {
                     brewImage
                         .font(.system(size: 18))
                 }
-                
+
                 Spacer()
-                
+
                 if let rating = brew.rating {
                     HStack(spacing: 3) {
                         Text("\(rating.tens)")
+                            .fontWeight(.semibold)
                         Image(systemName: "star.fill")
+                            .font(.caption)
                     }
                 }
             } //: HStack
