@@ -18,6 +18,7 @@ extension BrewTimerTextField {
         private(set) var time: Double = 0.0
         private(set) var brewTimeString: String = ""
         private(set) var showResetButton = false
+        private(set) var stoppedAt: Date?
 
         func formatted(_ seconds: Double) -> String {
             let m = Int(seconds) / 60
@@ -48,6 +49,7 @@ extension BrewTimerTextField {
             time = Date().timeIntervalSince(startDate)
             brewTimeString = String(format: "%.1f", time)
             showResetButton = true
+            stoppedAt = Date()
         }
 
         func reset() {
@@ -55,6 +57,7 @@ extension BrewTimerTextField {
             time = 0
             brewTimeString = ""
             showResetButton = false
+            stoppedAt = nil
         }
     }
 }

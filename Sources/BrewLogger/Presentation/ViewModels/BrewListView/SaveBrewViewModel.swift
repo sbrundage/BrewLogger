@@ -28,9 +28,8 @@ final class SaveBrewViewModel {
     
     var filteredCoffees: [Coffee] {
         coffeeSearch.isEmpty
-        ? coffees
-        : coffees.filter { $0.name.localizedCaseInsensitiveContains(coffeeSearch)
-        }
+            ? coffees
+            : coffees.filter { $0.name.localizedCaseInsensitiveContains(coffeeSearch) }
     }
     
     var isEditing: Bool { brew.id != nil }
@@ -109,7 +108,8 @@ final class SaveBrewViewModel {
 extension SaveBrewViewModel {
     struct BrewDraft {
         var id: String? = nil
-        var date: Date = Date()
+        // nil until the timer stops (or falls back to save time in convertToBrew).
+        var date: Date? = nil
         var coffee: Coffee? = nil
         var grindSize: String = ""
         var dose: String = ""
@@ -157,7 +157,7 @@ extension SaveBrewViewModel {
 
             return Brew(
                 id: id ?? UUID().uuidString,
-                date: date,
+                date: date ?? Date(),
                 coffee: coffee,
                 grindSize: grindSize,
                 dose: dose,

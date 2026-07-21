@@ -55,9 +55,10 @@ struct DashboardContent: View {
                     title: "Recent Brews",
                     onSeeAllTapped: { path.append(SeeAllRoute.recentBrews) }) { brew in
                         NavigationLink {
-                            BrewDetailsView(brew: brew)
+                            BrewDetailsFormView(brew: brew)
                         } label: {
                             NewBrewView(brew: brew, showsDate: true)
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         .navigationLinkIndicatorVisibility(.hidden)
@@ -71,6 +72,7 @@ struct DashboardContent: View {
                             CoffeeDetailsView(coffee: coffee)
                         } label: {
                             CoffeeView(coffee: coffee, stats: viewModel.stats(for: coffee) ?? .empty, showsFreshness: false)
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         .navigationLinkIndicatorVisibility(.hidden)

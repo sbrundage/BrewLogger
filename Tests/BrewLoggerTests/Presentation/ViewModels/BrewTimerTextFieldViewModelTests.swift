@@ -148,4 +148,36 @@ struct BrewTimerTextFieldViewModelTests {
         #expect(sut.time == 0)
         #expect(sut.brewTimeString.isEmpty)
     }
+
+    // MARK: - Stopped at
+
+    @Test("Pause records the stop timestamp")
+    func testPause_whenRunning_shouldRecordStoppedAt() {
+        sut.start()
+
+        sut.pause()
+
+        #expect(sut.stoppedAt != nil)
+    }
+
+    @Test("Pause while not running leaves the stop timestamp nil")
+    func testPause_whenNotRunning_shouldLeaveStoppedAtNil() {
+        sut.pause()
+
+        #expect(sut.stoppedAt == nil)
+    }
+
+    @Test("Reset clears the stop timestamp")
+    func testReset_whenStopped_shouldClearStoppedAt() {
+        // Arrange
+        sut.start()
+        sut.pause()
+        #expect(sut.stoppedAt != nil)
+
+        // Act
+        sut.reset()
+
+        // Assert
+        #expect(sut.stoppedAt == nil)
+    }
 }

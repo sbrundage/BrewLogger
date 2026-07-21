@@ -25,10 +25,20 @@ struct BrewDetailsView: View {
                 if let roastInfo = viewModel.brew.coffee.roastInfo {
                     roastInfoView(roast: roastInfo)
                 }
+                
+                if let notes = viewModel.brew.notes {
+                    VStack(alignment: .leading) {
+                        Text("Notes:")
+                            .fontWeight(.semibold)
+                        Text(notes)
+                    } //: VStack
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
             } //: VStack
             .padding(.horizontal)
         }
         .navigationTitle(viewModel.brew.coffee.name)
+        .scrollIndicators(.hidden)
         .navigationDestination(isPresented: $showEditSheet, destination: {
             SaveBrewView(brewToEdit: viewModel.brew) {
                 viewModel.refetchBrew()
@@ -53,7 +63,7 @@ struct BrewDetailsView: View {
             StatRow(stats: [
                 .init(label: "Grind Size", value: viewModel.brew.grindSize.tens),
                 .init(label: "Time", value: "\(viewModel.brew.brewTime.tens)s"),
-                .init(label: "Yield", value: "\(viewModel.brew.yield.tens)g")
+                .init(label: "Yield", value: "\(viewModel.brew.yield.tens)  g")
             ])
             
             let stats: [StatRow.Stat] = [
@@ -63,12 +73,6 @@ struct BrewDetailsView: View {
             ].compactMap { $0 }
             
             StatRow(stats: stats)
-            
-            if let notes = viewModel.brew.notes {
-                Text("Notes:")
-                    .fontWeight(.semibold)
-                Text(notes)
-            }
         } //: VStack
     }
     

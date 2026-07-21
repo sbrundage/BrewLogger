@@ -150,7 +150,8 @@ struct SaveBrewView: View {
                 placeholder: timeFieldPlaceholder,
                 focus: $focus,
                 focusField: .brewTime,
-                brewTime: $viewModel.brew.brewTime
+                brewTime: $viewModel.brew.brewTime,
+                stoppedAt: $viewModel.brew.date
             )
 
             // Yield
