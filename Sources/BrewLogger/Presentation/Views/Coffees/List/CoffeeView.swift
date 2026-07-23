@@ -9,57 +9,86 @@ import SwiftUI
 import BrewLoggerDomain
 
 struct CoffeeView: View {
-    @Environment(\.colorScheme) private var colorScheme
-    
-    let coffee: Coffee
-    
+    private let viewModel: ViewModel
+
+    init(coffee: Coffee, stats: CoffeeBrewStats? = nil, showsFreshness: Bool = true) {
+        self.viewModel = ViewModel(coffee: coffee, stats: stats, showsFreshness: showsFreshness)
+    }
+
     var body: some View {
-        VStack(alignment: .leading) {
-            HStack {
-                Text(coffee.name)
-                    .font(.headline)
-                
-                Spacer()
-                
-                if let roaster = coffee.roastInfo?.roaster {
-                    Text(roaster)
-                        .font(.subheadline)
-                }
-            } //: HStack
-            
-            HStack(alignment: .top) {
-                VStack(alignment: .leading) {
-                    if let origin = coffee.originInfo {
-                        Text(origin.location)
+        VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack {
+                    Text(viewModel.name)
+                        .font(.headline)
+
+                    Spacer()
+
+                    if let roaster = viewModel.roaster {
+                        Text(roaster)
                             .font(.subheadline)
                     }
-                    
-                    if let altitude = coffee.originInfo?.altitude {
-                        Text("\(altitude) masl")
-                            .font(.caption)
-                    }
-                } //: VStack
-                
-                Spacer()
-                
-                if let roastDate = coffee.roastInfo?.date {
-                    Text(roastDate.shortFormatted)
-                        .font(.caption)
+                } //: HStack
+
+                if let origin = viewModel.origin {
+                    Text(origin)
+                        .font(.subheadline)
                 }
-            } //: HStack
+            } //: VStack
+
+            if viewModel.showsStatsLine {
+                HStack {
+                    if let statsText = viewModel.statsText {
+                        Text(statsText)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    if let freshness = viewModel.freshness {
+                        freshnessChip(freshness)
+                    }
+                } //: HStack
+            }
         } //: VStack
-//        .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-//        .background(
-//            RoundedRectangle(cornerRadius: 12)
-//                .foregroundStyle(colorScheme == .dark ? BrandColors.forestDark : BrandColors.forestLight)
-//        )
-        .frame(maxWidth: .infinity)
+    }
+
+    private func freshnessChip(_ freshness: RoastFreshness) -> some View {
+        Text("\(freshness.daysOffRoast)d off roast")
+            .font(.caption2)
+            .fontWeight(.medium)
+            .foregroundStyle(freshness.color)
+            .padding(.vertical, 3)
+            .padding(.horizontal, 8)
+            .background(
+                Capsule().fill(freshness.color.opacity(0.15))
+            )
+    }
+}
+
+/// Freshness bands for days off roast. Thresholds live here so they're easy to tune.
+struct RoastFreshness {
+    static let freshUpperBound = 21
+    static let goodUpperBound = 45
+
+    let daysOffRoast: Int
+
+    var color: Color {
+        switch daysOffRoast {
+        case ...Self.freshUpperBound: BrandColors.accent
+        case ...Self.goodUpperBound: .secondary
+        default: .orange
+        }
     }
 }
 
 #Preview {
-    CoffeeView(coffee: .preview)
+    CoffeeView(
+        coffee: .preview,
+        stats: CoffeeBrewStats(brewCount: 12, bestRating: 4.5, lastBrewed: Date())
+    )
     let coffee = Coffee(id: UUID().uuidString, name: "Test Coffee", originInfo: nil, roastInfo: nil, process: nil)
     CoffeeView(coffee: coffee)
 }

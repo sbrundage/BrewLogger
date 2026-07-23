@@ -15,12 +15,16 @@ extension DashboardView {
 
         private var brews: [Brew] = []
         private var coffees: [Coffee] = []
+        private var statsByCoffeeId: [String: CoffeeBrewStats] = [:]
 
         var recentBrews: [Brew] { brews.sorted { $0.date > $1.date } }
         var highestRatedBrews: [Brew] { brews.sorted { ($0.rating ?? 0) > ($1.rating ?? 0) } }
         var mostBrewedCoffees: [Coffee] {
-            let counts = Dictionary(grouping: brews, by: \.coffee.id).mapValues(\.count)
-            return coffees.sorted { (counts[$0.id] ?? 0) > (counts[$1.id] ?? 0) }
+            coffees.sorted { (stats(for: $0)?.brewCount ?? 0) > (stats(for: $1)?.brewCount ?? 0) }
+        }
+
+        func stats(for coffee: Coffee) -> CoffeeBrewStats? {
+            statsByCoffeeId[coffee.id]
         }
 
         init(
@@ -35,6 +39,7 @@ extension DashboardView {
             do {
                 brews = try fetchBrews.execute(coffeeId: nil)
                 coffees = try fetchCoffees.execute()
+                statsByCoffeeId = brews.statsByCoffeeId()
             } catch {
                 print("DashboardViewModel fetch failed: \(error)")
             }

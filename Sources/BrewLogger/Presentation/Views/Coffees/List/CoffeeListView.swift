@@ -10,7 +10,9 @@ import BrewLoggerDomain
 
 struct CoffeeListView: View {
     @State private var viewModel = CoffeeListViewModel()
-    
+
+    @State private var showSortPopover: Bool = false
+
     var body: some View {
         VStack {
             if viewModel.displayedCoffees.isEmpty {
@@ -26,18 +28,22 @@ struct CoffeeListView: View {
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Button {
-                    // TODO: Add filtering / sorting
+                    showSortPopover = true
                 } label: {
                     Image(systemName: "line.3.horizontal.decrease")
                 }
-//                .popover(isPresented: $showSortPopover) {
-//                    ItemPickerView(items: BrewSortOption.allCases, selectedItem: selectedSortOption, onItemTap: { option in
-//                        selectedSortOption = option
-//                        showSortPopover = false
-//                    })
-//                    .padding()
-//                    .presentationCompactAdaptation(.popover)
-//                }
+                .popover(isPresented: $showSortPopover) {
+                    ItemPickerView(
+                        items: CoffeeSortOption.allCases,
+                        selectedItem: viewModel.selectedSortOption,
+                        onItemTap: { option in
+                            viewModel.updateSelectedSortOption(option)
+                            showSortPopover = false
+                        }
+                    )
+                    .padding()
+                    .presentationCompactAdaptation(.popover)
+                }
             }
             
             ToolbarItem(placement: .primaryAction) {
@@ -69,7 +75,8 @@ struct CoffeeListView: View {
         List {
             ForEach(viewModel.displayedCoffees) { coffee in
                 NavigationLink(value: coffee.hasDetails ? coffee : nil) {
-                    CoffeeView(coffee: coffee)
+                    CoffeeView(coffee: coffee, stats: viewModel.stats(for: coffee) ?? .empty)
+                        .listCardBackground()
                 }
                 .navigationLinkIndicatorVisibility(.hidden)
                 .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))

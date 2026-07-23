@@ -10,103 +10,59 @@ import BrewLoggerDomain
 
 struct NewBrewView: View {
     let brew: Brew
-    
+    // Contexts without day grouping opt in to the date.
+    var showsDate: Bool = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .top) {
                 Text(brew.coffee.name)
-                    .font(.system(size: 18))
-                
+                    .font(.system(size: 18, weight: .semibold))
+
                 if let brewImage = brew.method.image {
                     brewImage
                         .font(.system(size: 18))
                 }
-                
+
                 Spacer()
-                
+
                 if let rating = brew.rating {
-                    Text("\(rating.tens)")
-                    Image(systemName: "star.fill")
+                    HStack(spacing: 3) {
+                        Text("\(rating.tens)")
+                            .fontWeight(.semibold)
+                        Image(systemName: "star.fill")
+                            .font(.caption)
+                    }
                 }
             } //: HStack
-            
-            BrewRatioDetailsView(
-                brew: brew,
-                baseFontWeight: .medium,
-                emphasizeFont: .headline
-            )
-        } //: VStack
-    }
-}
 
-struct NewBrewView2: View {
-    let brew: Brew
-    
-    var body: some View {
-        HStack(alignment: .top) {
-            VStack {
-                if let brewImage = brew.method.image {
-                    brewImage
-                        .font(.system(size: 18))
-                }
-            } //: VStack
-            
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text(brew.coffee.name)
-                        .font(.system(size: 18))
-                    
-                    Spacer()
-                    
-                    if let rating = brew.rating {
-                        Text("\(rating.tens)")
-                        Image(systemName: "star.fill")
-                    }
-                } //: HStack
-                
+            HStack {
                 BrewRatioDetailsView(
                     brew: brew,
-                    baseFontWeight: .medium,
-                    emphasizeFont: .headline
+                    baseFontWeight: .regular,
+                    emphasizeFont: .subheadline
                 )
-            } //: VStack
-        } //: HStack
-    }
-}
 
-struct NewBrewView3: View {
-    let brew: Brew
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                if let brewImage = brew.method.image {
-                    brewImage
-                        .font(.system(size: 18))
-                }
-                
-                Text(brew.coffee.name)
-                    .font(.system(size: 18))
-                
                 Spacer()
-                
-                if let rating = brew.rating {
-                    Text("\(rating.tens)")
-                    Image(systemName: "star.fill")
-                }
+
+                timestamp
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             } //: HStack
-            
-            BrewRatioDetailsView(
-                brew: brew,
-                baseFontWeight: .medium,
-                emphasizeFont: .headline
-            )
         } //: VStack
+    }
+
+    private var timestamp: some View {
+        HStack(spacing: 0) {
+            if showsDate {
+                Text(brew.date.monthDay)
+                Text(" · ")
+            }
+            Text(brew.date, style: .time)
+        }
     }
 }
 
 #Preview {
     NewBrewView(brew: .preview)
-    NewBrewView2(brew: .preview)
-    NewBrewView3(brew: .preview)
 }
