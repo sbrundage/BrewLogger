@@ -18,7 +18,7 @@ public struct Brew: Identifiable, Equatable, Sendable {
     public let method: BrewMethod
     public let brewTemp: Int?
     public let rating: Double?
-    public let notes: String?
+    public let tastingEntries: [TastingEntry]
 
     public init(
         id: String,
@@ -31,7 +31,7 @@ public struct Brew: Identifiable, Equatable, Sendable {
         method: BrewMethod,
         brewTemp: Int?,
         rating: Double?,
-        notes: String? = nil
+        tastingEntries: [TastingEntry] = []
     ) {
         self.id = id
         self.date = date
@@ -43,6 +43,6 @@ public struct Brew: Identifiable, Equatable, Sendable {
         self.method = method
         self.brewTemp = brewTemp
         self.rating = rating
-        self.notes = notes
+        self.tastingEntries = tastingEntries
     }
 }

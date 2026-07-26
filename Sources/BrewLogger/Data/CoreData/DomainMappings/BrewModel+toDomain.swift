@@ -5,6 +5,7 @@
 //  Created by Stephen Brundage on 3/8/26.
 //
 
+import Foundation
 import CoreData
 import BrewLoggerDomain
 
@@ -19,7 +20,8 @@ extension BrewModel {
         self.method = Int16(brew.method.rawValue)
         self.brewTemp = brew.brewTemp.map { NSDecimalNumber(value: $0) }
         self.rating = brew.rating.map { NSDecimalNumber(value: $0) }
-        self.notes = brew.notes
+        // Legacy `notes` is intentionally left untouched — additive, no data loss.
+        self.tastingEntriesData = try? JSONEncoder().encode(brew.tastingEntries)
     }
 
     func toDomain() -> Brew? {
@@ -35,7 +37,20 @@ extension BrewModel {
             method: BrewMethod(rawValue: Int(method)) ?? .na,
             brewTemp: brewTemp?.intValue,
             rating: rating?.doubleValue,
-            notes: notes
+            tastingEntries: decodedTastingEntries(brewDate: date)
         )
+    }
+
+    private func decodedTastingEntries(brewDate: Date) -> [TastingEntry] {
+        if let tastingEntriesData,
+           let entries = try? JSONDecoder().decode([TastingEntry].self, from: tastingEntriesData),
+           !entries.isEmpty {
+            return entries
+        }
+        // One-time backfill: surface a legacy `notes` string as a single entry.
+        if let notes, !notes.isEmpty {
+            return [TastingEntry(createdAt: brewDate, rating: rating?.doubleValue, note: notes)]
+        }
+        return []
     }
 }

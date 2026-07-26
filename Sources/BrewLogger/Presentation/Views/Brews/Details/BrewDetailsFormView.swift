@@ -13,6 +13,7 @@ struct BrewDetailsFormView: View {
     @State private var viewModel: ViewModel
     @State private var showEditSheet = false
     @State private var showAddNote = false
+    @State private var pendingEntry: TastingEntry?
 
     init(brew: Brew) {
         self.viewModel = ViewModel(brew: brew)
@@ -26,9 +27,15 @@ struct BrewDetailsFormView: View {
                 }
             }
 
+            if viewModel.showsChart {
+                Section("Taste Over Time") {
+                    TasteChartView(points: viewModel.chartPoints)
+                }
+            }
+
             Section {
-                if let notes = viewModel.notes {
-                    Text(notes)
+                ForEach(viewModel.entryRows) { row in
+                    TastingEntryRow(row: row)
                 }
             } header: {
                 HStack {
@@ -58,9 +65,14 @@ struct BrewDetailsFormView: View {
                 Button("Edit") { showEditSheet = true }
             }
         }
-        .sheet(isPresented: $showAddNote) {
-            AddNoteSheet(brewDate: viewModel.brewDate) { note in
-                viewModel.appendNote(note)
+        .sheet(isPresented: $showAddNote, onDismiss: {
+            if let pendingEntry {
+                viewModel.appendEntry(pendingEntry)
+                self.pendingEntry = nil
+            }
+        }) {
+            AddNoteSheet(brewDate: viewModel.brewDate) { entry in
+                pendingEntry = entry
             }
         }
         .sheet(isPresented: $showEditSheet) {
@@ -76,104 +88,6 @@ struct BrewDetailsFormView: View {
             }
             .interactiveDismissDisabled()
         }
-    }
-}
-
-// MARK: - Detail View Model
-
-struct DetailRow: Identifiable {
-    let id = UUID()
-    let label: String
-    let value: String
-}
-
-extension BrewDetailsFormView {
-    @MainActor @Observable
-    final class ViewModel {
-        private let fetchBrew: FetchBrewUseCase
-        private let updateBrew: UpdateBrewUseCase
-
-        private(set) var brew: Brew
-
-        var title: String { brew.coffee.name }
-        var brewDate: Date { brew.date }
-
-        var brewInfoRows: [DetailRow] {
-            var rows = [
-                DetailRow(label: "Grind Size", value: brew.grindSize.tens),
-                DetailRow(label: "Time", value: brew.brewTime.brewTimeFormatted),
-                DetailRow(label: "Yield", value: "\(brew.yield.tens)g"),
-                DetailRow(label: "Method", value: brew.method.title)
-            ]
-            
-            if let rating = brew.rating {
-                rows.append(DetailRow(label: "Rating", value: "\(rating.tens) ★"))
-            }
-            
-            if let temp = brew.brewTemp {
-                rows.append(DetailRow(label: "Temp", value: "\(temp)°F"))
-            }
-            return rows
-        }
-
-        var roastInfoRows: [DetailRow] {
-            guard let roast = brew.coffee.roastInfo else { return [] }
-            return [
-                roast.roaster.map { DetailRow(label: "Roaster", value: $0) },
-                roast.date.map { DetailRow(label: "Roast Date", value: $0.shortFormatted) },
-                roast.roastLevel.map { DetailRow(label: "Roast Level", value: $0.title) }
-            ].compactMap { $0 }
-        }
-
-        var notes: String? {
-            guard let notes = brew.notes, !notes.isEmpty else { return nil }
-            return notes
-        }
-        
-        init(brew: Brew, repository: BrewRepository = RepositoryFactory.dev.brew) {
-            self.fetchBrew = FetchBrewUseCase(repository: repository)
-            self.updateBrew = UpdateBrewUseCase(repository: repository)
-            self.brew = brew
-        }
-
-        func refetchBrew() {
-            do {
-                guard let updated = try fetchBrew.execute(brewId: brew.id) else { return }
-                brew = updated
-            } catch {
-                // TODO: Handle error
-            }
-        }
-
-        func appendNote(_ text: String) {
-            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmed.isEmpty else { return }
-
-            let combined = [brew.notes, trimmed]
-                .compactMap { $0?.isEmpty == false ? $0 : nil }
-                .joined(separator: "\n\n")
-
-            let updated = brew.replacingNotes(combined)
-            do {
-                try updateBrew.execute(updatedBrew: updated)
-                brew = updated
-            } catch {
-                // TODO: Handle error
-            }
-        }
-    }
-}
-
-// MARK: - Local helpers
-
-private extension Brew {
-    func replacingNotes(_ notes: String?) -> Brew {
-        Brew(
-            id: id, date: date, coffee: coffee,
-            grindSize: grindSize, dose: dose, yield: yield,
-            brewTime: brewTime, method: method, brewTemp: brewTemp,
-            rating: rating, notes: notes
-        )
     }
 }
 
@@ -196,7 +110,7 @@ private extension Brew {
         method: .pourOver,
         brewTemp: nil,
         rating: nil,
-        notes: nil
+        tastingEntries: []
     )
     return NavigationStack {
         BrewDetailsFormView(brew: sparse)

@@ -118,7 +118,8 @@ extension SaveBrewViewModel {
         var method: BrewMethod? = nil
         var brewTemp: String = ""
         var rating: String = ""
-        var notes: String = ""
+        var notes: String = ""            // initial-note text (new brews only)
+        var tastingEntries: [TastingEntry] = []   // carried through on edit
 
         var canSave: Bool {
             coffee != nil &&
@@ -143,7 +144,7 @@ extension SaveBrewViewModel {
             self.method = brew.method
             self.brewTemp = brew.brewTemp.map { String($0) } ?? ""
             self.rating = brew.rating.map { String($0) } ?? ""
-            self.notes = brew.notes ?? ""
+            self.tastingEntries = brew.tastingEntries
         }
 
         func convertToBrew() -> Brew? {
@@ -155,9 +156,22 @@ extension SaveBrewViewModel {
                 let brewTime = Double(brewTime)
             else { return nil }
 
+            let brewDate = date ?? Date()
+
+            // New brew: turn the initial note into entry #1 (mirrors the overall rating).
+            // Edit: preserve the brew's existing entries untouched.
+            let entries: [TastingEntry]
+            if id == nil {
+                entries = notes.isEmpty
+                    ? []
+                    : [TastingEntry(createdAt: brewDate, rating: Double(rating), note: notes)]
+            } else {
+                entries = tastingEntries
+            }
+
             return Brew(
                 id: id ?? UUID().uuidString,
-                date: date ?? Date(),
+                date: brewDate,
                 coffee: coffee,
                 grindSize: grindSize,
                 dose: dose,
@@ -166,7 +180,7 @@ extension SaveBrewViewModel {
                 method: method,
                 brewTemp: Int(brewTemp),
                 rating: Double(rating),
-                notes: notes.isEmpty ? nil : notes
+                tastingEntries: entries
             )
         }
     }

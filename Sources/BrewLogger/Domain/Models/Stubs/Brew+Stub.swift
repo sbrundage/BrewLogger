@@ -19,7 +19,11 @@ public extension Brew {
         method: .pourOver,
         brewTemp: 195,
         rating: 4,
-        notes: "Clean and sweet, nice clarity"
+        tastingEntries: [
+            TastingEntry(createdAt: Date(), rating: 4, note: "Clean and sweet, nice clarity"),
+            TastingEntry(createdAt: Date().addingTimeInterval(8 * 60), rating: 4.5, note: "Acidity opening up, juicy"),
+            TastingEntry(createdAt: Date().addingTimeInterval(16 * 60), rating: 3.5, note: "Flattening as it cools")
+        ]
     )
 
     /*
@@ -38,7 +42,7 @@ public extension Brew {
             method: .pourOver,
             brewTemp: 195,
             rating: 4,
-            notes: "Clean and sweet, nice clarity"
+            tastingEntries: [TastingEntry(createdAt: Date(), rating: 4, note: "Clean and sweet, nice clarity")]
         ),
         Brew(
             id: UUID().uuidString,
@@ -51,7 +55,7 @@ public extension Brew {
             method: .pourOver,
             brewTemp: 195,
             rating: 3,
-            notes: "Slightly over-extracted, bitter finish"
+            tastingEntries: [TastingEntry(createdAt: Date().addingTimeInterval(-86400), rating: 3, note: "Slightly over-extracted, bitter finish")]
         ),
         Brew(
             id: UUID().uuidString,
@@ -64,7 +68,7 @@ public extension Brew {
             method: .espresso,
             brewTemp: 195,
             rating: 5,
-            notes: "Best shot yet"
+            tastingEntries: [TastingEntry(createdAt: Date().addingTimeInterval(-86400 * 2), rating: 5, note: "Best shot yet")]
         ),
         Brew(
             id: UUID().uuidString,
@@ -77,7 +81,7 @@ public extension Brew {
             method: .espresso,
             brewTemp: 195,
             rating: 4,
-            notes: nil
+            tastingEntries: []
         ),
         Brew(
             id: UUID().uuidString,
@@ -90,7 +94,7 @@ public extension Brew {
             method: .pourOver,
             brewTemp: 195,
             rating: 3,
-            notes: "Under-developed, needs coarser grind"
+            tastingEntries: [TastingEntry(createdAt: Date().addingTimeInterval(-86400 * 5), rating: 3, note: "Under-developed, needs coarser grind")]
         ),
     ]
 }

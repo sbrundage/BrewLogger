@@ -176,10 +176,12 @@ struct SaveBrewView: View {
                 .textContentType(.none)
                 .focused($focus, equals: .rating)
 
-            // Notes
-            TextField("Notes", text: $viewModel.brew.notes, axis: .vertical)
-                .lineLimit(3...6)
-                .focused($focus, equals: .notes)
+            // Initial tasting note (new brews only — edits manage timed entries in the detail view)
+            if !viewModel.isEditing {
+                TextField("Notes", text: $viewModel.brew.notes, axis: .vertical)
+                    .lineLimit(3...6)
+                    .focused($focus, equals: .notes)
+            }
         }
     }
 

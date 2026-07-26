@@ -72,28 +72,29 @@ struct AddNoteViewModelTests {
         #expect(vm.canSave)
     }
 
-    // MARK: - Insert time mark
+    // MARK: - Make entry
 
-    @Test("Inserting the mark into an empty note prefixes it")
-    func testInsertTimeMark_whenNoteEmpty_shouldPrefixMark() {
-        let vm = sut(minutesAfter: 8)
-        vm.insertTimeMark()
-        #expect(vm.note == "8 min post-brew: ")
-    }
-
-    @Test("Inserting the mark prepends before existing text")
-    func testInsertTimeMark_whenNoteHasText_shouldPrependMark() {
+    @Test("Made entry captures note, rating, and the open time")
+    func testMakeEntry_withNoteAndRating_shouldBuildEntry() {
+        // Arrange
         let vm = sut(minutesAfter: 8)
         vm.note = "bright and juicy"
-        vm.insertTimeMark()
-        #expect(vm.note == "8 min post-brew: bright and juicy")
+        vm.rating = "4.5"
+
+        // Act
+        let entry = vm.makeEntry()
+
+        // Assert
+        #expect(entry.note == "bright and juicy")
+        #expect(entry.rating == 4.5)
+        #expect(entry.createdAt == brewDate.addingTimeInterval(8 * 60))
     }
 
-    @Test("Inserting past the window leaves the note unchanged")
-    func testInsertTimeMark_pastWindow_shouldLeaveNoteUnchanged() {
-        let vm = sut(minutesAfter: 45)
-        vm.note = "cold now"
-        vm.insertTimeMark()
-        #expect(vm.note == "cold now")
+    @Test("Made entry has a nil rating when the rating text is empty")
+    func testMakeEntry_whenRatingEmpty_shouldHaveNilRating() {
+        let vm = sut(minutesAfter: 0)
+        vm.note = "sweet"
+
+        #expect(vm.makeEntry().rating == nil)
     }
 }

@@ -19,7 +19,7 @@ struct BrewDetailsFormViewModelTests {
     private func brew(
         rating: Double? = 4,
         brewTemp: Int? = 195,
-        notes: String? = nil,
+        tastingEntries: [TastingEntry] = [],
         coffee: Coffee = .preview
     ) -> Brew {
         Brew(
@@ -33,7 +33,7 @@ struct BrewDetailsFormViewModelTests {
             method: .pourOver,
             brewTemp: brewTemp,
             rating: rating,
-            notes: notes
+            tastingEntries: tastingEntries
         )
     }
 
@@ -76,44 +76,103 @@ struct BrewDetailsFormViewModelTests {
         #expect(rows.first?.value == "KOS")
     }
 
-    // MARK: - Notes
+    // MARK: - Entry rows
 
-    @Test("Notes is nil when the brew has none")
-    func testNotes_whenNil_shouldReturnNil() {
-        #expect(sut(brew(notes: nil)).notes == nil)
+    @Test("Entry rows are sorted chronologically with derived time labels")
+    func testEntryRows_withEntries_shouldSortAndLabel() {
+        // Arrange — brew date is 1_000_000; entries at +0 and +8 min, out of order
+        let brewDate = Date(timeIntervalSince1970: 1_000_000)
+        let entries = [
+            TastingEntry(createdAt: brewDate.addingTimeInterval(8 * 60), rating: 3.5, note: "fading"),
+            TastingEntry(createdAt: brewDate, rating: 4.5, note: "bright")
+        ]
+
+        // Act
+        let rows = sut(brew(tastingEntries: entries)).entryRows
+
+        // Assert
+        #expect(rows.map(\.note) == ["bright", "fading"])
+        #expect(rows.first?.timeLabel == "At brew")
+        #expect(rows.last?.timeLabel == "8 min post-brew")
     }
 
-    @Test("Notes is nil when the brew notes are empty")
-    func testNotes_whenEmpty_shouldReturnNil() {
-        #expect(sut(brew(notes: "")).notes == nil)
+    @Test("No entries yields no rows")
+    func testEntryRows_whenEmpty_shouldReturnNoRows() {
+        #expect(sut(brew(tastingEntries: [])).entryRows.isEmpty)
     }
 
-    @Test("Notes returns the text when present")
-    func testNotes_whenPresent_shouldReturnText() {
-        #expect(sut(brew(notes: "clean")).notes == "clean")
+    @Test("Out-of-window entries have no time label")
+    func testEntryRows_whenOutOfWindow_shouldHaveNilTimeLabel() {
+        let brewDate = Date(timeIntervalSince1970: 1_000_000)
+        let entry = TastingEntry(createdAt: brewDate.addingTimeInterval(120 * 60), rating: nil, note: "later")
+
+        #expect(sut(brew(tastingEntries: [entry])).entryRows.first?.timeLabel == nil)
     }
 
-    // MARK: - Append note
+    // MARK: - Chart
 
-    @Test("Appending with no existing notes sets the note")
-    func testAppendNote_whenNoExistingNotes_shouldSetNote() {
-        let vm = sut(brew(notes: nil))
-        vm.appendNote("8 min post-brew: bright")
-        #expect(vm.brew.notes == "8 min post-brew: bright")
+    @Test("Chart points include only rated entries")
+    func testChartPoints_withMixedRatings_shouldIncludeOnlyRated() {
+        let brewDate = Date(timeIntervalSince1970: 1_000_000)
+        let entries = [
+            TastingEntry(createdAt: brewDate, rating: 4, note: "a"),
+            TastingEntry(createdAt: brewDate.addingTimeInterval(60), rating: nil, note: "no rating"),
+            TastingEntry(createdAt: brewDate.addingTimeInterval(120), rating: 3, note: "c")
+        ]
+
+        let points = sut(brew(tastingEntries: entries)).chartPoints
+
+        #expect(points.map(\.rating) == [4, 3])
     }
 
-    @Test("Appending joins onto existing notes with a blank line")
-    func testAppendNote_withExistingNotes_shouldJoinWithBlankLine() {
-        let vm = sut(brew(notes: "0 min: sweet"))
-        vm.appendNote("8 min: bright")
-        #expect(vm.brew.notes == "0 min: sweet\n\n8 min: bright")
+    @Test("Chart shows with at least two rated entries")
+    func testShowsChart_withTwoRatedEntries_shouldReturnTrue() {
+        let brewDate = Date(timeIntervalSince1970: 1_000_000)
+        let entries = [
+            TastingEntry(createdAt: brewDate, rating: 4, note: "a"),
+            TastingEntry(createdAt: brewDate.addingTimeInterval(60), rating: 3, note: "b")
+        ]
+
+        #expect(sut(brew(tastingEntries: entries)).showsChart)
     }
 
-    @Test("Appending blank text leaves notes unchanged")
-    func testAppendNote_whenBlank_shouldNotChangeNotes() {
-        let vm = sut(brew(notes: "sweet"))
-        vm.appendNote("   ")
-        #expect(vm.brew.notes == "sweet")
+    @Test("Chart hidden with fewer than two rated entries")
+    func testShowsChart_withOneRatedEntry_shouldReturnFalse() {
+        let entry = TastingEntry(createdAt: Date(timeIntervalSince1970: 1_000_000), rating: 4, note: "a")
+
+        #expect(!sut(brew(tastingEntries: [entry])).showsChart)
+    }
+
+    @Test("Chart excludes entries outside the session window")
+    func testChartPoints_withOutOfWindowEntry_shouldExcludeIt() {
+        let brewDate = Date(timeIntervalSince1970: 1_000_000)
+        let entries = [
+            TastingEntry(createdAt: brewDate, rating: 4, note: "in window"),
+            TastingEntry(createdAt: brewDate.addingTimeInterval(120 * 60), rating: 3, note: "hours later")
+        ]
+
+        #expect(sut(brew(tastingEntries: entries)).chartPoints.map(\.rating) == [4])
+    }
+
+    // MARK: - Append entry
+
+    @Test("Appending an entry adds it to the brew")
+    func testAppendEntry_whenNoExisting_shouldAddEntry() {
+        let vm = sut(brew(tastingEntries: []))
+
+        vm.appendEntry(TastingEntry(createdAt: Date(), rating: 4, note: "bright"))
+
+        #expect(vm.brew.tastingEntries.map(\.note) == ["bright"])
+    }
+
+    @Test("Appending keeps existing entries in order")
+    func testAppendEntry_withExisting_shouldAppendAfter() {
+        let existing = TastingEntry(createdAt: Date(), rating: 4, note: "first")
+        let vm = sut(brew(tastingEntries: [existing]))
+
+        vm.appendEntry(TastingEntry(createdAt: Date(), rating: 3, note: "second"))
+
+        #expect(vm.brew.tastingEntries.map(\.note) == ["first", "second"])
     }
 
     // MARK: - Passthrough

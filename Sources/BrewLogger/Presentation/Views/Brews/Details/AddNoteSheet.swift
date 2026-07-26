@@ -6,16 +6,16 @@
 //
 
 import SwiftUI
+import BrewLoggerDomain
 
 struct AddNoteSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var viewModel: ViewModel
-    @FocusState private var focused: Bool
-    
-    private let onSave: (String) -> Void
 
-    init(brewDate: Date, onSave: @escaping (String) -> Void) {
+    private let onSave: (TastingEntry) -> Void
+
+    init(brewDate: Date, onSave: @escaping (TastingEntry) -> Void) {
         self.viewModel = ViewModel(brewDate: brewDate)
         self.onSave = onSave
     }
@@ -26,17 +26,15 @@ struct AddNoteSheet: View {
                 Section {
                     TextField("Note", text: $viewModel.note, axis: .vertical)
                         .lineLimit(3...8)
-                        .focused($focused)
 
                     if let timeMark = viewModel.timeMark {
-                        Button {
-                            viewModel.insertTimeMark()
-                            DispatchQueue.main.async { focused = true }
-                        } label: {
-                            Label("Add \(timeMark)", systemImage: "clock")
-                        }
-                        .foregroundStyle(BrandColors.accent)
+                        Label(timeMark, systemImage: "clock")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
+
+                    TextField("Rating (0–5)", text: $viewModel.rating)
+                        .keyboardType(.decimalPad)
                 }
             }
             .navigationTitle("Add Note")
@@ -47,14 +45,14 @@ struct AddNoteSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        onSave(viewModel.note)
+                        onSave(viewModel.makeEntry())
                         dismiss()
                     }
                     .disabled(!viewModel.canSave)
                 }
             }
         }
-        .presentationDetents([.fraction(0.3)])
+        .presentationDetents([.medium])
     }
 }
 
@@ -65,28 +63,25 @@ extension AddNoteSheet {
         private let openedAt: Date
 
         var note: String = ""
+        var rating: String = ""
+
+        var canSave: Bool {
+            !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+
+        var timeMark: String? {
+            let minutes = Int(openedAt.timeIntervalSince(brewDate) / 60)
+            guard (0...TastingSession.windowMinutes).contains(minutes) else { return nil }
+            return "\(minutes) min post-brew"
+        }
 
         init(brewDate: Date, openedAt: Date = Date()) {
             self.brewDate = brewDate
             self.openedAt = openedAt
         }
 
-        var canSave: Bool {
-            !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        }
-
-        // Taste-over-time only makes sense while a cup is still cooling.
-        private let markWindowMinutes = 30
-
-        var timeMark: String? {
-            let minutes = Int(openedAt.timeIntervalSince(brewDate) / 60)
-            guard (0...markWindowMinutes).contains(minutes) else { return nil }
-            return "\(minutes) min post-brew"
-        }
-
-        func insertTimeMark() {
-            guard let timeMark else { return }
-            note = note.isEmpty ? "\(timeMark): " : "\(timeMark): \(note)"
+        func makeEntry() -> TastingEntry {
+            TastingEntry(createdAt: openedAt, rating: Double(rating), note: note)
         }
     }
 }

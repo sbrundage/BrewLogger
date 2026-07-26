@@ -25,15 +25,6 @@ struct BrewDetailsView: View {
                 if let roastInfo = viewModel.brew.coffee.roastInfo {
                     roastInfoView(roast: roastInfo)
                 }
-                
-                if let notes = viewModel.brew.notes {
-                    VStack(alignment: .leading) {
-                        Text("Notes:")
-                            .fontWeight(.semibold)
-                        Text(notes)
-                    } //: VStack
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
             } //: VStack
             .padding(.horizontal)
         }
