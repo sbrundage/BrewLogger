@@ -134,3 +134,12 @@ struct BrewDetailsFormView: View {
     }
     .environment(BleScaleConnectionManager(repository: RepositoryFactory.stub.scale))
 }
+
+// Interactive: add notes with ratings and each lands 8 min apart (stub entrySpacing), so the chart builds live.
+#Preview("Tasting flow") {
+    NavigationStack {
+        BrewDetailsFormView(brew: Brew.previewList[0])
+    }
+    .environment(BleScaleConnectionManager(repository: RepositoryFactory.stub.scale))
+}
+

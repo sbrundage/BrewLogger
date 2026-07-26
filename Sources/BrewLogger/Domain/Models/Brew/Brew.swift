@@ -44,4 +44,13 @@ public struct Brew: Identifiable, Equatable, Sendable {
         self.brewTemp = brewTemp
         self.tastingEntries = tastingEntries
     }
+
+    public func replacingEntries(_ entries: [TastingEntry]) -> Brew {
+        Brew(
+            id: id, date: date, coffee: coffee,
+            grindSize: grindSize, dose: dose, yield: yield,
+            brewTime: brewTime, method: method, brewTemp: brewTemp,
+            tastingEntries: entries
+        )
+    }
 }

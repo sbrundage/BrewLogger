@@ -41,7 +41,7 @@ struct BrewDetailsFormViewModelTests {
     }
 
     private func sut(_ brew: Brew) -> BrewDetailsFormView.ViewModel {
-        BrewDetailsFormView.ViewModel(brew: brew, repository: StubBrewRepository())
+        BrewDetailsFormView.ViewModel(brew: brew, repository: StubBrewRepository(brews: [brew]))
     }
 
     // MARK: - Brew info rows
