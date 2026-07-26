@@ -8,7 +8,7 @@
 import Foundation
 
 enum TastingSession {
-    // Notes within this window of the brew are the cooling-session curve (charted);
-    // later notes are general journal entries.
-    static let windowMinutes = 45
+    // Notes within this window of the brew are charted.
+    // Later ones are plain journal entries.
+    static let windowMinutes = 35
 }

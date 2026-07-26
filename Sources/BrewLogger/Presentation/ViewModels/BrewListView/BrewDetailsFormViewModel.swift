@@ -104,7 +104,7 @@ extension BrewDetailsFormView {
             let updated = brew.replacingEntries(brew.tastingEntries + [entry])
             do {
                 try updateBrew.execute(updatedBrew: updated)
-                brew = updated
+                refetchBrew()
             } catch {
                 // TODO: Handle error
             }
@@ -125,16 +125,5 @@ extension BrewDetailsFormView {
             if mins <= TastingSession.windowMinutes { return "\(mins) min post-brew" }
             return nil   // no label past the tasting window
         }
-    }
-}
-
-private extension Brew {
-    func replacingEntries(_ entries: [TastingEntry]) -> Brew {
-        Brew(
-            id: id, date: date, coffee: coffee,
-            grindSize: grindSize, dose: dose, yield: yield,
-            brewTime: brewTime, method: method, brewTemp: brewTemp,
-            rating: rating, tastingEntries: entries
-        )
     }
 }

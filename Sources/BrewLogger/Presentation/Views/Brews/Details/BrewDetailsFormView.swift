@@ -92,8 +92,26 @@ struct BrewDetailsFormView: View {
 }
 
 #Preview("Full") {
-    NavigationStack {
-        BrewDetailsFormView(brew: .preview)
+    // Brew dated in the past so an added note lands mid-window and charts.
+    let brewedAt = Date().addingTimeInterval(-18 * 60)
+    let brew = Brew(
+        id: UUID().uuidString,
+        date: brewedAt,
+        coffee: .preview,
+        grindSize: 0.6,
+        dose: 18,
+        yield: 36,
+        brewTime: 28,
+        method: .pourOver,
+        brewTemp: 195,
+        tastingEntries: [
+            TastingEntry(createdAt: brewedAt, rating: 4, note: "Clean and sweet, nice clarity"),
+            TastingEntry(createdAt: brewedAt.addingTimeInterval(8 * 60), rating: 4.5, note: "Acidity opening up, juicy"),
+            TastingEntry(createdAt: brewedAt.addingTimeInterval(13 * 60), rating: 3.5, note: "Flattening as it cools")
+        ]
+    )
+    return NavigationStack {
+        BrewDetailsFormView(brew: brew)
     }
     .environment(BleScaleConnectionManager(repository: RepositoryFactory.stub.scale))
 }
@@ -109,7 +127,6 @@ struct BrewDetailsFormView: View {
         brewTime: 28,
         method: .pourOver,
         brewTemp: nil,
-        rating: nil,
         tastingEntries: []
     )
     return NavigationStack {
@@ -117,3 +134,12 @@ struct BrewDetailsFormView: View {
     }
     .environment(BleScaleConnectionManager(repository: RepositoryFactory.stub.scale))
 }
+
+// Interactive: add notes with ratings and each lands 8 min apart (stub entrySpacing), so the chart builds live.
+#Preview("Tasting flow") {
+    NavigationStack {
+        BrewDetailsFormView(brew: Brew.previewList[0])
+    }
+    .environment(BleScaleConnectionManager(repository: RepositoryFactory.stub.scale))
+}
+

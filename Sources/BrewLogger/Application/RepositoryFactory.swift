@@ -19,7 +19,8 @@ public struct RepositoryFactory {
     
     public static let stub = RepositoryFactory(
         coffee: StubCoffeeRepository(),
-        brew: StubBrewRepository(),
+        // entrySpacing lets previews build the taste-over-time chart without waiting real minutes.
+        brew: StubBrewRepository(entrySpacing: 8 * 60),
         scale: StubBLEScaleRepository()
     )
 

@@ -158,13 +158,14 @@ extension SaveBrewViewModel {
 
             let brewDate = date ?? Date()
 
-            // New brew: turn the initial note into entry #1 (mirrors the overall rating).
+            // New brew: an initial rating and/or note becomes tasting entry #1 (t=0).
             // Edit: preserve the brew's existing entries untouched.
             let entries: [TastingEntry]
             if id == nil {
-                entries = notes.isEmpty
+                let initialRating = Double(rating)
+                entries = (notes.isEmpty && initialRating == nil)
                     ? []
-                    : [TastingEntry(createdAt: brewDate, rating: Double(rating), note: notes)]
+                    : [TastingEntry(createdAt: brewDate, rating: initialRating, note: notes)]
             } else {
                 entries = tastingEntries
             }
@@ -179,7 +180,6 @@ extension SaveBrewViewModel {
                 brewTime: brewTime,
                 method: method,
                 brewTemp: Int(brewTemp),
-                rating: Double(rating),
                 tastingEntries: entries
             )
         }

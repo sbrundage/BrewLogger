@@ -38,12 +38,13 @@ struct AddNoteViewModelTests {
 
     @Test("Time mark at the window boundary is included")
     func testTimeMark_atWindowBoundary_shouldReturnMinutes() {
-        #expect(sut(minutesAfter: 30).timeMark == "30 min post-brew")
+        let boundary = TastingSession.windowMinutes
+        #expect(sut(minutesAfter: Double(boundary)).timeMark == "\(boundary) min post-brew")
     }
 
     @Test("Time mark past the window is nil")
     func testTimeMark_pastWindow_shouldReturnNil() {
-        #expect(sut(minutesAfter: 31).timeMark == nil)
+        #expect(sut(minutesAfter: Double(TastingSession.windowMinutes) + 1).timeMark == nil)
     }
 
     @Test("Time mark is nil when opened before the brew date")

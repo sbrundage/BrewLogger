@@ -29,6 +29,6 @@ struct TasteChartView: View {
         .chartYScale(domain: 0...5)
         .chartXScale(domain: 0...Double(TastingSession.windowMinutes))
         .frame(height: 160)
-        .animation(.smooth, value: points)
+        .animation(.easeInOut(duration: 0.8), value: points)
     }
 }
