@@ -17,8 +17,9 @@ public struct Brew: Identifiable, Equatable, Sendable {
     public let brewTime: TimeInterval
     public let method: BrewMethod
     public let brewTemp: Int?
-    public let rating: Double?
     public let tastingEntries: [TastingEntry]
+
+    public var rating: Double? { tastingEntries.compactMap(\.rating).max() }
 
     public init(
         id: String,
@@ -30,7 +31,6 @@ public struct Brew: Identifiable, Equatable, Sendable {
         brewTime: TimeInterval,
         method: BrewMethod,
         brewTemp: Int?,
-        rating: Double?,
         tastingEntries: [TastingEntry] = []
     ) {
         self.id = id
@@ -42,7 +42,6 @@ public struct Brew: Identifiable, Equatable, Sendable {
         self.brewTime = brewTime
         self.method = method
         self.brewTemp = brewTemp
-        self.rating = rating
         self.tastingEntries = tastingEntries
     }
 }

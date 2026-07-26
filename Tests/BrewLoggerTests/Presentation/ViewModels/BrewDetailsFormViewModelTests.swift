@@ -17,12 +17,16 @@ import Testing
 struct BrewDetailsFormViewModelTests {
 
     private func brew(
-        rating: Double? = 4,
+        rating: Double? = nil,
         brewTemp: Int? = 195,
         tastingEntries: [TastingEntry] = [],
         coffee: Coffee = .preview
     ) -> Brew {
-        Brew(
+        var entries = tastingEntries
+        if entries.isEmpty, let rating {
+            entries = [TastingEntry(createdAt: Date(timeIntervalSince1970: 1_000_000), rating: rating, note: "")]
+        }
+        return Brew(
             id: "brew-1",
             date: Date(timeIntervalSince1970: 1_000_000),
             coffee: coffee,
@@ -32,8 +36,7 @@ struct BrewDetailsFormViewModelTests {
             brewTime: 28,
             method: .pourOver,
             brewTemp: brewTemp,
-            rating: rating,
-            tastingEntries: tastingEntries
+            tastingEntries: entries
         )
     }
 
@@ -45,14 +48,14 @@ struct BrewDetailsFormViewModelTests {
 
     @Test("Brew info includes rating and temp when present")
     func testBrewInfoRows_whenRatingAndTempPresent_shouldIncludeAllRows() {
-        let rows = sut(brew()).brewInfoRows
+        let rows = sut(brew(rating: 4)).brewInfoRows
         #expect(rows.map(\.label) == ["Grind Size", "Time", "Yield", "Method", "Rating", "Temp"])
         #expect(rows.map(\.value) == ["3.5", "28s", "36.0g", "Pour Over", "4.0 ★", "195°F"])
     }
 
     @Test("Brew info omits rating and temp when nil")
     func testBrewInfoRows_whenRatingAndTempNil_shouldOmitThoseRows() {
-        let rows = sut(brew(rating: nil, brewTemp: nil)).brewInfoRows
+        let rows = sut(brew(brewTemp: nil)).brewInfoRows
         #expect(rows.map(\.label) == ["Grind Size", "Time", "Yield", "Method"])
     }
 

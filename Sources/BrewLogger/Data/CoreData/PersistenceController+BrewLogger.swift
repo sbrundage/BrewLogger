@@ -8,6 +8,7 @@
 import Foundation
 import CoreLogger
 import CoreData
+import BrewLoggerDomain
 
 public extension PersistenceController {
     @MainActor
@@ -34,14 +35,15 @@ public extension PersistenceController {
         coffee.roaster = "KOS"
 
         for _ in 0..<10 {
+            let date = Date()
             let brew = BrewModel(context: context)
             brew.id = UUID().uuidString
-            brew.date = Date()
+            brew.date = date
             brew.dose = 18.0
             brew.yield = 36.0
             brew.brewTime = 28
             brew.method = 1
-            brew.rating = 4
+            brew.tastingEntriesData = try? JSONEncoder().encode([TastingEntry(createdAt: date, rating: 4, note: "")])
             brew.coffee = coffee
         }
 

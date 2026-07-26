@@ -134,7 +134,7 @@ private extension Brew {
             id: id, date: date, coffee: coffee,
             grindSize: grindSize, dose: dose, yield: yield,
             brewTime: brewTime, method: method, brewTemp: brewTemp,
-            rating: rating, tastingEntries: entries
+            tastingEntries: entries
         )
     }
 }

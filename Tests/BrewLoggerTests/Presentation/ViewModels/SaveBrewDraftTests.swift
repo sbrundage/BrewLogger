@@ -81,8 +81,7 @@ private extension SaveBrewDraftTests {
             yield: 36,
             brewTime: 28,
             method: .pourOver,
-            brewTemp: 195,
-            rating: 4
+            brewTemp: 195
         )
     }
 }

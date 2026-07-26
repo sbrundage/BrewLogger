@@ -132,7 +132,7 @@ private extension BrewStatisticsTests {
             brewTime: 28,
             method: .pourOver,
             brewTemp: 195,
-            rating: rating
+            tastingEntries: rating.map { [TastingEntry(createdAt: date, rating: $0, note: "")] } ?? []
         )
     }
 }
