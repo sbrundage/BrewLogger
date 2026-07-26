@@ -27,15 +27,16 @@ struct AddNoteSheet: View {
                     TextField("Note", text: $viewModel.note, axis: .vertical)
                         .lineLimit(3...8)
 
+                    TextField("Rating (0–5)", text: $viewModel.rating)
+                        .keyboardType(.decimalPad)
+                } header: {
                     if let timeMark = viewModel.timeMark {
                         Label(timeMark, systemImage: "clock")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
-
-                    TextField("Rating (0–5)", text: $viewModel.rating)
-                        .keyboardType(.decimalPad)
                 }
+                
             }
             .navigationTitle("Add Note")
             .navigationBarTitleDisplayMode(.inline)
@@ -84,4 +85,9 @@ extension AddNoteSheet {
             TastingEntry(createdAt: openedAt, rating: Double(rating), note: note)
         }
     }
+}
+
+#Preview {
+    let brewedAt = Date().addingTimeInterval(-18 * 60)
+    AddNoteSheet(brewDate: brewedAt, onSave: { _ in })
 }
