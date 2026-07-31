@@ -17,8 +17,9 @@ public struct Brew: Identifiable, Equatable, Sendable {
     public let brewTime: TimeInterval
     public let method: BrewMethod
     public let brewTemp: Int?
-    public let rating: Double?
-    public let notes: String?
+    public let tastingEntries: [TastingEntry]
+
+    public var rating: Double? { tastingEntries.compactMap(\.rating).max() }
 
     public init(
         id: String,
@@ -30,8 +31,7 @@ public struct Brew: Identifiable, Equatable, Sendable {
         brewTime: TimeInterval,
         method: BrewMethod,
         brewTemp: Int?,
-        rating: Double?,
-        notes: String? = nil
+        tastingEntries: [TastingEntry] = []
     ) {
         self.id = id
         self.date = date
@@ -42,7 +42,15 @@ public struct Brew: Identifiable, Equatable, Sendable {
         self.brewTime = brewTime
         self.method = method
         self.brewTemp = brewTemp
-        self.rating = rating
-        self.notes = notes
+        self.tastingEntries = tastingEntries
+    }
+
+    public func replacingEntries(_ entries: [TastingEntry]) -> Brew {
+        Brew(
+            id: id, date: date, coffee: coffee,
+            grindSize: grindSize, dose: dose, yield: yield,
+            brewTime: brewTime, method: method, brewTemp: brewTemp,
+            tastingEntries: entries
+        )
     }
 }

@@ -28,9 +28,8 @@ final class SaveBrewViewModel {
     
     var filteredCoffees: [Coffee] {
         coffeeSearch.isEmpty
-        ? coffees
-        : coffees.filter { $0.name.localizedCaseInsensitiveContains(coffeeSearch)
-        }
+            ? coffees
+            : coffees.filter { $0.name.localizedCaseInsensitiveContains(coffeeSearch) }
     }
     
     var isEditing: Bool { brew.id != nil }
@@ -109,7 +108,8 @@ final class SaveBrewViewModel {
 extension SaveBrewViewModel {
     struct BrewDraft {
         var id: String? = nil
-        var date: Date = Date()
+        // nil until the timer stops (or falls back to save time in convertToBrew).
+        var date: Date? = nil
         var coffee: Coffee? = nil
         var grindSize: String = ""
         var dose: String = ""
@@ -118,7 +118,8 @@ extension SaveBrewViewModel {
         var method: BrewMethod? = nil
         var brewTemp: String = ""
         var rating: String = ""
-        var notes: String = ""
+        var notes: String = ""            // initial-note text (new brews only)
+        var tastingEntries: [TastingEntry] = []   // carried through on edit
 
         var canSave: Bool {
             coffee != nil &&
@@ -143,7 +144,7 @@ extension SaveBrewViewModel {
             self.method = brew.method
             self.brewTemp = brew.brewTemp.map { String($0) } ?? ""
             self.rating = brew.rating.map { String($0) } ?? ""
-            self.notes = brew.notes ?? ""
+            self.tastingEntries = brew.tastingEntries
         }
 
         func convertToBrew() -> Brew? {
@@ -155,9 +156,23 @@ extension SaveBrewViewModel {
                 let brewTime = Double(brewTime)
             else { return nil }
 
+            let brewDate = date ?? Date()
+
+            // New brew: an initial rating and/or note becomes tasting entry #1 (t=0).
+            // Edit: preserve the brew's existing entries untouched.
+            let entries: [TastingEntry]
+            if id == nil {
+                let initialRating = Double(rating)
+                entries = (notes.isEmpty && initialRating == nil)
+                    ? []
+                    : [TastingEntry(createdAt: brewDate, rating: initialRating, note: notes)]
+            } else {
+                entries = tastingEntries
+            }
+
             return Brew(
                 id: id ?? UUID().uuidString,
-                date: date,
+                date: brewDate,
                 coffee: coffee,
                 grindSize: grindSize,
                 dose: dose,
@@ -165,8 +180,7 @@ extension SaveBrewViewModel {
                 brewTime: brewTime,
                 method: method,
                 brewTemp: Int(brewTemp),
-                rating: Double(rating),
-                notes: notes.isEmpty ? nil : notes
+                tastingEntries: entries
             )
         }
     }

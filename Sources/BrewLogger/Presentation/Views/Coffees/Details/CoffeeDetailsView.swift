@@ -51,6 +51,7 @@ struct CoffeeDetailsView: View {
             .padding(.horizontal)
         }
         .navigationTitle(viewModel.coffee.name)
+        .scrollIndicators(.hidden)
         .navigationDestination(isPresented: $showAllBrews, destination: {
             AllBrewsView(title: viewModel.coffee.name, brews: viewModel.brews)
         })

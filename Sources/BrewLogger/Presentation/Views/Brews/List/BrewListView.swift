@@ -115,7 +115,7 @@ struct BrewListView: View {
 
     private func row(for brew: Brew) -> some View {
         NavigationLink {
-            BrewDetailsView(brew: brew)
+            BrewDetailsFormView(brew: brew)
         } label: {
             NewBrewView(brew: brew)
                 .listCardBackground()

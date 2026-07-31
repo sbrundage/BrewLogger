@@ -5,6 +5,7 @@
 //  Created by Stephen Brundage on 3/8/26.
 //
 
+import Foundation
 import CoreData
 import BrewLoggerDomain
 
@@ -18,12 +19,13 @@ extension BrewModel {
         self.brewTime = brew.brewTime
         self.method = Int16(brew.method.rawValue)
         self.brewTemp = brew.brewTemp.map { NSDecimalNumber(value: $0) }
-        self.rating = brew.rating.map { NSDecimalNumber(value: $0) }
-        self.notes = brew.notes
+        self.tastingEntriesData = try? JSONEncoder().encode(brew.tastingEntries)
     }
 
     func toDomain() -> Brew? {
         guard let id, let date, let domainCoffee = coffee?.toDomain() else { return nil }
+        let entries = tastingEntriesData
+            .flatMap { try? JSONDecoder().decode([TastingEntry].self, from: $0) } ?? []
         return Brew(
             id: id,
             date: date,
@@ -34,8 +36,7 @@ extension BrewModel {
             brewTime: brewTime,
             method: BrewMethod(rawValue: Int(method)) ?? .na,
             brewTemp: brewTemp?.intValue,
-            rating: rating?.doubleValue,
-            notes: notes
+            tastingEntries: entries
         )
     }
 }

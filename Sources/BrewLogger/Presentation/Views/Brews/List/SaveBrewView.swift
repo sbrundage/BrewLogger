@@ -150,7 +150,8 @@ struct SaveBrewView: View {
                 placeholder: timeFieldPlaceholder,
                 focus: $focus,
                 focusField: .brewTime,
-                brewTime: $viewModel.brew.brewTime
+                brewTime: $viewModel.brew.brewTime,
+                stoppedAt: $viewModel.brew.date
             )
 
             // Yield
@@ -161,24 +162,30 @@ struct SaveBrewView: View {
         }
     }
 
+    @ViewBuilder
     private var optionalFieldsSection: some View {
         Section("Optional") {
-            // Brew Temp
             TextField("Brew Temp", text: $viewModel.brew.brewTemp)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .brewTemp)
-            
-            // Rating
-            TextField("Rating (0–5)", text: $viewModel.brew.rating)
-                .keyboardType(.decimalPad)
-                .textContentType(.none)
-                .focused($focus, equals: .rating)
+        }
 
-            // Notes
-            TextField("Notes", text: $viewModel.brew.notes, axis: .vertical)
-                .lineLimit(3...6)
-                .focused($focus, equals: .notes)
+        // Initial rating/note become tasting entry #1. Edits manage entries in the detail view.
+        if !viewModel.isEditing {
+            Section {
+                // TODO: Ensure rating is between 0-5 and only up to 2? decimal places
+                TextField("Initial rating (0–5)", text: $viewModel.brew.rating)
+                    .keyboardType(.decimalPad)
+                    .textContentType(.none)
+                    .focused($focus, equals: .rating)
+
+                TextField("Initial tasting note", text: $viewModel.brew.notes, axis: .vertical)
+                    .lineLimit(3...6)
+                    .focused($focus, equals: .notes)
+            } footer: {
+                Text("Track how the cup changes over time from the brew's detail page.")
+            }
         }
     }
 

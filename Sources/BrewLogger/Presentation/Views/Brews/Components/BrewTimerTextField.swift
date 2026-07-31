@@ -17,6 +17,7 @@ struct BrewTimerTextField: View {
     let focusField: SaveBrewView.Field
 
     @Binding var brewTime: String
+    @Binding var stoppedAt: Date?
 
     private var timerBinding: Binding<String> {
         Binding(
@@ -67,6 +68,9 @@ struct BrewTimerTextField: View {
         .onChange(of: viewModel.brewTimeString) { _, newValue in
             brewTime = newValue
         }
+        .onChange(of: viewModel.stoppedAt) { _, newValue in
+            stoppedAt = newValue
+        }
         .onDisappear {
             viewModel.pause()
         }
@@ -75,11 +79,13 @@ struct BrewTimerTextField: View {
 
 #Preview {
     @Previewable @State var brewTime = ""
+    @Previewable @State var stoppedAt: Date?
     @Previewable @FocusState var focus: SaveBrewView.Field?
     BrewTimerTextField(
         placeholder: "Brew Time",
         focus: $focus,
         focusField: .brewTime,
-        brewTime: $brewTime
+        brewTime: $brewTime,
+        stoppedAt: $stoppedAt
     )
 }
