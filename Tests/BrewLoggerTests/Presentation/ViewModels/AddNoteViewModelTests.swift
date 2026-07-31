@@ -98,4 +98,56 @@ struct AddNoteViewModelTests {
 
         #expect(vm.makeEntry().rating == nil)
     }
+
+    // MARK: - Editing an existing entry
+
+    @Test("Editing prefills the note and rating and titles the sheet Edit")
+    func testInit_whenEditing_shouldPrefillFieldsAndTitle() {
+        let entry = TastingEntry(id: "e1", createdAt: brewDate.addingTimeInterval(8 * 60), rating: 4, note: "bright")
+
+        let vm = AddNoteSheet.ViewModel(brewDate: brewDate, editing: entry)
+
+        #expect(vm.note == "bright")
+        #expect(vm.rating == "4.0")
+        #expect(vm.title == "Edit Note")
+    }
+
+    @Test("Adding (no edit) titles the sheet Add")
+    func testTitle_whenNotEditing_shouldBeAdd() {
+        #expect(sut(minutesAfter: 0).title == "Add Note")
+    }
+
+    @Test("Editing preserves the entry's id and time, changing only note and rating")
+    func testMakeEntry_whenEditing_shouldPreserveIdentityAndTime() {
+        // Arrange — sheet opened much later than the entry's original time
+        let entry = TastingEntry(id: "e1", createdAt: brewDate.addingTimeInterval(8 * 60), rating: 4, note: "bright")
+        let vm = AddNoteSheet.ViewModel(
+            brewDate: brewDate,
+            editing: entry,
+            openedAt: brewDate.addingTimeInterval(90 * 60)
+        )
+        vm.note = "muddled"
+        vm.rating = "2"
+
+        // Act
+        let result = vm.makeEntry()
+
+        // Assert — id and createdAt from the original, not the open time
+        #expect(result.id == "e1")
+        #expect(result.createdAt == brewDate.addingTimeInterval(8 * 60))
+        #expect(result.note == "muddled")
+        #expect(result.rating == 2)
+    }
+
+    @Test("Editing shows the entry's original time mark, not the open time")
+    func testTimeMark_whenEditing_shouldUseEntryTime() {
+        let entry = TastingEntry(id: "e1", createdAt: brewDate.addingTimeInterval(8 * 60), rating: 4, note: "bright")
+        let vm = AddNoteSheet.ViewModel(
+            brewDate: brewDate,
+            editing: entry,
+            openedAt: brewDate.addingTimeInterval(90 * 60)
+        )
+
+        #expect(vm.timeMark == "8 min post-brew")
+    }
 }

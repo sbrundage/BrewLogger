@@ -14,6 +14,7 @@ struct BrewDetailsFormView: View {
     @State private var showEditSheet = false
     @State private var showAddNote = false
     @State private var pendingEntry: TastingEntry?
+    @State private var editingEntry: TastingEntry?
 
     init(brew: Brew) {
         self.viewModel = ViewModel(brew: brew)
@@ -36,6 +37,15 @@ struct BrewDetailsFormView: View {
             Section {
                 ForEach(viewModel.entryRows) { row in
                     TastingEntryRow(row: row)
+                        .contentShape(Rectangle())
+                        .onTapGesture { editingEntry = viewModel.entry(id: row.id) }
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                viewModel.deleteEntry(id: row.id)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                 }
             } header: {
                 HStack {
@@ -73,6 +83,11 @@ struct BrewDetailsFormView: View {
         }) {
             AddNoteSheet(brewDate: viewModel.brewDate) { entry in
                 pendingEntry = entry
+            }
+        }
+        .sheet(item: $editingEntry) { entry in
+            AddNoteSheet(brewDate: viewModel.brewDate, editing: entry) { updated in
+                viewModel.updateEntry(updated)
             }
         }
         .sheet(isPresented: $showEditSheet) {

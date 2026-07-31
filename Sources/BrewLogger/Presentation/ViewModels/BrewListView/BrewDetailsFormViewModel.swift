@@ -110,20 +110,43 @@ extension BrewDetailsFormView {
             }
         }
 
-        private var sortedEntries: [TastingEntry] {
-            brew.tastingEntries.sorted { $0.createdAt < $1.createdAt }
+        func entry(id: String) -> TastingEntry? {
+            brew.tastingEntries.first { $0.id == id }
         }
 
-        private func minutes(for entry: TastingEntry) -> Double {
-            entry.createdAt.timeIntervalSince(brew.date) / 60
+        func deleteEntry(id: String) {
+            save(brew.replacingEntries(brew.tastingEntries.filter { $0.id != id }))
         }
 
-        private func timeLabel(for entry: TastingEntry) -> String? {
-            let mins = Int(minutes(for: entry))
-            if mins < 0 { return nil }
-            if mins == 0 { return "At brew" }
-            if mins <= TastingSession.windowMinutes { return "\(mins) min post-brew" }
-            return nil   // no label past the tasting window
+        func updateEntry(_ entry: TastingEntry) {
+            save(brew.replacingEntries(brew.tastingEntries.map { $0.id == entry.id ? entry : $0 }))
         }
+    }
+}
+
+private extension BrewDetailsFormView.ViewModel {
+    var sortedEntries: [TastingEntry] {
+        brew.tastingEntries.sorted { $0.createdAt < $1.createdAt }
+    }
+
+    func save(_ updated: Brew) {
+        do {
+            try updateBrew.execute(updatedBrew: updated)
+            brew = updated
+        } catch {
+            // TODO: Handle error
+        }
+    }
+
+    func minutes(for entry: TastingEntry) -> Double {
+        entry.createdAt.timeIntervalSince(brew.date) / 60
+    }
+
+    func timeLabel(for entry: TastingEntry) -> String? {
+        let mins = Int(minutes(for: entry))
+        if mins < 0 { return nil }
+        if mins == 0 { return "At brew" }
+        if mins <= TastingSession.windowMinutes { return "\(mins) min post-brew" }
+        return nil   // no label past the tasting window
     }
 }

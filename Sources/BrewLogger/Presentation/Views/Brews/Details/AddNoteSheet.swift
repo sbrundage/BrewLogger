@@ -15,8 +15,8 @@ struct AddNoteSheet: View {
 
     private let onSave: (TastingEntry) -> Void
 
-    init(brewDate: Date, onSave: @escaping (TastingEntry) -> Void) {
-        self.viewModel = ViewModel(brewDate: brewDate)
+    init(brewDate: Date, editing: TastingEntry? = nil, onSave: @escaping (TastingEntry) -> Void) {
+        self.viewModel = ViewModel(brewDate: brewDate, editing: editing)
         self.onSave = onSave
     }
 
@@ -38,7 +38,7 @@ struct AddNoteSheet: View {
                 }
                 
             }
-            .navigationTitle("Add Note")
+            .navigationTitle(viewModel.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -62,27 +62,39 @@ extension AddNoteSheet {
     final class ViewModel {
         private let brewDate: Date
         private let openedAt: Date
+        private let editing: TastingEntry?
 
-        var note: String = ""
-        var rating: String = ""
+        var note: String
+        var rating: String
+
+        var title: String { editing == nil ? "Add Note" : "Edit Note" }
 
         var canSave: Bool {
             !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
 
         var timeMark: String? {
-            let minutes = Int(openedAt.timeIntervalSince(brewDate) / 60)
+            let minutes = Int((editing?.createdAt ?? openedAt).timeIntervalSince(brewDate) / 60)
             guard (0...TastingSession.windowMinutes).contains(minutes) else { return nil }
             return "\(minutes) min post-brew"
         }
 
-        init(brewDate: Date, openedAt: Date = Date()) {
+        init(brewDate: Date, editing: TastingEntry? = nil, openedAt: Date = Date()) {
             self.brewDate = brewDate
             self.openedAt = openedAt
+            self.editing = editing
+            self.note = editing?.note ?? ""
+            self.rating = editing?.rating.map { String($0) } ?? ""
         }
 
+        // Editing preserves the entry's id and createdAt; only note/rating change.
         func makeEntry() -> TastingEntry {
-            TastingEntry(createdAt: openedAt, rating: Double(rating), note: note)
+            TastingEntry(
+                id: editing?.id ?? UUID().uuidString,
+                createdAt: editing?.createdAt ?? openedAt,
+                rating: Double(rating),
+                note: note
+            )
         }
     }
 }

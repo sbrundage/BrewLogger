@@ -178,6 +178,75 @@ struct BrewDetailsFormViewModelTests {
         #expect(vm.brew.tastingEntries.map(\.note) == ["first", "second"])
     }
 
+    // MARK: - Lookup, edit & delete entries
+
+    @Test("entry(id:) returns the matching tasting entry")
+    func testEntry_withMatchingId_shouldReturnMatch() {
+        let entry = TastingEntry(id: "e1", createdAt: Date(timeIntervalSince1970: 1_000_000), rating: 4, note: "bright")
+        let vm = sut(brew(tastingEntries: [entry]))
+        #expect(vm.entry(id: "e1") == entry)
+    }
+
+    @Test("entry(id:) returns nil for an unknown id")
+    func testEntry_withUnknownId_shouldReturnNil() {
+        #expect(sut(brew(tastingEntries: [])).entry(id: "nope") == nil)
+    }
+
+    @Test("Deleting an entry removes only that entry")
+    func testDeleteEntry_withMatchingId_shouldRemoveIt() {
+        let keep = TastingEntry(id: "keep", createdAt: Date(timeIntervalSince1970: 1_000_000), rating: 4, note: "keep")
+        let drop = TastingEntry(id: "drop", createdAt: Date(timeIntervalSince1970: 1_000_480), rating: 3, note: "drop")
+        let vm = sut(brew(tastingEntries: [keep, drop]))
+
+        vm.deleteEntry(id: "drop")
+
+        #expect(vm.brew.tastingEntries == [keep])
+    }
+
+    @Test("Deleting with an unknown id changes nothing")
+    func testDeleteEntry_withUnknownId_shouldNotChangeEntries() {
+        let entry = TastingEntry(id: "e1", createdAt: Date(timeIntervalSince1970: 1_000_000), rating: 4, note: "x")
+        let vm = sut(brew(tastingEntries: [entry]))
+
+        vm.deleteEntry(id: "nope")
+
+        #expect(vm.brew.tastingEntries == [entry])
+    }
+
+    @Test("Deleting the top-rated entry lowers the derived headline rating")
+    func testDeleteEntry_removingBestRating_shouldLowerHeadlineRating() {
+        let low = TastingEntry(id: "low", createdAt: Date(timeIntervalSince1970: 1_000_000), rating: 3, note: "low")
+        let high = TastingEntry(id: "high", createdAt: Date(timeIntervalSince1970: 1_000_480), rating: 5, note: "high")
+        let vm = sut(brew(tastingEntries: [low, high]))
+        #expect(vm.brew.rating == 5)
+
+        vm.deleteEntry(id: "high")
+
+        #expect(vm.brew.rating == 3)
+    }
+
+    @Test("Updating an entry replaces note and rating in place")
+    func testUpdateEntry_withEdit_shouldReplaceMatchingEntry() {
+        let original = TastingEntry(id: "e1", createdAt: Date(timeIntervalSince1970: 1_000_000), rating: 3, note: "meh")
+        let vm = sut(brew(tastingEntries: [original]))
+
+        let edited = TastingEntry(id: "e1", createdAt: original.createdAt, rating: 5, note: "great")
+        vm.updateEntry(edited)
+
+        #expect(vm.brew.tastingEntries == [edited])
+    }
+
+    @Test("Updating an entry leaves the other entries untouched")
+    func testUpdateEntry_withMultipleEntries_shouldOnlyReplaceTarget() {
+        let first = TastingEntry(id: "a", createdAt: Date(timeIntervalSince1970: 1_000_000), rating: 4, note: "first")
+        let second = TastingEntry(id: "b", createdAt: Date(timeIntervalSince1970: 1_000_480), rating: 3, note: "second")
+        let vm = sut(brew(tastingEntries: [first, second]))
+
+        vm.updateEntry(TastingEntry(id: "b", createdAt: second.createdAt, rating: 5, note: "second edited"))
+
+        #expect(vm.brew.tastingEntries.map(\.note) == ["first", "second edited"])
+    }
+
     // MARK: - Passthrough
 
     @Test("Title and brew date pass through from the brew")
