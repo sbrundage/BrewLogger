@@ -50,6 +50,8 @@ struct DashboardContent: View {
     private var home: some View {
         ScrollView {
             VStack(spacing: 18) {
+                WeeklyHighlightView()
+                
                 SeeSomeView(
                     items: viewModel.recentBrews,
                     title: "Recent Brews",
@@ -77,8 +79,11 @@ struct DashboardContent: View {
                         .buttonStyle(.plain)
                         .navigationLinkIndicatorVisibility(.hidden)
                     }
+                
+                OriginHistoryMapView()
             }
             .padding(.horizontal)
         }
+        .scrollIndicators(.hidden)
     }
 }
