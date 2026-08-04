@@ -45,26 +45,31 @@ struct OriginHistoryMapView: View {
             get: { selection.flatMap(viewModel.location(id:)) },
             set: { selection = $0?.id }
         )) { location in
-            OriginCoffeesSheet(coffees: location.coffees)
+            OriginCoffeesSheet(location: location)
         }
     }
 }
 
 private struct OriginCoffeesSheet: View {
-    let coffees: [Coffee]
+    let location: OriginHistoryMapView.ViewModel.CoffeeOriginLocation
 
     var body: some View {
         NavigationStack {
-            List(coffees) { coffee in
-                NavigationLink {
-                    CoffeeDetailsView(coffee: coffee)
-                } label: {
-                    Text(coffee.name)
+            if let coffee = location.singleCoffee {
+                CoffeeDetailsView(coffee: coffee)
+            } else {
+                List(location.coffees) { coffee in
+                    NavigationLink {
+                        CoffeeDetailsView(coffee: coffee)
+                    } label: {
+                        Text(coffee.name)
+                    }
                 }
+                .navigationTitle("Coffees")
             }
-            .navigationTitle("Coffees")
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 }
 

@@ -21,16 +21,25 @@ extension OriginHistoryMapView {
             var title: String {
                 coffees.count == 1 ? coffees[0].name : "\(coffees.count) coffees"
             }
+
+            var singleCoffee: Coffee? {
+                coffees.count == 1 ? coffees.first : nil
+            }
         }
         
         private let fetchCoffees: FetchAllCoffeesUseCase
-        
+        private let coordinateCache: OriginCoordinateCache
+
         private(set) var locations: [CoffeeOriginLocation] = []
-        
+
         var isLoading = false
-        
-        init(repository: CoffeeRepository = RepositoryFactory.dev.coffee) {
+
+        init(
+            repository: CoffeeRepository = RepositoryFactory.dev.coffee,
+            coordinateCache: OriginCoordinateCache = UserDefaultsOriginCoordinateCache()
+        ) {
             self.fetchCoffees = FetchAllCoffeesUseCase(repository: repository)
+            self.coordinateCache = coordinateCache
         }
         
         func load() async {
@@ -59,13 +68,13 @@ extension OriginHistoryMapView {
         }
         
         private func coordinate(for location: String) async -> CLLocationCoordinate2D? {
-            if let cached = OriginGeocodeCache.coordinate(for: location) { return cached }
+            if let cached = coordinateCache.coordinate(for: location) { return cached }
             guard
                 let request = MKGeocodingRequest(addressString: location),
                 let mapItems = try? await request.mapItems,
                 let coordinate = mapItems.first?.location.coordinate
             else { return nil }
-            OriginGeocodeCache.store(coordinate, for: location)
+            coordinateCache.save(coordinate, for: location)
             return coordinate
         }
     }

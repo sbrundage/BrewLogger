@@ -31,7 +31,7 @@ public struct DashboardView: View {
                     ToolbarItem(placement: .bottomBar) {
                         Menu {
                             Button { path.append(AddRoute.coffee) } label: {
-                                Label("New Coffee", systemImage: "bag")
+                                Label("New Bean", systemImage: "bag")
                             }
                             
                             Button { path.append(AddRoute.brew) } label: {
