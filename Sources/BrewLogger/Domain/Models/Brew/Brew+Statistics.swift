@@ -19,6 +19,31 @@ public extension Array where Element == Brew {
         }
     }
 
+    /// Brews dated within the last `days` days of `now`.
+    func brewed(inLast days: Int, calendar: Calendar = .current, now: Date = Date()) -> [Brew] {
+        guard let cutoff = calendar.date(byAdding: .day, value: -days, to: now) else { return self }
+        return filter { $0.date >= cutoff }
+    }
+
+    /// Per-coffee stats paired with the coffee, most-brewed first (ties broken by name).
+    func summariesPerCoffee() -> [(coffee: Coffee, stats: CoffeeBrewStats)] {
+        Dictionary(grouping: self, by: \.coffee.id)
+            .values
+            .map { brews in
+                (brews[0].coffee,
+                 CoffeeBrewStats(
+                    brewCount: brews.count,
+                    bestRating: brews.bestRating,
+                    lastBrewed: brews.map(\.date).max()
+                 ))
+            }
+            .sorted {
+                $0.stats.brewCount != $1.stats.brewCount
+                    ? $0.stats.brewCount > $1.stats.brewCount
+                    : $0.coffee.name.localizedCaseInsensitiveCompare($1.coffee.name) == .orderedAscending
+            }
+    }
+
     /// Average of the non-nil ratings; nil when no brew has a rating.
     var averageRating: Double? {
         let ratings = compactMap(\.rating)

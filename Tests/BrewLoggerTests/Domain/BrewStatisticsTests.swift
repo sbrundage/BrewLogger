@@ -114,6 +114,54 @@ struct BrewStatisticsTests {
     func testGroupedByDay_whenEmpty_shouldReturnNoGroups() {
         #expect([Brew]().groupedByDay(calendar: calendar).isEmpty)
     }
+
+    // MARK: - Recent window
+
+    @Test("brewed(inLast:) keeps brews on or after the cutoff and drops older ones")
+    func testBrewedInLast_withMixedDates_shouldKeepOnlyWithinWindow() {
+        // Arrange
+        let now = date(2026, 7, 15)
+        let sut = [
+            brew(date: date(2026, 7, 15)),  // today
+            brew(date: date(2026, 7, 9)),   // within 7 days
+            brew(date: date(2026, 7, 8))    // just outside 7 days
+        ]
+
+        // Act
+        let recent = sut.brewed(inLast: 7, calendar: calendar, now: now)
+
+        // Assert
+        #expect(recent.count == 2)
+        #expect(recent.map(\.date) == [date(2026, 7, 15), date(2026, 7, 9)])
+    }
+
+    @Test("brewed(inLast:) on an empty array returns empty")
+    func testBrewedInLast_whenEmpty_shouldReturnEmpty() {
+        #expect([Brew]().brewed(inLast: 7, calendar: calendar, now: date(2026, 7, 15)).isEmpty)
+    }
+
+    @Test("summariesPerCoffee aggregates each coffee, most-brewed first")
+    func testSummariesPerCoffee_withMultipleCoffees_shouldRankByBrewCount() {
+        // Arrange
+        let coffeeA = Coffee.previewList[0]
+        let coffeeB = Coffee.previewList[1]
+        let sut = [
+            brew(date: date(2026, 7, 13), rating: 3, coffee: coffeeA),
+            brew(date: date(2026, 7, 15), rating: 4.5, coffee: coffeeA),
+            brew(date: date(2026, 7, 14), rating: 5, coffee: coffeeB)
+        ]
+
+        // Act
+        let summaries = sut.summariesPerCoffee()
+
+        // Assert
+        #expect(summaries.count == 2)
+        #expect(summaries[0].coffee == coffeeA)          // 2 brews outranks 1
+        #expect(summaries[0].stats.brewCount == 2)
+        #expect(summaries[0].stats.bestRating == 4.5)
+        #expect(summaries[1].coffee == coffeeB)
+        #expect(summaries[1].stats.brewCount == 1)
+    }
 }
 
 private extension BrewStatisticsTests {
