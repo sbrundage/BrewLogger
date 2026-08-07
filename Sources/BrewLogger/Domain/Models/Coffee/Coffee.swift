@@ -33,6 +33,17 @@ public struct Coffee: Sendable, Identifiable, Hashable {
     
     public var hasDetails: Bool { originInfo != nil || roastInfo != nil || process != nil }
 
+    public func withOrigin(_ originInfo: OriginInfo?) -> Coffee {
+        Coffee(
+            id: id,
+            name: name,
+            originInfo: originInfo,
+            roastInfo: roastInfo,
+            process: process,
+            variety: variety
+        )
+    }
+
     public static func == (lhs: Coffee, rhs: Coffee) -> Bool { lhs.id == rhs.id }
 
     public func hash(into hasher: inout Hasher) { hasher.combine(id) }

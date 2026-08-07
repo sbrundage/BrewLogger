@@ -60,6 +60,16 @@ public final class StubBrewRepository: BrewRepository {
     }
 }
 
+public struct StubGeocodingService: GeocodingService {
+    private let result: GeocodeResult?
+
+    public init(result: GeocodeResult? = nil) {
+        self.result = result
+    }
+
+    public func geocode(_ query: String) async -> GeocodeResult? { result }
+}
+
 public final class StubBLEScaleRepository: BLEScaleRepository {
     public var connectionState: BLEConnectionState = .disconnected
     public var state​Changes: AsyncStream<BLEConnectionState> { AsyncStream { _ in } }

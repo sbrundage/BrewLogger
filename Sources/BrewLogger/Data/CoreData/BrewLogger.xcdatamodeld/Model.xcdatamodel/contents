@@ -17,7 +17,10 @@
         <attribute name="id" optional="YES" attributeType="String"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="originAltitude" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO"/>
+        <attribute name="originCanonicalName" optional="YES" attributeType="String"/>
+        <attribute name="originLatitude" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
         <attribute name="originLocation" optional="YES" attributeType="String"/>
+        <attribute name="originLongitude" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
         <attribute name="process" optional="YES" attributeType="String"/>
         <attribute name="roastDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="roaster" optional="YES" attributeType="String"/>

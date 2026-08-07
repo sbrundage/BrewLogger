@@ -18,64 +18,89 @@ extension OriginHistoryMapView {
             let coffees: [Coffee]
             let coordinate: CLLocationCoordinate2D
             
-            var title: String {
-                coffees.count == 1 ? coffees[0].name : "\(coffees.count) coffees"
-            }
-
             var singleCoffee: Coffee? {
                 coffees.count == 1 ? coffees.first : nil
+            }
+
+            var title: String {
+                singleCoffee?.name ?? "\(coffees.count) coffees"
+            }
+        }
+
+        private struct Placed {
+            let coffee: Coffee
+            let key: String
+            let coordinate: CLLocationCoordinate2D
+
+            init?(_ coffee: Coffee) {
+                guard let origin = coffee.originInfo, let latitude = origin.latitude, let longitude = origin.longitude
+                else { return nil }
+                self.coffee = coffee
+                self.key = origin.groupingKey
+                self.coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
             }
         }
         
         private let fetchCoffees: FetchAllCoffeesUseCase
-        private let coordinateCache: OriginCoordinateCache
+        private let updateCoffee: UpdateCoffeeUseCase
+        private let geocoding: GeocodingService
 
         private(set) var locations: [CoffeeOriginLocation] = []
 
-        var isLoading = false
-
         init(
             repository: CoffeeRepository = RepositoryFactory.dev.coffee,
-            coordinateCache: OriginCoordinateCache = UserDefaultsOriginCoordinateCache()
+            geocoding: GeocodingService = RepositoryFactory.dev.geocoding
         ) {
             self.fetchCoffees = FetchAllCoffeesUseCase(repository: repository)
-            self.coordinateCache = coordinateCache
+            self.updateCoffee = UpdateCoffeeUseCase(repository: repository)
+            self.geocoding = geocoding
         }
-        
+
         func load() async {
-            isLoading = true
-            defer { isLoading = false }
-            
             guard let coffees = try? fetchCoffees.execute() else { return }
-            
-            let coffeesByOrigin = Dictionary(
-                grouping: coffees.compactMap { coffee -> (Coffee, String)? in
-                    coffee.originInfo.map { (coffee, $0.location) }
-                },
-                by: { $0.1 }
-            ).mapValues { $0.map(\.0) }
-            
-            var results: [CoffeeOriginLocation] = []
-            for (location, coffeesAtOrigin) in coffeesByOrigin {
-                guard let coordinate = await coordinate(for: location) else { continue }
-                results.append(CoffeeOriginLocation(id: location, coffees: coffeesAtOrigin, coordinate: coordinate))
+
+            // Render coffees that already have coordinates immediately — don't block pins on geocoding.
+            locations = groupedLocations(from: coffees)
+
+            // Backfill any legacy coffees missing a coordinate once, then merge them in.
+            if let backfilled = await backfillMissingCoordinates(coffees) {
+                locations = groupedLocations(from: backfilled)
             }
-            locations = results
         }
-        
+
         func location(id: String) -> CoffeeOriginLocation? {
             locations.first { $0.id == id }
         }
-        
-        private func coordinate(for location: String) async -> CLLocationCoordinate2D? {
-            if let cached = coordinateCache.coordinate(for: location) { return cached }
-            guard
-                let request = MKGeocodingRequest(addressString: location),
-                let mapItems = try? await request.mapItems,
-                let coordinate = mapItems.first?.location.coordinate
-            else { return nil }
-            coordinateCache.save(coordinate, for: location)
-            return coordinate
+
+        private func groupedLocations(from coffees: [Coffee]) -> [CoffeeOriginLocation] {
+            let placed = coffees.compactMap(Placed.init)
+            return Dictionary(grouping: placed, by: \.key).map { key, group in
+                CoffeeOriginLocation(id: key, coffees: group.map(\.coffee), coordinate: group[0].coordinate)
+            }
+        }
+
+        // Transitional backfill for coffees saved before entry-time geocoding; remove once location matching guarantees a coordinate.
+        private func backfillMissingCoordinates(_ coffees: [Coffee]) async -> [Coffee]? {
+            let unresolved = Set(coffees.compactMap { coffee -> String? in
+                guard let origin = coffee.originInfo, !origin.hasCoordinate else { return nil }
+                return origin.location
+            })
+            guard !unresolved.isEmpty else { return nil }
+
+            var resultsByLocation: [String: GeocodeResult] = [:]
+            for location in unresolved {
+                resultsByLocation[location] = await geocoding.geocode(location)
+            }
+            guard !resultsByLocation.isEmpty else { return nil }
+
+            return coffees.map { coffee in
+                guard let origin = coffee.originInfo, !origin.hasCoordinate,
+                      let result = resultsByLocation[origin.location]
+                else { return coffee }
+                let updated = coffee.withOrigin(origin.applying(result))
+                try? updateCoffee.execute(coffee: updated)
+                return updated
+            }
         }
     }
 }

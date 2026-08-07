@@ -33,11 +33,6 @@ struct OriginHistoryMapView: View {
         ))
         .frame(height: 300)
         .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay {
-            if viewModel.isLoading {
-                ProgressView()
-            }
-        }
         .task {
             await viewModel.load()
         }
