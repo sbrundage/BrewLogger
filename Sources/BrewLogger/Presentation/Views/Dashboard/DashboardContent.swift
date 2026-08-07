@@ -80,7 +80,9 @@ struct DashboardContent: View {
                         .navigationLinkIndicatorVisibility(.hidden)
                     }
                 
-                OriginHistoryMapView()
+                if viewModel.hasOriginCoffees {
+                    OriginHistoryMapView()
+                }
             }
             .padding(.horizontal)
         }
