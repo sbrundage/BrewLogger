@@ -97,8 +97,8 @@ struct BrewModelMappingTests {
     @Test("update(from:) sets all fields from domain model")
     func testUpdateFrom_withAllFields_shouldSetAllFields() {
         // Arrange
-        let coffee = Coffee(id: "coffee-1", name: "Test Coffee", originInfo: nil, roastInfo: nil, process: nil)
-        let brew = Brew(id: "brew-1", date: Date(), coffee: coffee, grindSize: 0.5, dose: 17, yield: 34, brewTime: 28, method: .espresso, brewTemp: 195, tastingEntries: [TastingEntry(createdAt: Date(), rating: 5, note: "Great")])
+        let coffee = Coffee(id: "coffee-1", name: "Test Coffee", originInfo: nil, roastInfo: nil, process: nil, variety: nil, finishedAt: nil)
+        let brew = Brew(id: "brew-1", date: Date(), coffee: coffee, grindSize: 0.5, dose: 17, yield: 34, brewTime: 28, method: .espresso, brewTemp: 195, roastDate: nil, tastingEntries: [TastingEntry(createdAt: Date(), rating: 5, note: "Great")])
         let sut = BrewModel(context: context)
 
         // Act
@@ -112,6 +112,33 @@ struct BrewModelMappingTests {
         #expect(sut.method == 2)
         let entries = try? JSONDecoder().decode([TastingEntry].self, from: sut.tastingEntriesData ?? Data())
         #expect(entries?.first?.note == "Great")
+    }
+
+    @Test("roastDate round-trips through update(from:) and toDomain()")
+    func testRoastDate_whenSetAndMappedBack_shouldRoundTrip() {
+        // Arrange
+        let roasted = Date(timeIntervalSince1970: 500_000)
+        let coffee = Coffee(id: "c", name: "X", originInfo: nil, roastInfo: nil, process: nil, variety: nil, finishedAt: nil)
+        let brew = Brew(id: "b", date: Date(), coffee: coffee, grindSize: 0.5, dose: 18, yield: 36, brewTime: 28, method: .pourOver, brewTemp: nil, roastDate: roasted, tastingEntries: [])
+        let sut = BrewModel(context: context)
+
+        // Act
+        sut.update(from: brew)
+        sut.coffee = makeCoffee() // update(from:) doesn't set the relationship; toDomain guards on it
+        let result = sut.toDomain()
+
+        // Assert
+        #expect(sut.roastDate == roasted)
+        #expect(result?.roastDate == roasted)
+    }
+
+    @Test("roastDate is nil when the brew has no snapshot")
+    func testToDomain_whenRoastDateNotSet_shouldReturnNilRoastDate() {
+        let sut = BrewModel(context: context)
+        sut.id = UUID().uuidString
+        sut.date = Date()
+        sut.coffee = makeCoffee()
+        #expect(sut.toDomain()?.roastDate == nil)
     }
 }
 

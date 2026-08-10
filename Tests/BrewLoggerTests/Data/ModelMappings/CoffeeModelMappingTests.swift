@@ -60,7 +60,9 @@ struct CoffeeModelMappingTests {
             name: "Rodrigo Sanchez",
             originInfo: .init(location: "Huila, Colombia", altitude: 1730, latitude: 2.5359, longitude: -75.5277, canonicalName: "Huila, Colombia"),
             roastInfo: nil,
-            process: nil
+            process: nil,
+            variety: nil,
+            finishedAt: nil
         )
         let sut = CoffeeModel(context: context)
 
@@ -80,7 +82,7 @@ struct CoffeeModelMappingTests {
         let coffee = Coffee(id: "abc", name: "El Puente",
             originInfo: nil,
             roastInfo: .init(roaster: "KOS", date: nil, roastLevel: nil),
-            process: nil)
+            process: nil, variety: nil, finishedAt: nil)
         let sut = CoffeeModel(context: context)
 
         // Act
@@ -90,5 +92,30 @@ struct CoffeeModelMappingTests {
         #expect(sut.id == "abc")
         #expect(sut.name == "El Puente")
         #expect(sut.roaster == "KOS")
+    }
+
+    @Test("finishedAt round-trips through update(from:) and toDomain()")
+    func testFinishedAt_whenSetAndMappedBack_shouldRoundTrip() {
+        // Arrange
+        let finished = Date(timeIntervalSince1970: 800_000)
+        let coffee = Coffee(id: "c1", name: "X", originInfo: nil, roastInfo: nil, process: nil, variety: nil, finishedAt: finished)
+        let sut = CoffeeModel(context: context)
+
+        // Act
+        sut.update(from: coffee)
+        let result = sut.toDomain()
+
+        // Assert
+        #expect(sut.finishedAt == finished)
+        #expect(result?.finishedAt == finished)
+        #expect(result?.isFinished == true)
+    }
+
+    @Test("A coffee with no finishedAt is active")
+    func testToDomain_whenFinishedAtNotSet_shouldBeActive() {
+        let sut = CoffeeModel(context: context)
+        sut.id = "c"
+        sut.name = "X"
+        #expect(sut.toDomain()?.isFinished == false)
     }
 }

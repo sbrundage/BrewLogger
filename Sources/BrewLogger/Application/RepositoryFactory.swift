@@ -44,5 +44,7 @@ public struct RepositoryFactory {
             scale: bleRepository,
             geocoding: MapKitGeocodingService()
         )
+
+        BrewRoastDateBackfill.runIfNeeded(in: context)
     }
 }

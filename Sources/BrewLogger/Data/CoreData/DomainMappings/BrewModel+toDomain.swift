@@ -19,6 +19,7 @@ extension BrewModel {
         self.brewTime = brew.brewTime
         self.method = Int16(brew.method.rawValue)
         self.brewTemp = brew.brewTemp.map { NSDecimalNumber(value: $0) }
+        self.roastDate = brew.roastDate
         self.tastingEntriesData = try? JSONEncoder().encode(brew.tastingEntries)
     }
 
@@ -36,6 +37,7 @@ extension BrewModel {
             brewTime: brewTime,
             method: BrewMethod(rawValue: Int(method)) ?? .na,
             brewTemp: brewTemp?.intValue,
+            roastDate: self.roastDate,
             tastingEntries: entries
         )
     }

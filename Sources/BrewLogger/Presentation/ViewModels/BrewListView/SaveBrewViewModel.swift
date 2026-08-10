@@ -117,6 +117,7 @@ extension SaveBrewViewModel {
         var brewTime: String = ""
         var method: BrewMethod? = nil
         var brewTemp: String = ""
+        var roastDate: Date? = nil
         var rating: String = ""
         var notes: String = ""            // initial-note text (new brews only)
         var tastingEntries: [TastingEntry] = []   // carried through on edit
@@ -143,6 +144,7 @@ extension SaveBrewViewModel {
             self.brewTime = String(brew.brewTime)
             self.method = brew.method
             self.brewTemp = brew.brewTemp.map { String($0) } ?? ""
+            self.roastDate = brew.roastDate
             self.rating = brew.rating.map { String($0) } ?? ""
             self.tastingEntries = brew.tastingEntries
         }
@@ -180,6 +182,7 @@ extension SaveBrewViewModel {
                 brewTime: brewTime,
                 method: method,
                 brewTemp: Int(brewTemp),
+                roastDate: roastDate ?? coffee.roastInfo?.date,
                 tastingEntries: entries
             )
         }

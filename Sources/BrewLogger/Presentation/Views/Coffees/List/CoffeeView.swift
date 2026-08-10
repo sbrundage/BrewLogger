@@ -89,6 +89,6 @@ struct RoastFreshness {
         coffee: .preview,
         stats: CoffeeBrewStats(brewCount: 12, bestRating: 4.5, lastBrewed: Date())
     )
-    let coffee = Coffee(id: UUID().uuidString, name: "Test Coffee", originInfo: nil, roastInfo: nil, process: nil)
+    let coffee = Coffee(id: UUID().uuidString, name: "Test Coffee", originInfo: nil, roastInfo: nil, process: nil, variety: nil, finishedAt: nil)
     CoffeeView(coffee: coffee)
 }

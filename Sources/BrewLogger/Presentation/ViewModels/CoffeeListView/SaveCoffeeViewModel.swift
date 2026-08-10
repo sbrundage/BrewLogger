@@ -65,6 +65,7 @@ extension SaveCoffeeViewModel {
         var originAltitude = ""
         var variety = ""
         var process: ProcessMethod? = nil
+        var finishedAt: Date? = nil
 
         var geocode: GeocodeResult? = nil
         // The origin string the stored coordinate was resolved from; a mismatch means re-geocode.
@@ -88,6 +89,7 @@ extension SaveCoffeeViewModel {
             self.originAltitude = coffee.originInfo?.altitude.map(String.init) ?? ""
             self.variety = coffee.variety ?? ""
             self.process = coffee.process
+            self.finishedAt = coffee.finishedAt
             if let origin = coffee.originInfo, let result = origin.geocodeResult {
                 self.geocode = result
                 self.resolvedLocation = origin.location
@@ -113,7 +115,8 @@ extension SaveCoffeeViewModel {
                 originInfo: originInfo,
                 roastInfo: roastInfo,
                 process: process,
-                variety: variety.isEmpty ? nil : variety
+                variety: variety.isEmpty ? nil : variety,
+                finishedAt: finishedAt
             )
         }
     }

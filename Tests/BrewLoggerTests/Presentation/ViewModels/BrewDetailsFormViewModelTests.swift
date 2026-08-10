@@ -36,6 +36,7 @@ struct BrewDetailsFormViewModelTests {
             brewTime: 28,
             method: .pourOver,
             brewTemp: brewTemp,
+            roastDate: nil,
             tastingEntries: entries
         )
     }
@@ -63,7 +64,7 @@ struct BrewDetailsFormViewModelTests {
 
     @Test("Roast info is empty when the coffee has no roast info")
     func testRoastInfoRows_whenNoRoastInfo_shouldReturnEmpty() {
-        let coffee = Coffee(id: "c", name: "X", originInfo: nil, roastInfo: nil, process: nil)
+        let coffee = Coffee(id: "c", name: "X", originInfo: nil, roastInfo: nil, process: nil, variety: nil, finishedAt: nil)
         #expect(sut(brew(coffee: coffee)).roastInfoRows.isEmpty)
     }
 
@@ -72,7 +73,9 @@ struct BrewDetailsFormViewModelTests {
         let coffee = Coffee(
             id: "c", name: "X", originInfo: nil,
             roastInfo: .init(roaster: "KOS", date: nil, roastLevel: nil),
-            process: nil
+            process: nil,
+            variety: nil,
+            finishedAt: nil
         )
         let rows = sut(brew(coffee: coffee)).roastInfoRows
         #expect(rows.map(\.label) == ["Roaster"])

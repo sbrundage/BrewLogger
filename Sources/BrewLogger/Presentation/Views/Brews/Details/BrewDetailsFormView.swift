@@ -119,6 +119,7 @@ struct BrewDetailsFormView: View {
         brewTime: 28,
         method: .pourOver,
         brewTemp: 195,
+        roastDate: Date().addingTimeInterval(-86400 * 12),
         tastingEntries: [
             TastingEntry(createdAt: brewedAt, rating: 4, note: "Clean and sweet, nice clarity"),
             TastingEntry(createdAt: brewedAt.addingTimeInterval(8 * 60), rating: 4.5, note: "Acidity opening up, juicy"),
@@ -135,13 +136,14 @@ struct BrewDetailsFormView: View {
     let sparse = Brew(
         id: UUID().uuidString,
         date: Date(),
-        coffee: Coffee(id: UUID().uuidString, name: "El Puente", originInfo: nil, roastInfo: nil, process: nil),
+        coffee: Coffee(id: UUID().uuidString, name: "El Puente", originInfo: nil, roastInfo: nil, process: nil, variety: nil, finishedAt: nil),
         grindSize: 3.5,
         dose: 18,
         yield: 36,
         brewTime: 28,
         method: .pourOver,
         brewTemp: nil,
+        roastDate: nil,
         tastingEntries: []
     )
     return NavigationStack {

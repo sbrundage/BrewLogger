@@ -14,6 +14,10 @@ public struct Coffee: Sendable, Identifiable, Hashable {
     public let roastInfo: RoastInfo?
     public let process: ProcessMethod?
     public let variety: String?
+    public let finishedAt: Date?
+
+    public var hasDetails: Bool { originInfo != nil || roastInfo != nil || process != nil }
+    public var isFinished: Bool { finishedAt != nil }
 
     public init(
         id: String,
@@ -21,7 +25,8 @@ public struct Coffee: Sendable, Identifiable, Hashable {
         originInfo: OriginInfo?,
         roastInfo: RoastInfo?,
         process: ProcessMethod?,
-        variety: String? = nil
+        variety: String?,
+        finishedAt: Date?
     ) {
         self.id = id
         self.name = name
@@ -29,9 +34,8 @@ public struct Coffee: Sendable, Identifiable, Hashable {
         self.roastInfo = roastInfo
         self.process = process
         self.variety = variety
+        self.finishedAt = finishedAt
     }
-    
-    public var hasDetails: Bool { originInfo != nil || roastInfo != nil || process != nil }
 
     public func withOrigin(_ originInfo: OriginInfo?) -> Coffee {
         Coffee(
@@ -40,7 +44,8 @@ public struct Coffee: Sendable, Identifiable, Hashable {
             originInfo: originInfo,
             roastInfo: roastInfo,
             process: process,
-            variety: variety
+            variety: variety,
+            finishedAt: finishedAt
         )
     }
 
