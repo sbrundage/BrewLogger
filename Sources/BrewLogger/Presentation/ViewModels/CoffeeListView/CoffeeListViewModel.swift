@@ -14,6 +14,7 @@ public class CoffeeListViewModel {
     private let fetchCoffees: FetchAllCoffeesUseCase
     private let deleteCoffee: DeleteCoffeeUseCase
     private let fetchBrews: FetchAllBrewsUseCase
+    private let updateCoffee: UpdateCoffeeUseCase
 
     private var coffees: [Coffee] = []
     private var statsByCoffeeId: [String: CoffeeBrewStats] = [:]
@@ -41,6 +42,7 @@ public class CoffeeListViewModel {
         self.fetchCoffees = FetchAllCoffeesUseCase(repository: repository)
         self.deleteCoffee = DeleteCoffeeUseCase(repository: repository)
         self.fetchBrews = FetchAllBrewsUseCase(repository: brewRepository)
+        self.updateCoffee = UpdateCoffeeUseCase(repository: repository)
     }
 
     func fetchAllCoffees() {
@@ -54,8 +56,28 @@ public class CoffeeListViewModel {
     func delete(_ coffee: Coffee) {
         do {
             try deleteCoffee.execute(coffeeId: coffee.id)
-            fetchAllCoffees()
+            coffees.removeAll { $0.id == coffee.id }
+            statsByCoffeeId[coffee.id] = nil
         } catch {}
+    }
+    
+    func toggleFinished(_ coffee: Coffee) {
+        do {
+            // If coffee already finished, pass in nil to
+            let updatedCoffee = coffee.markingFinished(coffee.isFinished ? nil : Date())
+            try updateCoffee.execute(coffee: updatedCoffee)
+            if let index = coffees.firstIndex(where: { $0.id == coffee.id }) {
+                coffees[index] = updatedCoffee
+            }
+        } catch {
+            print("[CoffeeListViewModel] - Failed to toggle finished: \(error)")
+        }
+    }
+
+    func deleteMessage(for coffee: Coffee) -> String {
+        let count = stats(for: coffee)?.brewCount ?? 0
+        guard count > 0 else { return "This can't be undone." }
+        return "This also deletes \(count) logged brew\(count == 1 ? "" : "s")."
     }
 
     func stats(for coffee: Coffee) -> CoffeeBrewStats? {

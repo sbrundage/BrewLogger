@@ -60,11 +60,11 @@ extension BrewDetailsFormView {
         }
 
         var roastInfoRows: [DetailRow] {
-            guard let roast = brew.coffee.roastInfo else { return [] }
+            let roast = brew.coffee.roastInfo
             return [
-                roast.roaster.map { DetailRow(label: "Roaster", value: $0) },
-                roast.date.map { DetailRow(label: "Roast Date", value: $0.shortFormatted) },
-                roast.roastLevel.map { DetailRow(label: "Roast Level", value: $0.title) }
+                roast?.roaster.map { DetailRow(label: "Roaster", value: $0) },
+                roast?.roastLevel.map { DetailRow(label: "Roast Level", value: $0.title) },
+                brew.roastDate.map { DetailRow(label: "Roast Date", value: roastDateValue(for: $0)) }
             ].compactMap { $0 }
         }
 
@@ -125,6 +125,13 @@ extension BrewDetailsFormView {
 }
 
 private extension BrewDetailsFormView.ViewModel {
+    // Roast date with days off roast at brew time appended when ≥ 1 day, e.g. "Aug 1, 2026 (12 days)".
+    func roastDateValue(for roastDate: Date) -> String {
+        let days = Calendar.current.dateComponents([.day], from: roastDate, to: brew.date).day ?? 0
+        guard days >= 1 else { return roastDate.shortFormatted }
+        return "\(roastDate.shortFormatted) (\(days) day\(days == 1 ? "" : "s"))"
+    }
+
     var sortedEntries: [TastingEntry] {
         brew.tastingEntries.sorted { $0.createdAt < $1.createdAt }
     }

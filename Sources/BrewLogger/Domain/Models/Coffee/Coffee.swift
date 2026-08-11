@@ -37,7 +37,15 @@ public struct Coffee: Sendable, Identifiable, Hashable {
         self.finishedAt = finishedAt
     }
 
-    public func withOrigin(_ originInfo: OriginInfo?) -> Coffee {
+    public static func == (lhs: Coffee, rhs: Coffee) -> Bool { lhs.id == rhs.id }
+
+    public func hash(into hasher: inout Hasher) { hasher.combine(id) }
+}
+
+// MARK: Helpers
+
+public extension Coffee {
+    func withOrigin(_ originInfo: OriginInfo?) -> Coffee {
         Coffee(
             id: id,
             name: name,
@@ -49,8 +57,33 @@ public struct Coffee: Sendable, Identifiable, Hashable {
         )
     }
 
-    public static func == (lhs: Coffee, rhs: Coffee) -> Bool { lhs.id == rhs.id }
+    // Pass nil to reopen (clear the finished flag).
+    func markingFinished(_ date: Date?) -> Coffee {
+        Coffee(
+            id: id,
+            name: name,
+            originInfo: originInfo,
+            roastInfo: roastInfo,
+            process: process,
+            variety: variety,
+            finishedAt: date
+        )
+    }
 
-    public func hash(into hasher: inout Hasher) { hasher.combine(id) }
+    // Opening a fresh bag: stamp the new roast date and reactivate the coffee.
+    func openingBag(roastedAt date: Date) -> Coffee {
+        Coffee(
+            id: id,
+            name: name,
+            originInfo: originInfo,
+            roastInfo: RoastInfo(
+                roaster: roastInfo?.roaster,
+                date: date,
+                roastLevel: roastInfo?.roastLevel
+            ),
+            process: process,
+            variety: variety,
+            finishedAt: nil
+        )
+    }
 }
-

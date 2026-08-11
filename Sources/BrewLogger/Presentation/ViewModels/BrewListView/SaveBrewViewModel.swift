@@ -12,11 +12,16 @@ import BrewLoggerDomain
 @MainActor @Observable
 final class SaveBrewViewModel {
     private let fetchCoffees: FetchAllCoffeesUseCase
+    private let updateCoffee: UpdateCoffeeUseCase
     private let logNewBrew: LogBrewUseCase
     private let updateBrew: UpdateBrewUseCase
     private let fetchAllBrews: FetchAllBrewsUseCase
     
     private var coffees: [Coffee] = []
+    private var shouldAutofill: Bool {
+        // only autofill when all fields are empty
+        brew.grindSize.isEmpty && brew.dose.isEmpty && brew.brewTemp.isEmpty
+    }
     
     private(set) var lastBrew: Brew? = nil
     private(set) var justAutofilled = false
@@ -34,12 +39,25 @@ final class SaveBrewViewModel {
     
     var isEditing: Bool { brew.id != nil }
 
+    var roastAgeText: String? {
+        guard let roastDate = brew.roastDate else { return nil }
+        let days = Calendar.current.dateComponents([.day], from: roastDate, to: Date()).day ?? 0
+        guard days >= 0 else { return nil }
+        return days == 0 ? "Roasted today" : "\(days) day\(days == 1 ? "" : "s") off roast"
+    }
+
+    var roastDateTitle: String {
+        guard let roastDate = brew.roastDate else { return "Roast Date" }
+        return roastAgeText.map { "\(roastDate.shortFormatted) · \($0)" } ?? roastDate.shortFormatted
+    }
+
     init(
         brewToEdit: Brew? = nil,
         coffeeRepository: CoffeeRepository = RepositoryFactory.dev.coffee,
         brewRepository: BrewRepository = RepositoryFactory.dev.brew
     ) {
         self.fetchCoffees = FetchAllCoffeesUseCase(repository: coffeeRepository)
+        self.updateCoffee = UpdateCoffeeUseCase(repository: coffeeRepository)
         self.logNewBrew = LogBrewUseCase(repository: brewRepository)
         self.updateBrew = UpdateBrewUseCase(repository: brewRepository)
         self.fetchAllBrews = FetchAllBrewsUseCase(repository: brewRepository)
@@ -64,11 +82,13 @@ final class SaveBrewViewModel {
             canSave,
             let brew = brew.convertToBrew()
         else { return }
-        
-        // If we're updating an existing brew, newBrew id will already be set. Otherwise save a new brew
-        self.brew.id != nil ?
-            try updateBrew.execute(updatedBrew: brew) :
+
+        if isEditing {
+            try updateBrew.execute(updatedBrew: brew)
+        } else {
             try logNewBrew.execute(newBrew: brew)
+            openNewBagIfRoastDateChanged(from: brew)
+        }
     }
     
     func autofillFromLastBrew() {
@@ -76,8 +96,7 @@ final class SaveBrewViewModel {
             !isEditing,
             let coffee = brew.coffee,
             let method = brew.method,
-            brew.grindSize.isEmpty, // Only autofill when input fields are empty
-            brew.dose.isEmpty
+            shouldAutofill
         else {
             // TODO: Log
             return
@@ -92,14 +111,30 @@ final class SaveBrewViewModel {
                 return
             }
             
-            // Autofill
-            brew.grindSize = String(lastBrew.grindSize)
-            brew.dose = String(lastBrew.dose)
+            // Autofill whatever is empty
+            if brew.grindSize.isEmpty {
+                brew.grindSize = String(lastBrew.grindSize)
+            }
+            
+            if brew.dose.isEmpty {
+                brew.dose = String(lastBrew.dose)
+            }
+            
+            if brew.brewTemp.isEmpty, let brewTemp = lastBrew.brewTemp {
+                brew.brewTemp = "\(brewTemp)"
+            }
+
             justAutofilled = true
         } catch {
             // TODO: Handle error
             print("[SaveBrewViewModel] - Autofill failed: \(error)")
         }
+    }
+
+    // Prefills the roast-date field from the selected coffee's current bag. Editing keeps the brew's own snapshot.
+    func prefillRoastDateFromCoffee() {
+        guard !isEditing else { return }
+        brew.roastDate = brew.coffee?.roastInfo?.date
     }
 }
 
@@ -185,6 +220,20 @@ extension SaveBrewViewModel {
                 roastDate: roastDate ?? coffee.roastInfo?.date,
                 tastingEntries: entries
             )
+        }
+    }
+}
+
+private extension SaveBrewViewModel {
+    // A new brew whose roast date differs from the coffee's current one signals a fresh bag: update the coffee and reactivate it.
+    // Best-effort — the brew is already saved and self-contained; a failed coffee sync must not fail the save (would risk a duplicate brew on retry).
+    func openNewBagIfRoastDateChanged(from brew: Brew) {
+        guard let roastDate = brew.roastDate, roastDate != brew.coffee.roastInfo?.date else { return }
+        do {
+            try updateCoffee.execute(coffee: brew.coffee.openingBag(roastedAt: roastDate))
+        } catch {
+            // TODO: Log — coffee roast-date sync failed; brew is already saved
+            print("[SaveBrewViewModel] - Coffee roast-date update failed: \(error)")
         }
     }
 }

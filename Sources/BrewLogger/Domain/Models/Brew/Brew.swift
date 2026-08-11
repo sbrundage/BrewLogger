@@ -21,7 +21,8 @@ public struct Brew: Identifiable, Equatable, Sendable {
     public let tastingEntries: [TastingEntry]
 
     public var rating: Double? { tastingEntries.compactMap(\.rating).max() }
-    public var roastAge: TimeInterval? { roastDate.map { Date().timeIntervalSince($0) } }
+    // How rested the coffee was at brew time — a fixed historical fact, not relative to now.
+    public var roastAge: TimeInterval? { roastDate.map { date.timeIntervalSince($0) } }
 
     public init(
         id: String,
