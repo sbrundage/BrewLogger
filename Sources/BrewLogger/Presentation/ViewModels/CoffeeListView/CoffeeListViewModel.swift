@@ -87,6 +87,12 @@ public class CoffeeListViewModel {
     func updateSelectedSortOption(_ option: CoffeeSortOption) {
         self.selectedSortOption = option
     }
+    
+    func updateCoffee(_ coffee: Coffee) {
+        // TODO: Handle error for not updating?
+        guard let index = coffees.firstIndex(where: { $0.id == coffee.id }) else { return }
+        coffees[index] = coffee
+    }
 }
 
 private extension CoffeeListViewModel {

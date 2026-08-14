@@ -154,4 +154,57 @@ struct CoffeeListViewModelTests {
         // Assert
         #expect(!sut.displayedCoffees.contains { $0.id == coffee.id })
     }
+
+    // MARK: - Finished toggle
+
+    @Test("Marking an active coffee finished flags it")
+    func testToggleFinished_whenActive_shouldMarkFinished() {
+        // Arrange
+        sut.fetchAllCoffees()
+        let coffee = sut.displayedCoffees.first { !$0.isFinished }!
+
+        // Act
+        sut.toggleFinished(coffee)
+
+        // Assert
+        #expect(sut.displayedCoffees.first { $0.id == coffee.id }?.isFinished == true)
+    }
+
+    @Test("Toggling a finished coffee reopens it")
+    func testToggleFinished_whenFinished_shouldReopen() {
+        // Arrange
+        sut.fetchAllCoffees()
+        let coffee = sut.displayedCoffees[0]
+        sut.toggleFinished(coffee)
+        let finished = sut.displayedCoffees.first { $0.id == coffee.id }!
+
+        // Act
+        sut.toggleFinished(finished)
+
+        // Assert
+        #expect(sut.displayedCoffees.first { $0.id == coffee.id }?.isFinished == false)
+    }
+
+    // MARK: - Delete message
+
+    @Test("Delete message counts the coffee's logged brews")
+    func testDeleteMessage_withBrews_shouldCountThem() {
+        sut.fetchAllCoffees()
+        let rodrigo = sut.displayedCoffees.first { $0.name == "Rodrigo Sanchez" }!
+        #expect(sut.deleteMessage(for: rodrigo) == "This also deletes 2 logged brews.")
+    }
+
+    @Test("Delete message uses singular for a single brew")
+    func testDeleteMessage_withOneBrew_shouldUseSingular() {
+        sut.fetchAllCoffees()
+        let guatemala = sut.displayedCoffees.first { $0.name == "Guatemala" }!
+        #expect(sut.deleteMessage(for: guatemala) == "This also deletes 1 logged brew.")
+    }
+
+    @Test("Delete message omits the count when there are no brews")
+    func testDeleteMessage_withNoBrews_shouldOmitCount() {
+        sut.fetchAllCoffees()
+        let dropBear = sut.displayedCoffees.first { $0.name == "Drop Bear Espresso" }!
+        #expect(sut.deleteMessage(for: dropBear) == "This can't be undone.")
+    }
 }

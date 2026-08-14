@@ -20,7 +20,8 @@ struct BrewDetailsFormViewModelTests {
         rating: Double? = nil,
         brewTemp: Int? = 195,
         tastingEntries: [TastingEntry] = [],
-        coffee: Coffee = .preview
+        coffee: Coffee = .preview,
+        roastDate: Date? = nil
     ) -> Brew {
         var entries = tastingEntries
         if entries.isEmpty, let rating {
@@ -36,7 +37,7 @@ struct BrewDetailsFormViewModelTests {
             brewTime: 28,
             method: .pourOver,
             brewTemp: brewTemp,
-            roastDate: nil,
+            roastDate: roastDate,
             tastingEntries: entries
         )
     }
@@ -80,6 +81,49 @@ struct BrewDetailsFormViewModelTests {
         let rows = sut(brew(coffee: coffee)).roastInfoRows
         #expect(rows.map(\.label) == ["Roaster"])
         #expect(rows.first?.value == "KOS")
+    }
+
+    @Test("Roast Date row uses the brew's snapshot, not the coffee's current roast date")
+    func testRoastInfoRows_shouldUseBrewSnapshotDate() {
+        // Arrange — coffee's current roast date differs from the brew's snapshot
+        let snapshot = Date(timeIntervalSince1970: 1_000_000) // == brew date → 0 days, plain date
+        let coffee = Coffee(
+            id: "c", name: "X", originInfo: nil,
+            roastInfo: .init(roaster: nil, date: Date(timeIntervalSince1970: 9_000_000), roastLevel: nil),
+            process: nil, variety: nil, finishedAt: nil
+        )
+
+        // Act
+        let value = sut(brew(coffee: coffee, roastDate: snapshot)).roastInfoRows.first { $0.label == "Roast Date" }?.value
+
+        // Assert
+        #expect(value == snapshot.shortFormatted)
+    }
+
+    @Test("Roast Date appends days off roast at brew time when at least a day")
+    func testRoastInfoRows_withRestedDays_shouldAppendDayCount() {
+        // Arrange — brew date 1_000_000; roasted 12 days earlier
+        let roasted = Date(timeIntervalSince1970: 1_000_000 - 12 * 86_400)
+
+        // Act
+        let value = sut(brew(roastDate: roasted)).roastInfoRows.first { $0.label == "Roast Date" }?.value
+
+        // Assert
+        #expect(value == "\(roasted.shortFormatted) (12 days)")
+    }
+
+    @Test("Roast Date uses a singular day for a one-day rest")
+    func testRoastInfoRows_withOneRestedDay_shouldUseSingular() {
+        let roasted = Date(timeIntervalSince1970: 1_000_000 - 86_400)
+        let value = sut(brew(roastDate: roasted)).roastInfoRows.first { $0.label == "Roast Date" }?.value
+        #expect(value == "\(roasted.shortFormatted) (1 day)")
+    }
+
+    @Test("Roast Date shows the date only when roasted the same day")
+    func testRoastInfoRows_whenSameDay_shouldShowDateOnly() {
+        let roasted = Date(timeIntervalSince1970: 1_000_000)
+        let value = sut(brew(roastDate: roasted)).roastInfoRows.first { $0.label == "Roast Date" }?.value
+        #expect(value == roasted.shortFormatted)
     }
 
     // MARK: - Entry rows

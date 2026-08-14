@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct RoastInfo: Sendable {
+public struct RoastInfo: Sendable, Equatable {
     public let roaster: String?
     public let date: Date?
     public let roastLevel: RoastLevel?

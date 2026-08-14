@@ -68,42 +68,42 @@ struct SaveCoffeeView: View {
 
     private var requiredSection: some View {
         Section("Required") {
-            TextField("Coffee Name", text: $viewModel.coffee.name)
+            TextField("Coffee Name", text: $viewModel.coffeeDraft.name)
                 .focused($focus, equals: .name)
         }
     }
 
     private var optionalSection: some View {
         Section("Optional") {
-            TextField("Roaster", text: $viewModel.coffee.roaster)
+            TextField("Roaster", text: $viewModel.coffeeDraft.roaster)
                 .focused($focus, equals: .roaster)
 
             // Roast Level
             ExpandablePickerRow(
-                title: viewModel.coffee.roastLevel?.title ?? "Roast Level",
-                isSelected: viewModel.coffee.roastLevel != nil,
+                title: viewModel.coffeeDraft.roastLevel?.title ?? "Roast Level",
+                isSelected: viewModel.coffeeDraft.roastLevel != nil,
                 isExpanded: $showRoastLevelPicker
             ) {
                 ItemPickerView(
                     items: RoastLevel.allCases,
-                    selectedItem: viewModel.coffee.roastLevel
+                    selectedItem: viewModel.coffeeDraft.roastLevel
                 ) { level in
                     withAnimation(.spring(duration: 0.2)) { showRoastLevelPicker = false }
-                    viewModel.coffee.roastLevel = level
+                    viewModel.coffeeDraft.roastLevel = level
                 }
             }
 
             // Roast Date
             ExpandablePickerRow(
-                title: viewModel.coffee.roastDate?.shortFormatted ?? "Roast Date",
-                isSelected: viewModel.coffee.roastDate != nil,
+                title: viewModel.coffeeDraft.roastDate?.shortFormatted ?? "Roast Date",
+                isSelected: viewModel.coffeeDraft.roastDate != nil,
                 isExpanded: $showRoastDatePicker
             ) {
                 DatePicker(
                     "",
                     selection: Binding(
-                        get: { viewModel.coffee.roastDate ?? Date() },
-                        set: { viewModel.coffee.roastDate = $0 }
+                        get: { viewModel.coffeeDraft.roastDate ?? Date() },
+                        set: { viewModel.coffeeDraft.roastDate = $0 }
                     ),
                     displayedComponents: .date
                 )
@@ -112,9 +112,7 @@ struct SaveCoffeeView: View {
                 .tint(BrandColors.accent)
 
                 Button {
-                    viewModel.coffee.roastDate = nil
-                    // TODO: This doesn't animate closed
-//                    withAnimation(.spring(duration: 0.2)) { showRoastDatePicker = false }
+                    viewModel.coffeeDraft.roastDate = nil
                 } label: {
                     Text("Clear")
                         .foregroundStyle(.white)
@@ -125,29 +123,29 @@ struct SaveCoffeeView: View {
                 .listRowSeparator(.hidden)
             }
 
-            TextField("Origin", text: $viewModel.coffee.originLocation)
+            TextField("Origin", text: $viewModel.coffeeDraft.originLocation)
                 .focused($focus, equals: .origin)
 
-            TextField("Altitude (masl)", text: $viewModel.coffee.originAltitude)
+            TextField("Altitude (masl)", text: $viewModel.coffeeDraft.originAltitude)
                 .keyboardType(.numberPad)
                 .focused($focus, equals: .altitude)
 
             // Roast Process
             ExpandablePickerRow(
-                title: viewModel.coffee.process?.title ?? "Process",
-                isSelected: viewModel.coffee.process != nil,
+                title: viewModel.coffeeDraft.process?.title ?? "Process",
+                isSelected: viewModel.coffeeDraft.process != nil,
                 isExpanded: $showProcessPicker
             ) {
                 ItemPickerView(
                     items: ProcessMethod.allCases,
-                    selectedItem: viewModel.coffee.process
+                    selectedItem: viewModel.coffeeDraft.process
                 ) { process in
                     withAnimation(.spring(duration: 0.2)) { showProcessPicker = false }
-                    viewModel.coffee.process = process
+                    viewModel.coffeeDraft.process = process
                 }
             }
 
-            TextField("Variety", text: $viewModel.coffee.variety)
+            TextField("Variety", text: $viewModel.coffeeDraft.variety)
                 .focused($focus, equals: .variety)
         }
     }
@@ -177,8 +175,14 @@ struct SaveCoffeeView: View {
     }
 }
 
-#Preview {
+#Preview("New Coffee") {
     NavigationStack {
         SaveCoffeeView()
+    }
+}
+
+#Preview("Edit Coffee") {
+    NavigationStack {
+        SaveCoffeeView(coffeeToEdit: .preview)
     }
 }

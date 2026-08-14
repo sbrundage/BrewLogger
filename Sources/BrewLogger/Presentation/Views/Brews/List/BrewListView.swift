@@ -12,6 +12,9 @@ struct BrewListView: View {
     @Environment(BleScaleConnectionManager.self) var connectionManager
 
     @State private var viewModel: BrewListViewModel
+    
+    @State private var brewPendingDelete: Brew?
+    @State private var brewToEdit: Brew?
 
     // Popovers
     @State private var showBlePopover: Bool = false
@@ -76,18 +79,27 @@ struct BrewListView: View {
                 }
             }
         }
-        .sheet(isPresented: $viewModel.showAddBrewSheet, onDismiss: {
-            viewModel.fetchAllBrews()
-        }) {
+        .sheet(isPresented: $viewModel.showAddBrewSheet) {
             NavigationStack {
-                SaveBrewView()
-                    .toolbar {
-                        Button {
-                            viewModel.showAddBrewSheet = false
-                        } label: { Image(systemName: "xmark") }
-                    }
+                SaveBrewView() { viewModel.fetchAllBrews() }
             }
             .environment(connectionManager)
+        }
+        .sheet(item: $brewToEdit, content: { brew in
+            NavigationStack {
+                SaveBrewView(brewToEdit: brew) { viewModel.fetchAllBrews() }
+            }
+        })
+        .alert(
+            "Delete \(brewPendingDelete?.coffee.name ?? "this brew")?",
+            isPresented: Binding(
+                get: { brewPendingDelete != nil },
+                set: { if !$0 { brewPendingDelete = nil } }
+            ),
+            presenting: brewPendingDelete
+        ) { brew in
+            Button("Delete", role: .destructive) { viewModel.delete(brew) }
+            Button("Cancel", role: .cancel) { }
         }
     }
     
@@ -119,18 +131,27 @@ struct BrewListView: View {
         } label: {
             NewBrewView(brew: brew)
                 .listCardBackground()
-                .listRowSeparator(.hidden)
-                .swipeActions(edge: .trailing) {
-                    Button(role: .destructive) {
-                        viewModel.delete(brew)
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    Button {
+                        brewPendingDelete = brew
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
+                    .tint(.red)
                 }
+                .contextMenu {
+                    Button {
+                      brewToEdit = brew
+                    } label: {
+                        Label("Edit", systemImage: "pencil")
+                    }
+                }
+                .tint(.primary)
         }
         .navigationLinkIndicatorVisibility(.hidden)
         .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
         .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
     }
 
     private func sectionHeader(for section: BrewDateGroup) -> some View {

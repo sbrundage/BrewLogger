@@ -12,7 +12,9 @@ struct CoffeeListView: View {
     @State private var viewModel = CoffeeListViewModel()
 
     @State private var showSortPopover: Bool = false
+    
     @State private var coffeePendingDelete: Coffee?
+    @State private var coffeeToEdit: Coffee?
 
     var body: some View {
         VStack {
@@ -55,18 +57,18 @@ struct CoffeeListView: View {
                 }
             }
         }
-        .sheet(isPresented: $viewModel.showAddCoffeeSheet, onDismiss: {
-            viewModel.fetchAllCoffees()
-        }) {
+        .sheet(isPresented: $viewModel.showAddCoffeeSheet) {
             NavigationStack {
-                SaveCoffeeView()
-                    .toolbar {
-                        Button {
-                            viewModel.showAddCoffeeSheet = false
-                        } label: { Image(systemName: "xmark") }
-                    }
+                SaveCoffeeView() { _ in viewModel.fetchAllCoffees() }
             }
         }
+        .sheet(item: $coffeeToEdit, content: { coffee in
+            NavigationStack {
+                SaveCoffeeView(coffeeToEdit: coffee) { updatedCoffee in
+                    viewModel.updateCoffee(updatedCoffee)
+                }
+            }
+        })
         .navigationDestination(for: Coffee.self) { coffee in
             CoffeeDetailsView(coffee: coffee)
         }
@@ -91,27 +93,53 @@ struct CoffeeListView: View {
                 NavigationLink(value: coffee.hasDetails ? coffee : nil) {
                     CoffeeView(coffee: coffee, stats: viewModel.stats(for: coffee) ?? .empty)
                         .listCardBackground()
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button {
+                                coffeePendingDelete = coffee
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                            .tint(.red)
+                        }
+                        .swipeActions(edge: .leading) {
+                            Button {
+                                viewModel.toggleFinished(coffee)
+                            } label: {
+                                Label(
+                                    coffee.isFinished ? "Reopen" : "Finished",
+                                    systemImage: coffee.isFinished ? "arrow.uturn.backward" : "checkmark"
+                                )
+                            }
+                            .tint(BrandColors.accent)
+                        }
+                        .contextMenu {
+                            Button {
+                                coffeeToEdit = coffee
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            
+                            Button {
+                                viewModel.toggleFinished(coffee)
+                            } label: {
+                                Label(
+                                    coffee.isFinished ? "Reopen" : "Finished",
+                                    systemImage: coffee.isFinished ? "arrow.uturn.backward" : "checkmark"
+                                )
+                            }
+
+                            Button {
+                                coffeePendingDelete = coffee
+                            } label : {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                        .tint(.primary)
                 }
                 .navigationLinkIndicatorVisibility(.hidden)
                 .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
-                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    Button {
-                        coffeePendingDelete = coffee
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
-                    .tint(.red)
-                }
-                .swipeActions(edge: .leading) {
-                    Button {
-                        viewModel.toggleFinished(coffee)
-                    } label: {
-                        Image(systemName: "checkmark")
-                    }
-
-                }
             }
         }
         .listStyle(.plain)

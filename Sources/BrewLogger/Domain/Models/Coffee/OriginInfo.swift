@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct OriginInfo: Sendable {
+public struct OriginInfo: Sendable, Equatable {
     public let location: String
     public let altitude: Int?
     public let latitude: Double?
