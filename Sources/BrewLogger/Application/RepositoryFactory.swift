@@ -16,12 +16,14 @@ public struct RepositoryFactory {
     public let coffee: CoffeeRepository
     public let brew: BrewRepository
     public let scale: BLEScaleRepository
-    
+    public let geocoding: GeocodingService
+
     public static let stub = RepositoryFactory(
         coffee: StubCoffeeRepository(),
         // entrySpacing lets previews build the taste-over-time chart without waiting real minutes.
         brew: StubBrewRepository(entrySpacing: 8 * 60),
-        scale: StubBLEScaleRepository()
+        scale: StubBLEScaleRepository(),
+        geocoding: StubGeocodingService()
     )
 
     // Starts as stubs. Host app calls configure(context:) in App.init() to upgrade to real repos.
@@ -39,7 +41,8 @@ public struct RepositoryFactory {
                 store: CoreDataStore<BrewModel>(context: context),
                 coffeeStore: coffeeStore
             ),
-            scale: bleRepository
+            scale: bleRepository,
+            geocoding: MapKitGeocodingService()
         )
     }
 }

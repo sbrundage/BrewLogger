@@ -14,6 +14,9 @@ extension CoffeeModel {
         self.name = coffee.name
         self.originLocation = coffee.originInfo?.location
         self.originAltitude = coffee.originInfo?.altitude.map { NSNumber(value: $0) }
+        self.originLatitude = coffee.originInfo?.latitude.map { NSNumber(value: $0) }
+        self.originLongitude = coffee.originInfo?.longitude.map { NSNumber(value: $0) }
+        self.originCanonicalName = coffee.originInfo?.canonicalName
         self.roaster = coffee.roastInfo?.roaster
         self.roastDate = coffee.roastInfo?.date
         self.roastLevel = coffee.roastInfo?.roastLevel?.rawValue
@@ -25,7 +28,13 @@ extension CoffeeModel {
         guard let id, let name else { return nil }
 
         let originInfo: OriginInfo? = originLocation.map {
-            OriginInfo(location: $0, altitude: originAltitude?.intValue)
+            OriginInfo(
+                location: $0,
+                altitude: originAltitude?.intValue,
+                latitude: originLatitude?.doubleValue,
+                longitude: originLongitude?.doubleValue,
+                canonicalName: originCanonicalName
+            )
         }
 
         let roastInfo: RoastInfo? = {

@@ -11,7 +11,7 @@ public extension Coffee {
     static let preview = Coffee(
         id: UUID().uuidString,
         name: "Rodrigo Sanchez",
-        originInfo: .init(location: "Huila, Colombia", altitude: 1730),
+        originInfo: .init(location: "Huila, Colombia", altitude: 1730, latitude: 2.5359, longitude: -75.5277, canonicalName: "Huila, Colombia"),
         roastInfo: .init(roaster: "KOS", date: Date(), roastLevel: .light),
         process: .natural
     )
@@ -20,7 +20,7 @@ public extension Coffee {
         Coffee(
             id: UUID().uuidString,
             name: "Rodrigo Sanchez",
-            originInfo: .init(location: "Huila, Colombia", altitude: 1730),
+            originInfo: .init(location: "Huila, Colombia", altitude: 1730, latitude: 2.5359, longitude: -75.5277, canonicalName: "Huila, Colombia"),
             roastInfo: .init(roaster: "KOS", date: Date(), roastLevel: .light),
             process: nil
         ),
@@ -34,7 +34,7 @@ public extension Coffee {
         Coffee(
             id: UUID().uuidString,
             name: "Guatemala",
-            originInfo: .init(location: "La Union Zacapa, Guatemala", altitude: 1500),
+            originInfo: .init(location: "La Union Zacapa, Guatemala", altitude: 1500, latitude: 14.9667, longitude: -89.2833, canonicalName: "Zacapa, Guatemala"),
             roastInfo: .init(roaster: "KOS", date: Date(), roastLevel: .light),
             process: nil
         ),
@@ -48,7 +48,7 @@ public extension Coffee {
         Coffee(
             id: UUID().uuidString,
             name: "Koke Washing Station",
-            originInfo: .init(location: "Yirgacheffe, Ethiopia", altitude: 1850),
+            originInfo: .init(location: "Yirgacheffe, Ethiopia", altitude: 1850, latitude: 6.1667, longitude: 38.2059, canonicalName: "Yirgacheffe, Ethiopia"),
             roastInfo: .init(roaster: "KOS", date: nil, roastLevel: .light),
             process: nil
         ),

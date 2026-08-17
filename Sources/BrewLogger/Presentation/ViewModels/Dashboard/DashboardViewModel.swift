@@ -22,6 +22,8 @@ extension DashboardView {
         var mostBrewedCoffees: [Coffee] {
             coffees.sorted { (stats(for: $0)?.brewCount ?? 0) > (stats(for: $1)?.brewCount ?? 0) }
         }
+        
+        var hasOriginCoffees: Bool { coffees.contains { $0.originInfo != nil } }
 
         func stats(for coffee: Coffee) -> CoffeeBrewStats? {
             statsByCoffeeId[coffee.id]

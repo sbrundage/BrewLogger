@@ -31,12 +31,14 @@ struct SaveCoffeeView: View {
             optionalSection
 
             Button {
-                do {
-                    let savedCoffee = try viewModel.saveCoffee()
-                    onSuccessfulSave?(savedCoffee)
-                    dismiss()
+                Task {
+                    do {
+                        let savedCoffee = try await viewModel.saveCoffee()
+                        onSuccessfulSave?(savedCoffee)
+                        dismiss()
+                    }
+                    catch { /* TODO: Handle error */ }
                 }
-                catch { /* TODO: Handle error */ }
             } label: {
                 Text("Save Coffee")
             }

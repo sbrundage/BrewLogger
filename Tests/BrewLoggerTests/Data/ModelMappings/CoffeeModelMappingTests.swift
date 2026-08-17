@@ -52,6 +52,28 @@ struct CoffeeModelMappingTests {
         #expect(result?.roastInfo?.roaster == "KOS")
     }
 
+    @Test("origin coordinate round-trips through update(from:) and toDomain()")
+    func testOriginCoordinate_whenSetAndMappedBack_shouldRoundTrip() {
+        // Arrange
+        let coffee = Coffee(
+            id: "c1",
+            name: "Rodrigo Sanchez",
+            originInfo: .init(location: "Huila, Colombia", altitude: 1730, latitude: 2.5359, longitude: -75.5277, canonicalName: "Huila, Colombia"),
+            roastInfo: nil,
+            process: nil
+        )
+        let sut = CoffeeModel(context: context)
+
+        // Act
+        sut.update(from: coffee)
+        let result = sut.toDomain()
+
+        // Assert
+        #expect(result?.originInfo?.latitude == 2.5359)
+        #expect(result?.originInfo?.longitude == -75.5277)
+        #expect(result?.originInfo?.canonicalName == "Huila, Colombia")
+    }
+
     @Test("update(from:) sets id, name, and roaster from domain model")
     func testUpdateFrom_withCoffeeModel_shouldSetAllFields() {
         // Arrange
