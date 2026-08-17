@@ -84,11 +84,23 @@ struct RoastFreshness {
     }
 }
 
-#Preview {
+#Preview("Live Coffee") {
     CoffeeView(
         coffee: .preview,
         stats: CoffeeBrewStats(brewCount: 12, bestRating: 4.5, lastBrewed: Date())
     )
-    let coffee = Coffee(id: UUID().uuidString, name: "Test Coffee", originInfo: nil, roastInfo: nil, process: nil)
-    CoffeeView(coffee: coffee)
+}
+
+#Preview("Finished Coffee") {
+    let coffee = Coffee.preview
+    let finishedCoffee = Coffee(id: coffee.id, name: coffee.name, originInfo: coffee.originInfo, roastInfo: coffee.roastInfo, process: coffee.process, variety: coffee.variety, finishedAt: coffee.roastInfo?.date)
+    CoffeeView(
+        coffee: finishedCoffee,
+        stats: CoffeeBrewStats(brewCount: 12, bestRating: 4.5, lastBrewed: Date())
+    )
+}
+
+#Preview("Empty Coffee") {
+    let emptyCoffee = Coffee(id: UUID().uuidString, name: "Test Coffee", originInfo: nil, roastInfo: nil, process: nil, variety: nil, finishedAt: nil)
+    CoffeeView(coffee: emptyCoffee)
 }

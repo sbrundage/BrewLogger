@@ -57,7 +57,9 @@ struct SaveCoffeeViewModelTests {
             name: "Rodrigo Sanchez",
             originInfo: .init(location: "Huila, Colombia", altitude: 1730, latitude: 2.5359, longitude: -75.5277, canonicalName: "Huila, Colombia"),
             roastInfo: nil,
-            process: nil
+            process: nil,
+            variety: nil,
+            finishedAt: nil
         )
         let geocoding = StubGeocodingService(result: GeocodeResult(latitude: 0, longitude: 0, canonicalName: "Wrong"))
         let sut = SaveCoffeeViewModel(coffeeToEdit: existing, repository: StubCoffeeRepository(), geocoding: geocoding)

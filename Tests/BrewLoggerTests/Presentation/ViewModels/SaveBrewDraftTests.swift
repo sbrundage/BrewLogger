@@ -57,6 +57,52 @@ struct SaveBrewDraftTests {
         // Assert
         #expect(converted.date == original.date)
     }
+
+    // MARK: - Roast date snapshot
+
+    @Test("Converting with no roast date snapshots the coffee's current roast date")
+    func testConvertToBrew_whenRoastDateNil_shouldSnapshotCoffeeRoastDate() throws {
+        // Arrange
+        let roasted = Date(timeIntervalSince1970: 500_000)
+        var draft = validDraft()
+        draft.coffee = coffee(roastDate: roasted)
+        draft.roastDate = nil
+
+        // Act
+        let brew = try #require(draft.convertToBrew())
+
+        // Assert
+        #expect(brew.roastDate == roasted)
+    }
+
+    @Test("Converting preserves an explicitly set roast date over the coffee's")
+    func testConvertToBrew_whenRoastDateSet_shouldPreserveIt() throws {
+        // Arrange
+        let picked = Date(timeIntervalSince1970: 900_000)
+        var draft = validDraft()
+        draft.coffee = coffee(roastDate: Date(timeIntervalSince1970: 500_000))
+        draft.roastDate = picked
+
+        // Act
+        let brew = try #require(draft.convertToBrew())
+
+        // Assert
+        #expect(brew.roastDate == picked)
+    }
+
+    @Test("A draft built from an existing brew keeps that brew's roast date")
+    func testInitFromBrew_shouldPreserveRoastDate() throws {
+        // Arrange
+        let roasted = Date(timeIntervalSince1970: 700_000)
+        let original = brew(date: Date(), roastDate: roasted)
+        let draft = SaveBrewViewModel.BrewDraft(from: original)
+
+        // Act
+        let converted = try #require(draft.convertToBrew())
+
+        // Assert
+        #expect(converted.roastDate == roasted)
+    }
 }
 
 private extension SaveBrewDraftTests {
@@ -71,7 +117,7 @@ private extension SaveBrewDraftTests {
         return draft
     }
 
-    func brew(date: Date) -> Brew {
+    func brew(date: Date, roastDate: Date? = nil) -> Brew {
         Brew(
             id: "brew-1",
             date: date,
@@ -81,7 +127,21 @@ private extension SaveBrewDraftTests {
             yield: 36,
             brewTime: 28,
             method: .pourOver,
-            brewTemp: 195
+            brewTemp: 195,
+            roastDate: roastDate,
+            tastingEntries: []
+        )
+    }
+
+    func coffee(roastDate: Date?) -> Coffee {
+        Coffee(
+            id: "c",
+            name: "X",
+            originInfo: nil,
+            roastInfo: .init(roaster: nil, date: roastDate, roastLevel: nil),
+            process: nil,
+            variety: nil,
+            finishedAt: nil
         )
     }
 }

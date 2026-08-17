@@ -18,6 +18,7 @@ public extension Brew {
         brewTime: 28,
         method: .pourOver,
         brewTemp: 195,
+        roastDate: Date().addingTimeInterval(-86400 * 12),
         tastingEntries: [
             TastingEntry(createdAt: Date(), rating: 4, note: "Clean and sweet, nice clarity"),
             TastingEntry(createdAt: Date().addingTimeInterval(8 * 60), rating: 4.5, note: "Acidity opening up, juicy"),
@@ -40,6 +41,7 @@ public extension Brew {
             brewTime: 28,
             method: .pourOver,
             brewTemp: 195,
+            roastDate: Date().addingTimeInterval(-86400 * 12),
             tastingEntries: [TastingEntry(createdAt: Date(), rating: 4, note: "Clean and sweet, nice clarity")]
         ),
         Brew(
@@ -52,6 +54,7 @@ public extension Brew {
             brewTime: 30,
             method: .pourOver,
             brewTemp: 195,
+            roastDate: Date().addingTimeInterval(-86400 * 12),
             tastingEntries: [TastingEntry(createdAt: Date().addingTimeInterval(-86400), rating: 3, note: "Slightly over-extracted, bitter finish")]
         ),
         Brew(
@@ -64,6 +67,7 @@ public extension Brew {
             brewTime: 26,
             method: .espresso,
             brewTemp: 195,
+            roastDate: Date().addingTimeInterval(-86400 * 12),
             tastingEntries: [TastingEntry(createdAt: Date().addingTimeInterval(-86400 * 2), rating: 5, note: "Best shot yet")]
         ),
         Brew(
@@ -76,6 +80,7 @@ public extension Brew {
             brewTime: 27,
             method: .espresso,
             brewTemp: 195,
+            roastDate: Date().addingTimeInterval(-86400 * 12),
             tastingEntries: [TastingEntry(createdAt: Date().addingTimeInterval(-86400 * 3), rating: 4, note: "")]
         ),
         Brew(
@@ -88,6 +93,7 @@ public extension Brew {
             brewTime: 32,
             method: .pourOver,
             brewTemp: 195,
+            roastDate: Date().addingTimeInterval(-86400 * 12),
             tastingEntries: [TastingEntry(createdAt: Date().addingTimeInterval(-86400 * 5), rating: 3, note: "Under-developed, needs coarser grind")]
         ),
     ]

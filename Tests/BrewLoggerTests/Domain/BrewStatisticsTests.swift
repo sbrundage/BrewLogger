@@ -132,6 +132,7 @@ private extension BrewStatisticsTests {
             brewTime: 28,
             method: .pourOver,
             brewTemp: 195,
+            roastDate: nil,
             tastingEntries: rating.map { [TastingEntry(createdAt: date, rating: $0, note: "")] } ?? []
         )
     }

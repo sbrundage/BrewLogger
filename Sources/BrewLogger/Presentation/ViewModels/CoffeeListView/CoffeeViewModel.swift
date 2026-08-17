@@ -30,7 +30,11 @@ extension CoffeeView {
         }
 
         var freshness: RoastFreshness? {
-            guard showsFreshness, let roastDate = coffee.roastInfo?.date else { return nil }
+            guard
+                showsFreshness,
+                !coffee.isFinished,
+                let roastDate = coffee.roastInfo?.date
+            else { return nil }
             let days = Calendar.current.dateComponents([.day], from: roastDate, to: Date()).day ?? 0
             return RoastFreshness(daysOffRoast: days)
         }

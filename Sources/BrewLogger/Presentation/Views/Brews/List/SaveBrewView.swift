@@ -18,6 +18,7 @@ struct SaveBrewView: View {
     // Navigation
     @State private var showCoffeePicker = false
     @State private var showMethodPicker = false
+    @State private var showRoastDatePicker = false
     @State private var showAddCoffeeView = false
 
     @FocusState private var focus: Field?
@@ -85,12 +86,13 @@ struct SaveBrewView: View {
         .navigationDestination(isPresented: $showAddCoffeeView) {
             SaveCoffeeView { newCoffee in
                 viewModel.brew.coffee = newCoffee
+                viewModel.prefillRoastDateFromCoffee()
             }
         }
     }
 
     private var requiredFieldsSection: some View {
-        Section("Required") {
+        Section {
             // Select a Coffee
             ExpandablePickerRow(
                 title: viewModel.brew.coffee?.name ?? "Select a coffee",
@@ -106,6 +108,7 @@ struct SaveBrewView: View {
                         withAnimation(.spring(duration: 0.2)) {
                             viewModel.brew.coffee = coffee
                             viewModel.autofillFromLastBrew()
+                            viewModel.prefillRoastDateFromCoffee()
                             viewModel.coffeeSearch = ""
                             showCoffeePicker = false
                         }
@@ -159,12 +162,44 @@ struct SaveBrewView: View {
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
                 .focused($focus, equals: .yield)
+        } header: {
+            Text("Required")
         }
     }
 
     @ViewBuilder
     private var optionalFieldsSection: some View {
         Section("Optional") {
+            // Roast Date
+            ExpandablePickerRow(
+                title: viewModel.roastDateTitle,
+                isSelected: viewModel.brew.roastDate != nil,
+                isExpanded: $showRoastDatePicker
+            ) {
+                DatePicker(
+                    "",
+                    selection: Binding(
+                        get: { viewModel.brew.roastDate ?? Date() },
+                        set: { viewModel.brew.roastDate = $0 }
+                    ),
+                    displayedComponents: .date
+                )
+                .datePickerStyle(.graphical)
+                .labelsHidden()
+                .tint(BrandColors.accent)
+
+                Button {
+                    viewModel.brew.roastDate = nil
+                } label: {
+                    Text("Clear")
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .tint(.secondary)
+                .listRowSeparator(.hidden)
+            }
+            
             TextField("Brew Temp", text: $viewModel.brew.brewTemp)
                 .keyboardType(.decimalPad)
                 .textContentType(.none)
