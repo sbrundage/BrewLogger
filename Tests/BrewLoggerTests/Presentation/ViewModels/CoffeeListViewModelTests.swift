@@ -207,4 +207,50 @@ struct CoffeeListViewModelTests {
         let dropBear = sut.displayedCoffees.first { $0.name == "Drop Bear Espresso" }!
         #expect(sut.deleteMessage(for: dropBear) == "This can't be undone.")
     }
+
+    // MARK: - Updating an edited coffee
+
+    @Test("Updating a coffee replaces it in state without refetching")
+    func testUpdateCoffee_withEditedCoffee_shouldReplaceItInState() {
+        // Arrange
+        sut.fetchAllCoffees()
+        let original = sut.displayedCoffees.first { $0.name == "Rodrigo Sanchez" }!
+        let countBefore = sut.displayedCoffees.count
+
+        // Act
+        sut.updateCoffee(original.renamed("Renamed"))
+
+        // Assert
+        #expect(sut.displayedCoffees.first { $0.id == original.id }?.name == "Renamed")
+        #expect(sut.displayedCoffees.count == countBefore, "Replacing must not add or drop a row.")
+    }
+
+    @Test("Updating a coffee that is not in the list changes nothing")
+    func testUpdateCoffee_withUnknownCoffee_shouldNotChangeState() {
+        // Arrange
+        sut.fetchAllCoffees()
+        let namesBefore = sut.displayedCoffees.map(\.name)
+
+        // Act
+        sut.updateCoffee(
+            Coffee(id: "not-in-list", name: "Ghost", originInfo: nil, roastInfo: nil, process: nil, variety: nil, finishedAt: nil)
+        )
+
+        // Assert
+        #expect(sut.displayedCoffees.map(\.name) == namesBefore)
+    }
+}
+
+private extension Coffee {
+    func renamed(_ name: String) -> Coffee {
+        Coffee(
+            id: id,
+            name: name,
+            originInfo: originInfo,
+            roastInfo: roastInfo,
+            process: process,
+            variety: variety,
+            finishedAt: finishedAt
+        )
+    }
 }
