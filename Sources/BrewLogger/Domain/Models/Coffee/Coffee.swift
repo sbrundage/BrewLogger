@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Coffee: Sendable, Identifiable, Hashable {
+public struct Coffee: Sendable, Identifiable, Hashable, Equatable {
     public let id: String
     public let name: String
     public let originInfo: OriginInfo?
@@ -37,8 +37,6 @@ public struct Coffee: Sendable, Identifiable, Hashable {
         self.finishedAt = finishedAt
     }
 
-    public static func == (lhs: Coffee, rhs: Coffee) -> Bool { lhs.id == rhs.id }
-
     public func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
 
@@ -57,7 +55,8 @@ public extension Coffee {
         )
     }
 
-    // Pass nil to reopen (clear the finished flag).
+    /// Sets the `finishedAt` date to mark as coffee as "completed" and remove the "days off roast" snipe.
+    /// Pass nil to reopen (clear the finished flag).
     func markingFinished(_ date: Date?) -> Coffee {
         Coffee(
             id: id,

@@ -14,11 +14,14 @@ final class SaveCoffeeViewModel {
     private let logCoffee: LogCoffeeUseCase
     private let updateCoffee: UpdateCoffeeUseCase
     private let geocoding: GeocodingService
+    private let coffeeToEdit: Coffee?
 
-    var coffee = CoffeeDraft()
+    var coffeeDraft = CoffeeDraft()
 
-    var canSave: Bool { coffee.canSave }
-    var isEditing: Bool { coffee.id != nil }
+    var isEditing: Bool { coffeeToEdit != nil }
+    var canSave: Bool {
+        coffeeDraft.canSave && coffeeDraft.toCoffee() != coffeeToEdit
+    }
 
     init(
         coffeeToEdit: Coffee? = nil,
@@ -28,29 +31,40 @@ final class SaveCoffeeViewModel {
         self.logCoffee = LogCoffeeUseCase(repository: repository)
         self.updateCoffee = UpdateCoffeeUseCase(repository: repository)
         self.geocoding = geocoding
-
+        self.coffeeToEdit = coffeeToEdit
+        
         if let coffeeToEdit {
-            self.coffee = CoffeeDraft(coffee: coffeeToEdit)
+            self.coffeeDraft = CoffeeDraft(coffee: coffeeToEdit)
         }
     }
 
     func saveCoffee() async throws -> Coffee {
         await resolveCoordinateIfNeeded()
-        let coffee = coffee.toCoffee()
-
-        // If we're updating an existing coffee, coffee id will already be set.  Otherwise save a new coffee
-        self.coffee.id != nil ?
+        let coffee = reactiveIfRoastDateChanged(coffeeDraft.toCoffee())
+        
+        isEditing ?
             try updateCoffee.execute(coffee: coffee) :
             try logCoffee.execute(coffee: coffee)
-
+            
         return coffee
     }
+}
 
-    private func resolveCoordinateIfNeeded() async {
-        guard !coffee.originLocation.isEmpty, coffee.needsGeocode else { return }
-        guard let result = await geocoding.geocode(coffee.originLocation) else { return }
-        coffee.geocode = result
-        coffee.resolvedLocation = coffee.originLocation
+private extension SaveCoffeeViewModel {
+    func resolveCoordinateIfNeeded() async {
+        guard !coffeeDraft.originLocation.isEmpty, coffeeDraft.needsGeocode else { return }
+        guard let result = await geocoding.geocode(coffeeDraft.originLocation) else { return }
+        coffeeDraft.geocode = result
+        coffeeDraft.resolvedLocation = coffeeDraft.originLocation
+    }
+    
+    // If coffee is edited and roast date is changed, we should clear the coffee's `finishedAt` date.
+    func reactiveIfRoastDateChanged(_ coffee: Coffee) -> Coffee {
+        guard
+            let coffeeToEdit,
+            coffee.roastInfo?.date != coffeeToEdit.roastInfo?.date
+        else { return coffee }
+        return coffee.markingFinished(nil)
     }
 }
 

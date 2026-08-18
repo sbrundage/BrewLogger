@@ -154,4 +154,103 @@ struct CoffeeListViewModelTests {
         // Assert
         #expect(!sut.displayedCoffees.contains { $0.id == coffee.id })
     }
+
+    // MARK: - Finished toggle
+
+    @Test("Marking an active coffee finished flags it")
+    func testToggleFinished_whenActive_shouldMarkFinished() {
+        // Arrange
+        sut.fetchAllCoffees()
+        let coffee = sut.displayedCoffees.first { !$0.isFinished }!
+
+        // Act
+        sut.toggleFinished(coffee)
+
+        // Assert
+        #expect(sut.displayedCoffees.first { $0.id == coffee.id }?.isFinished == true)
+    }
+
+    @Test("Toggling a finished coffee reopens it")
+    func testToggleFinished_whenFinished_shouldReopen() {
+        // Arrange
+        sut.fetchAllCoffees()
+        let coffee = sut.displayedCoffees[0]
+        sut.toggleFinished(coffee)
+        let finished = sut.displayedCoffees.first { $0.id == coffee.id }!
+
+        // Act
+        sut.toggleFinished(finished)
+
+        // Assert
+        #expect(sut.displayedCoffees.first { $0.id == coffee.id }?.isFinished == false)
+    }
+
+    // MARK: - Delete message
+
+    @Test("Delete message counts the coffee's logged brews")
+    func testDeleteMessage_withBrews_shouldCountThem() {
+        sut.fetchAllCoffees()
+        let rodrigo = sut.displayedCoffees.first { $0.name == "Rodrigo Sanchez" }!
+        #expect(sut.deleteMessage(for: rodrigo) == "This also deletes 2 logged brews.")
+    }
+
+    @Test("Delete message uses singular for a single brew")
+    func testDeleteMessage_withOneBrew_shouldUseSingular() {
+        sut.fetchAllCoffees()
+        let guatemala = sut.displayedCoffees.first { $0.name == "Guatemala" }!
+        #expect(sut.deleteMessage(for: guatemala) == "This also deletes 1 logged brew.")
+    }
+
+    @Test("Delete message omits the count when there are no brews")
+    func testDeleteMessage_withNoBrews_shouldOmitCount() {
+        sut.fetchAllCoffees()
+        let dropBear = sut.displayedCoffees.first { $0.name == "Drop Bear Espresso" }!
+        #expect(sut.deleteMessage(for: dropBear) == "This can't be undone.")
+    }
+
+    // MARK: - Updating an edited coffee
+
+    @Test("Updating a coffee replaces it in state without refetching")
+    func testUpdateCoffee_withEditedCoffee_shouldReplaceItInState() {
+        // Arrange
+        sut.fetchAllCoffees()
+        let original = sut.displayedCoffees.first { $0.name == "Rodrigo Sanchez" }!
+        let countBefore = sut.displayedCoffees.count
+
+        // Act
+        sut.updateCoffee(original.renamed("Renamed"))
+
+        // Assert
+        #expect(sut.displayedCoffees.first { $0.id == original.id }?.name == "Renamed")
+        #expect(sut.displayedCoffees.count == countBefore, "Replacing must not add or drop a row.")
+    }
+
+    @Test("Updating a coffee that is not in the list changes nothing")
+    func testUpdateCoffee_withUnknownCoffee_shouldNotChangeState() {
+        // Arrange
+        sut.fetchAllCoffees()
+        let namesBefore = sut.displayedCoffees.map(\.name)
+
+        // Act
+        sut.updateCoffee(
+            Coffee(id: "not-in-list", name: "Ghost", originInfo: nil, roastInfo: nil, process: nil, variety: nil, finishedAt: nil)
+        )
+
+        // Assert
+        #expect(sut.displayedCoffees.map(\.name) == namesBefore)
+    }
+}
+
+private extension Coffee {
+    func renamed(_ name: String) -> Coffee {
+        Coffee(
+            id: id,
+            name: name,
+            originInfo: originInfo,
+            roastInfo: roastInfo,
+            process: process,
+            variety: variety,
+            finishedAt: finishedAt
+        )
+    }
 }
