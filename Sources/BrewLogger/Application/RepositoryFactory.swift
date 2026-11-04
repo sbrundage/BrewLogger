@@ -29,6 +29,8 @@ public struct RepositoryFactory {
     // Starts as stubs. Host app calls configure(context:) in App.init() to upgrade to real repos.
     public private(set) static var dev: RepositoryFactory = .stub
 
+    public private(set) static var isConfigured = false
+
     private static let bleRepository = CoreBluetoothScaleRepository()
 
     /// Call once from App.init(). Replaces stub repos with real CoreData-backed ones.
@@ -44,5 +46,12 @@ public struct RepositoryFactory {
             scale: bleRepository,
             geocoding: MapKitGeocodingService()
         )
+        isConfigured = true
+    }
+
+    // App Intents can run in a process where App.init() never ran; self-configure on first use.
+    public static func bootstrap() {
+        guard !isConfigured else { return }
+        configure(with: .brewLogger)
     }
 }

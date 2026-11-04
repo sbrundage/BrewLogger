@@ -12,11 +12,13 @@ private enum AddRoute: Hashable {
 }
 
 public struct DashboardView: View {
+    private let coordinator = AppNavigationCoordinator.shared
+
     @State private var viewModel = ViewModel()
     @State private var searchText = ""
     @State private var path = NavigationPath()
     @State private var connectionManager = BleScaleConnectionManager()
-    
+
     public init() {}
     
     public var body: some View {
@@ -24,6 +26,9 @@ public struct DashboardView: View {
             DashboardContent(viewModel: viewModel, path: $path)
                 .navigationTitle("Pocket Logger")
                 .onAppear { viewModel.fetchAll() }
+                .onChange(of: coordinator.pendingDestination, initial: true) { _, destination in
+                    apply(destination)
+                }
                 .searchable(text: $searchText, prompt: "Search")
                 .toolbar {
                     DefaultToolbarItem(kind: .search, placement: .bottomBar)
@@ -53,6 +58,16 @@ public struct DashboardView: View {
                 })
         }
         .environment(connectionManager)
+    }
+
+    @MainActor
+    private func apply(_ destination: AppDestination?) {
+        guard let destination else { return }
+        coordinator.pendingDestination = nil   // clear first so a re-entrant fire can't push twice
+        switch destination {
+        case .addBrew:
+            path.append(AddRoute.brew)
+        }
     }
 }
 
